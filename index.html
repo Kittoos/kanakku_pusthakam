@@ -1,1574 +1,1037 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>PocketLedger - Personal Finance, Loans & EMI Tracker</title>
-  
-  <!-- Web App Manifest & Mobile Configuration -->
-  <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PocketLedger">
-  <link rel="apple-touch-icon" href="https://placehold.co/192x192/0f172a/38bdf8?text=₹">
-  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Khata & Finance Manager</title>
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857'
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Lucide Icons CDN -->
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <style>
-    /* Mobile-first safe area insets for notches & home bars */
+    /* Safe-area insets for notched phones */
     body {
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
-    input, textarea, select {
-      user-select: text;
-    }
-    /* Hide scrollbars for slick app look */
-    .no-scrollbar::-webkit-scrollbar {
+    .hide-scrollbar::-webkit-scrollbar {
       display: none;
     }
-    .no-scrollbar {
+    .hide-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Smooth modal transition */
-    .sheet-enter {
-      transform: translateY(100%);
-    }
-    .sheet-enter-active {
-      transform: translateY(0);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none pb-24">
 
-  <!-- TOP APP HEADER -->
-  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center space-x-2.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">
-        ₹
-      </div>
-      <div>
-        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger
-          <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA</span>
-        </h1>
-        <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
-      </div>
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+    <div>
+      <h1 class="text-base font-bold text-white tracking-wide flex items-center gap-2">
+        <i data-lucide="wallet" class="w-5 h-5 text-emerald-400"></i> My Ledger
+      </h1>
+      <p class="text-xs text-slate-400" id="currentDateStr"></p>
     </div>
-
-    <!-- Action icons: Reminders & Backup/Settings -->
-    <div class="flex items-center space-x-1.5">
-      <button onclick="toggleRemindersModal()" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
-        <i data-lucide="bell" class="w-5 h-5"></i>
-        <span id="headerReminderBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-900 animate-pulse"></span>
-      </button>
-
-      <button onclick="openSettingsModal()" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
-        <i data-lucide="settings" class="w-5 h-5"></i>
+    <div class="flex items-center gap-2">
+      <button onclick="openSettingsModal()" class="p-2 rounded-full bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">
+        <i data-lucide="settings" class="w-4 h-4"></i>
       </button>
     </div>
   </header>
 
-  <!-- MAIN SCROLLABLE VIEW AREA -->
-  <main class="flex-1 overflow-y-auto px-4 pt-3 pb-24 max-w-lg mx-auto w-full no-scrollbar">
+  <!-- MAIN SCROLLABLE CONTENT -->
+  <main class="flex-1 px-4 py-4 max-w-md mx-auto w-full">
 
-    <!-- URGENT DUE ALERTS BANNER -->
-    <div id="urgentAlertContainer" class="hidden mb-3"></div>
-
-    <!-- VIEW 1: DASHBOARD (HOME) -->
+    <!-- VIEW 1: DASHBOARD -->
     <section id="view-dashboard" class="space-y-4">
-      <!-- Net Balance Summary Card -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-850 to-slate-900 border border-slate-700/60 p-4 shadow-xl">
-        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-          <span>Net Liquid Wealth</span>
-          <span id="currentMonthYear" class="text-slate-400 font-medium font-mono text-[11px]"></span>
-        </div>
-        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1">
-          <span id="netWealthDisplay">₹0</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-700/50">
-          <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1">
-              <i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Month Inflow
-            </span>
-            <div id="monthInflowDisplay" class="text-sm font-bold text-emerald-400 mt-0.5">₹0</div>
-          </div>
-          <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1">
-              <i data-lucide="arrow-up-right" class="w-3 h-3 text-rose-400"></i> Month Spent
-            </span>
-            <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5">₹0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Khata Peer-to-Peer Quick Glance -->
+      
+      <!-- Net Summary Cards -->
       <div class="grid grid-cols-2 gap-3">
-        <div onclick="switchTab('khata'); setKhataFilter('lent')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span>
-            <div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400">
-              <i data-lucide="hand-coins" class="w-3.5 h-3.5"></i>
-            </div>
-          </div>
-          <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Cash given to others</p>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
+          <p class="text-xs text-slate-400 flex items-center gap-1 font-medium">
+            <i data-lucide="arrow-down-left" class="w-3.5 h-3.5 text-emerald-400"></i> You'll Get
+          </p>
+          <h2 class="text-xl font-bold text-emerald-400 mt-1" id="dashTotalGet">₹0</h2>
+          <p class="text-[10px] text-slate-500 mt-0.5">From Khata debtors</p>
         </div>
-
-        <div onclick="switchTab('khata'); setKhataFilter('borrowed')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span>
-            <div class="p-1 rounded-md bg-rose-500/10 text-rose-400">
-              <i data-lucide="receipt-text" class="w-3.5 h-3.5"></i>
-            </div>
-          </div>
-          <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Cash borrowed</p>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5">
+          <p class="text-xs text-slate-400 flex items-center gap-1 font-medium">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 text-rose-400"></i> You'll Give
+          </p>
+          <h2 class="text-xl font-bold text-rose-400 mt-1" id="dashTotalGive">₹0</h2>
+          <p class="text-[10px] text-slate-500 mt-0.5">Khata + Active EMIs</p>
         </div>
       </div>
 
-      <!-- Quick Action Buttons Row -->
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="openTransactionModal('expense')" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1">
-            <i data-lucide="minus" class="w-4 h-4"></i>
-          </div>
-          <span class="text-xs font-medium text-slate-200">Expense</span>
-        </button>
-
-        <button onclick="openTransactionModal('income')" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-          </div>
-          <span class="text-xs font-medium text-slate-200">Income</span>
-        </button>
-
-        <button onclick="openKhataModal()" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1">
-            <i data-lucide="users" class="w-4 h-4"></i>
-          </div>
-          <span class="text-xs font-medium text-slate-200">Khata Entry</span>
-        </button>
-      </div>
-
-      <!-- Institutional Loans Preview -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3>
-          </div>
-          <button onclick="switchTab('loans')" class="text-xs text-sky-400 font-semibold hover:underline">View All</button>
+      <!-- Quick Accounts Overview -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Liquid Balances</h3>
+          <button onclick="switchTab('accounts')" class="text-xs text-emerald-400 hover:underline">Manage</button>
         </div>
-        <div id="dashboardLoansList" class="space-y-2">
-          <!-- Rendered dynamically -->
+        <div class="grid grid-cols-3 gap-2 text-center" id="dashAccountsList">
+          <!-- Populated by JS -->
         </div>
       </div>
 
-      <!-- Recent Transactions feed -->
+      <!-- Dues & Reminders Alert Banner -->
+      <div id="reminderBannerSection" class="hidden">
+        <div class="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3.5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <i data-lucide="bell-ring" class="w-4 h-4"></i> Upcoming Dues & EMIs
+            </span>
+            <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium" id="reminderCountBadge">0 dues</span>
+          </div>
+          <div id="reminderItemsList" class="space-y-2">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Feed -->
       <div>
-        <div class="flex items-center justify-between mb-2.5 px-0.5">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
-          <button onclick="switchTab('transactions')" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
+          <button onclick="openTxModal('expense')" class="text-xs font-medium text-emerald-400 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+          </button>
         </div>
-        <div id="dashboardRecentTxList" class="space-y-2">
-          <!-- Rendered dynamically -->
+        <div id="recentTxList" class="space-y-2">
+          <!-- Injected by JS -->
         </div>
       </div>
     </section>
 
-    <!-- VIEW 2: TRANSACTIONS & EXPENSES -->
-    <section id="view-transactions" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Expenses & Income</h2>
-          <p class="text-xs text-slate-400">Track and filter day-to-day cash flow</p>
-        </div>
-        <button onclick="openTransactionModal('expense')" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
-        </button>
-      </div>
-
-      <!-- Search & Filters -->
+    <!-- VIEW 2: KHATA (CONTACT-BASED AGGREGATION) -->
+    <section id="view-khata" class="hidden space-y-4">
+      <!-- Search & Add Bar -->
       <div class="flex gap-2">
         <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="txSearchInput" oninput="renderTransactions()" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-500"></i>
+          <input type="text" id="khataSearchInput" oninput="renderKhataView()" placeholder="Search person name..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
         </div>
-        <select id="txFilterType" onchange="renderTransactions()" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-          <option value="all">All Types</option>
-          <option value="expense">Expense Only</option>
-          <option value="income">Income Only</option>
-        </select>
-      </div>
-
-      <div id="fullTxList" class="space-y-2">
-        <!-- Rendered dynamically -->
-      </div>
-    </section>
-
-    <!-- VIEW 3: PERSON-TO-PERSON KHATA -->
-    <section id="view-khata" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Person-to-Person Ledger</h2>
-          <p class="text-xs text-slate-400">Udhar / Cash given & borrowed</p>
-        </div>
-        <button onclick="openKhataModal()" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Entry
+        <button onclick="openKhataEntryModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Add
         </button>
       </div>
 
-      <!-- Ledger Filter Tabs -->
-      <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
-        <button onclick="setKhataFilter('all')" id="tabKhataAll" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition bg-slate-700 text-white">All</button>
-        <button onclick="setKhataFilter('lent')" id="tabKhataLent" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition text-slate-400">Given (To Get)</button>
-        <button onclick="setKhataFilter('borrowed')" id="tabKhataBorrowed" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition text-slate-400">Taken (To Return)</button>
-      </div>
-
-      <div id="khataList" class="space-y-2">
-        <!-- Rendered dynamically -->
+      <!-- Aggregated Contacts List -->
+      <div id="khataContactList" class="space-y-2.5">
+        <!-- Injected by JS: shows single card per contact with net balance -->
       </div>
     </section>
 
-    <!-- VIEW 4: INSTITUTIONAL LOANS & EMIs -->
+    <!-- VIEW 3: LOANS & BILLS -->
     <section id="view-loans" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
+      <div class="flex justify-between items-center">
         <div>
-          <h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2>
-          <p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p>
+          <h2 class="text-sm font-bold text-white">Bank Loans & Bill Reminders</h2>
+          <p class="text-xs text-slate-400">Formal EMIs, credit cards, and recurring bills</p>
         </div>
-        <button onclick="openLoanModal()" class="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Loan
+        <button onclick="openLoanModal()" class="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> New EMI / Bill
         </button>
       </div>
 
-      <!-- Total Outstanding Loan Debt banner -->
-      <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
-        <div>
-          <span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span>
-          <div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div>
-        </div>
-        <div class="text-right">
-          <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span>
-          <div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div>
-        </div>
-      </div>
-
-      <div id="allLoansList" class="space-y-3">
-        <!-- Rendered dynamically -->
+      <div id="loansList" class="space-y-3">
+        <!-- Injected by JS -->
       </div>
     </section>
 
-    <!-- VIEW 5: ACCOUNTS & CREDIT CARDS -->
+    <!-- VIEW 4: ACCOUNTS & CARDS -->
     <section id="view-accounts" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Debit & Credit Accounts</h2>
-          <p class="text-xs text-slate-400">Bank accounts, cash in hand & cards</p>
-        </div>
-        <button onclick="openAccountModal()" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Account
+      <div class="flex justify-between items-center">
+        <h2 class="text-sm font-bold text-white">Accounts & Cards</h2>
+        <button onclick="openAccountModal()" class="text-xs bg-slate-800 border border-slate-700 text-emerald-400 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Source
         </button>
       </div>
-
-      <!-- Liquid Cash & Bank Total -->
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Cash & Debit Accounts
-        </h3>
-        <div id="debitAccountsList" class="space-y-2">
-          <!-- Rendered dynamically -->
-        </div>
-      </div>
-
-      <!-- Credit Cards Section -->
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="credit-card" class="w-4 h-4 text-rose-400"></i> Credit Cards & Billing Due
-        </h3>
-        <div id="creditCardsList" class="space-y-2">
-          <!-- Rendered dynamically -->
-        </div>
+      <div id="accountsFullList" class="space-y-2.5">
+        <!-- Injected by JS -->
       </div>
     </section>
+
   </main>
 
-  <!-- BOTTOM MOBILE NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1 flex justify-around items-center max-w-lg mx-auto">
-    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-emerald-400 transition">
-      <i data-lucide="layout-grid" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Home</span>
-    </button>
-
-    <button onclick="switchTab('transactions')" id="nav-transactions" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Expenses</span>
-    </button>
-
-    <button onclick="switchTab('khata')" id="nav-khata" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="users" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Khata</span>
-    </button>
-
-    <button onclick="switchTab('loans')" id="nav-loans" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="landmark" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Loans/EMI</span>
-    </button>
-
-    <button onclick="switchTab('accounts')" id="nav-accounts" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="credit-card" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Accounts</span>
-    </button>
-  </nav>
-
-  <!-- ================= MODALS & BOTTOM SHEETS ================= -->
-
-  <!-- 1. REMINDERS MODAL -->
-  <div id="remindersModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-850 bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400">
-            <i data-lucide="bell" class="w-4 h-4"></i>
+  <!-- CONTACT STATEMENT MODAL (DRAWER VIEW) -->
+  <div id="contactStatementModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl max-h-[85vh] flex flex-col w-full max-w-md mx-auto">
+      
+      <!-- Drawer Header -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400" id="statementContactAvatar">
+              S
+            </div>
+            <div>
+              <h3 class="font-bold text-base text-white" id="statementContactName">Sarath</h3>
+              <p class="text-xs text-slate-400" id="statementLastUpdated"></p>
+            </div>
           </div>
-          <h3 class="font-bold text-white text-base">Payment Reminders</h3>
         </div>
-        <button onclick="toggleRemindersModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+        <button onclick="closeContactStatementModal()" class="p-2 rounded-full text-slate-400 hover:text-white bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Net Balance Header inside Statement -->
+      <div class="px-4 py-3 bg-slate-950/60 border-b border-slate-800 flex items-center justify-between">
+        <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
+        <span class="text-base font-bold" id="statementNetBadge">₹0</span>
+      </div>
+
+      <!-- Transaction History Scroll Area -->
+      <div class="p-4 overflow-y-auto space-y-2.5 flex-1 hide-scrollbar" id="statementTxHistoryList">
+        <!-- Timeline entries injected here -->
+      </div>
+
+      <!-- Quick Action Buttons for this contact -->
+      <div class="p-4 bg-slate-900 border-t border-slate-800 grid grid-cols-2 gap-2">
+        <button onclick="quickAddKhataForContact('TOOK')" class="bg-rose-500/10 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="arrow-down-left" class="w-4 h-4"></i> You Took (+)
+        </button>
+        <button onclick="quickAddKhataForContact('GAVE')" class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="arrow-up-right" class="w-4 h-4"></i> You Gave / Returned (-)
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ENTRY MODAL: ADD / RECORD KHATA ENTRY -->
+  <div id="khataEntryModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-w-md mx-auto w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-white text-base">Record Person Cash</h3>
+        <button onclick="closeKhataEntryModal()" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <div id="remindersListContent" class="overflow-y-auto p-4 space-y-2.5 flex-1 text-sm">
-        <!-- Rendered dynamically -->
-      </div>
-
-      <div class="p-4 bg-slate-800/40 border-t border-slate-800 text-center">
-        <p class="text-xs text-slate-400">Tap <span class="text-emerald-400 font-semibold">"Add to Calendar"</span> on any item to set an alert on your phone.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2. ADD TRANSACTION MODAL -->
-  <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="txModalTitle" class="font-bold text-base text-white">Add Expense</h3>
-        <button onclick="closeModal('txModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <form id="txForm" onsubmit="handleSaveTransaction(event)" class="space-y-3.5 pt-3">
-        <div class="flex bg-slate-800 p-1 rounded-xl">
-          <button type="button" onclick="setTxType('expense')" id="btnTxTypeExpense" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition">Expense</button>
-          <button type="button" onclick="setTxType('income')" id="btnTxTypeIncome" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Income</button>
+      <form id="khataForm" onsubmit="handleKhataSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Person Name</label>
+          <input type="text" id="khataPersonName" required placeholder="e.g., Sarath" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
-            <input type="number" step="0.01" id="txAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500">
+          <label class="text-xs text-slate-400 font-medium">Type</label>
+          <div class="grid grid-cols-2 gap-2 mt-1">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-800 bg-slate-950 text-xs cursor-pointer has-[:checked]:border-rose-500 has-[:checked]:bg-rose-500/10 text-rose-300">
+              <input type="radio" name="khataType" value="TOOK" class="hidden" checked />
+              <i data-lucide="arrow-down-left" class="w-3.5 h-3.5"></i> You Took Money
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-800 bg-slate-950 text-xs cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 text-emerald-300">
+              <input type="radio" name="khataType" value="GAVE" class="hidden" />
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> You Gave Money
+            </label>
           </div>
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</label>
-          <select id="txCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="Fuel & Commute">Fuel & Commute</option>
-            <option value="Groceries & Food">Groceries & Food</option>
-            <option value="Utilities & Bills">Utilities & Bills</option>
-            <option value="Maintenance & Repairs">Maintenance & Repairs</option>
-            <option value="Shopping & Personal">Shopping & Personal</option>
-            <option value="Salary & Wages">Salary & Wages</option>
-            <option value="Interest / Return">Interest / Return</option>
-            <option value="General">General / Others</option>
-          </select>
+          <label class="text-xs text-slate-400 font-medium">Amount (₹)</label>
+          <input type="number" id="khataAmount" required min="1" step="any" inputmode="decimal" placeholder="₹ 0.00" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold text-lg focus:outline-none focus:border-emerald-500" />
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Paid From/To</label>
-            <select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-              <!-- Dynamically populated from Accounts -->
+            <label class="text-xs text-slate-400 font-medium">Date</label>
+            <input type="date" id="khataDate" required class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium">Promised Return (Opt)</label>
+            <input type="date" id="khataDueDate" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Notes / Purpose (Optional)</label>
+          <input type="text" id="khataNotes" placeholder="e.g., Dinner split, fuel emergency" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">
+          Save Entry
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ENTRY MODAL: ADD EXPENSE / INCOME -->
+  <div id="txModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-w-md mx-auto w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-white text-base" id="txModalTitle">Add Expense</h3>
+        <button onclick="closeTxModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="txForm" onsubmit="handleTxSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Transaction Type</label>
+          <div class="grid grid-cols-2 gap-2 mt-1">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-800 bg-slate-950 text-xs cursor-pointer has-[:checked]:border-rose-500 has-[:checked]:bg-rose-500/10 text-rose-300">
+              <input type="radio" name="txType" value="EXPENSE" class="hidden" checked />
+              Expense
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-xl border border-slate-800 bg-slate-950 text-xs cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 text-emerald-300">
+              <input type="radio" name="txType" value="INCOME" class="hidden" />
+              Income
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Amount (₹)</label>
+          <input type="number" id="txAmount" required min="1" step="any" inputmode="decimal" placeholder="₹ 0.00" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-bold text-lg focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-400 font-medium">Category</label>
+            <select id="txCategory" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="Fuel">Fuel / Travel</option>
+              <option value="Food">Food / Groceries</option>
+              <option value="Maintenance">Vehicle / Repair</option>
+              <option value="Bills">Bills & Utilities</option>
+              <option value="Shopping">Shopping / Personal</option>
+              <option value="Salary">Salary / Inflow</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label>
-            <input type="date" id="txDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes / Description</label>
-          <input type="text" id="txNotes" placeholder="Petrol, tea, vegetables..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-        </div>
-
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition">
-          Save Transaction
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 3. ADD PERSON KHATA MODAL -->
-  <div id="khataModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Person-to-Person Entry (Khata)</h3>
-        <button onclick="closeModal('khataModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <form id="khataForm" onsubmit="handleSaveKhata(event)" class="space-y-3 pt-3">
-        <div class="flex bg-slate-800 p-1 rounded-xl">
-          <button type="button" onclick="setKhataDirection('lent')" id="btnKhataLent" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition">I Gave Cash (They Owe)</button>
-          <button type="button" onclick="setKhataDirection('borrowed')" id="btnKhataBorrowed" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">I Took Cash (I Owe)</button>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Contact / Person Name</label>
-          <input type="text" id="khataPersonName" required placeholder="e.g. Ramesh, Brother, Landlord" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative">
-            <span class="absolute left-3.5 top-2 text-slate-400 font-bold">₹</span>
-            <input type="number" step="0.01" id="khataAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-base font-bold text-white focus:outline-none focus:border-amber-500">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date Given / Taken</label>
-            <input type="date" id="khataDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Promised Return Date</label>
-            <input type="date" id="khataDueDate" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes</label>
-          <input type="text" id="khataNotes" placeholder="Reason or context..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-        </div>
-
-        <button type="submit" class="w-full mt-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-amber-950/40 active:scale-98 transition">
-          Save Khata Entry
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 4. ADD LOAN MODAL -->
-  <div id="loanModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Add Bank / Institutional Loan</h3>
-        <button onclick="closeModal('loanModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <form id="loanForm" onsubmit="handleSaveLoan(event)" class="space-y-3 pt-3">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Lender / Loan Name</label>
-          <input type="text" id="loanName" required placeholder="e.g. HDFC Car Loan, SBI Home Loan" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Principal Balance (₹)</label>
-            <input type="number" step="0.01" id="loanBalance" required placeholder="Remaining" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Monthly EMI (₹)</label>
-            <input type="number" step="0.01" id="loanEmi" required placeholder="EMI amount" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day of Month</label>
-            <select id="loanDueDay" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-              <!-- 1 to 31 options generated via JS -->
+            <label class="text-xs text-slate-400 font-medium">Source Account</label>
+            <select id="txAccount" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <!-- Populated dynamically -->
             </select>
           </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate % (Optional)</label>
-            <input type="number" step="0.1" id="loanInterest" placeholder="e.g. 8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-          </div>
         </div>
 
-        <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">
-          Add Loan Account
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Description</label>
+          <input type="text" id="txDesc" placeholder="e.g., Petrol at IndianOil, tea" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">
+          Record Transaction
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 5. ADD ACCOUNT / CREDIT CARD MODAL -->
-  <div id="accountModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Add Account / Card</h3>
-        <button onclick="closeModal('accountModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+  <!-- ENTRY MODAL: ADD LOAN / BILL -->
+  <div id="loanModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-w-md mx-auto w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-white text-base">Add Loan / Recurring Bill</h3>
+        <button onclick="closeLoanModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
 
-      <form id="accountForm" onsubmit="handleSaveAccount(event)" class="space-y-3 pt-3">
+      <form id="loanForm" onsubmit="handleLoanSubmit(event)" class="space-y-3.5">
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Type</label>
-          <select id="accType" onchange="toggleAccountFields()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="debit_bank">Savings / Salary Bank Account</option>
-            <option value="debit_cash">Cash in Hand / Wallet</option>
-            <option value="credit_card">Credit Card</option>
+          <label class="text-xs text-slate-400 font-medium">Title / Lender Name</label>
+          <input type="text" id="loanName" required placeholder="e.g., Car Loan (SBI), Electricity Bill" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-400 font-medium">EMI / Due Amount (₹)</label>
+            <input type="number" id="loanEmi" required min="1" step="any" placeholder="₹ 3,500" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium">Monthly Due Day (1-31)</label>
+            <input type="number" id="loanDay" required min="1" max="31" placeholder="e.g., 5" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Total Principal Remaining (Optional)</label>
+          <input type="number" id="loanPrincipal" step="any" placeholder="₹ 85,000" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">
+          Save Reminder
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ENTRY MODAL: ADD ACCOUNT -->
+  <div id="accountModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-w-md mx-auto w-full">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-white text-base">Add Source Account</h3>
+        <button onclick="closeAccountModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="accountForm" onsubmit="handleAccountSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Account Name</label>
+          <input type="text" id="accName" required placeholder="e.g., Federal Bank, Cash in Hand" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-400 font-medium">Account Type</label>
+          <select id="accType" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="BANK">Bank Account</option>
+            <option value="CASH">Cash in Hand</option>
+            <option value="CARD">Credit Card</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account / Card Name</label>
-          <input type="text" id="accName" required placeholder="e.g. ICICI Salary, Main Cash, Amazon Pay ICICI" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+          <label class="text-xs text-slate-400 font-medium">Starting Balance (₹)</label>
+          <input type="number" id="accBalance" required step="any" placeholder="₹ 0.00" class="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500" />
         </div>
 
-        <div id="accDebitBalanceGroup">
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
-          <input type="number" step="0.01" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
-        </div>
-
-        <div id="accCreditCardGroup" class="hidden space-y-2">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Due (₹)</label>
-              <input type="number" step="0.01" id="cardDue" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Credit Limit (₹)</label>
-              <input type="number" step="0.01" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment Due Day of Month</label>
-            <select id="cardDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-              <!-- Populated via JS -->
-            </select>
-          </div>
-        </div>
-
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition">
-          Save Account
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm transition">
+          Add Account
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 6. SETTINGS & JSON BACKUP MODAL -->
-  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">App Settings & Data Backup</h3>
-        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+  <!-- SETTINGS & BACKUP MODAL -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex flex-col justify-end">
+    <div class="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 max-w-md mx-auto w-full space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-base">Data Backup & Restore</h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
       </div>
 
-      <div class="space-y-4 pt-4">
-        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300">
-          <p class="font-semibold text-white mb-1 flex items-center gap-1.5">
-            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> 100% Private & Offline
-          </p>
-          All your personal finances are stored directly inside your device's browser local database. No data is sent to any external server.
-        </div>
+      <p class="text-xs text-slate-400">All data is kept strictly inside this phone's browser storage. Export a backup JSON regularly to keep your records safe.</p>
 
-        <!-- Export JSON -->
-        <div>
-          <button onclick="exportDataJSON()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">
-            <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)
-          </button>
-          <p class="text-[10px] text-slate-400 mt-1 text-center">Downloads a single backup file to your phone's storage.</p>
-        </div>
+      <div class="space-y-2">
+        <button onclick="exportDataBackup()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2">
+          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export Backup (.JSON)
+        </button>
 
-        <!-- Import JSON -->
-        <div>
-          <label class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs cursor-pointer active:scale-98 transition">
-            <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> Import / Restore Data (JSON)
-            <input type="file" id="importJsonFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
-          </label>
-        </div>
+        <label class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer">
+          <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> Import Backup (.JSON)
+          <input type="file" id="importFileInput" accept=".json" onchange="importDataBackup(event)" class="hidden" />
+        </label>
+      </div>
 
-        <!-- Reset / Clear -->
-        <div class="pt-2 border-t border-slate-800">
-          <button onclick="clearAllData()" class="w-full text-rose-400 hover:bg-rose-500/10 py-2 rounded-xl text-xs font-semibold transition">
-            Reset to Sample Data
-          </button>
-        </div>
+      <div class="pt-2 border-t border-slate-800 text-center">
+        <button onclick="resetAllData()" class="text-xs text-rose-500 hover:underline">Clear & Reset Everything</button>
       </div>
     </div>
   </div>
 
-  <!-- APPLICATION LOGIC & LOCAL STORAGE SCRIPT -->
+  <!-- FIXED BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur border-t border-slate-800 max-w-md mx-auto flex items-center justify-around py-2">
+    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center gap-0.5 text-emerald-400 transition">
+      <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Home</span>
+    </button>
+    <button onclick="switchTab('khata')" id="nav-khata" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition">
+      <i data-lucide="users-round" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Khata</span>
+    </button>
+    <button onclick="switchTab('loans')" id="nav-loans" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition">
+      <i data-lucide="calendar-clock" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Reminders</span>
+    </button>
+    <button onclick="switchTab('accounts')" id="nav-accounts" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white transition">
+      <i data-lucide="credit-card" class="w-5 h-5"></i>
+      <span class="text-[10px] font-medium">Accounts</span>
+    </button>
+  </nav>
+
+  <!-- APPLICATION CORE JAVASCRIPT -->
   <script>
-    /* =========================================================
-       INITIAL SEED DATA & STORAGE MANAGER
-       ========================================================= */
-    const STORAGE_KEY = 'pocketledger_data_v1';
+    // --- STORAGE & DEFAULT STATE ---
+    const STORAGE_KEY = "LEDGER_PWA_DATA_V2";
 
-    const defaultSeedData = {
+    const defaultState = {
       accounts: [
-        { id: 'acc_1', name: 'Primary Bank (HDFC)', type: 'debit_bank', balance: 48500 },
-        { id: 'acc_2', name: 'Cash in Hand', type: 'debit_cash', balance: 6400 },
-        { id: 'acc_3', name: 'Amazon ICICI Credit Card', type: 'credit_card', limit: 100000, currentDue: 14200, dueDay: 18 }
+        { id: "acc-1", name: "Bank Account", type: "BANK", balance: 18500 },
+        { id: "acc-2", name: "Cash in Hand", type: "CASH", balance: 3200 }
       ],
-      transactions: [
-        { id: 'tx_1', type: 'income', amount: 65000, category: 'Salary & Wages', accountId: 'acc_1', date: new Date().toISOString().slice(0, 10), notes: 'Monthly Salary' },
-        { id: 'tx_2', type: 'expense', amount: 3200, category: 'Groceries & Food', accountId: 'acc_1', date: new Date().toISOString().slice(0, 10), notes: 'Supermarket weekly essentials' },
-        { id: 'tx_3', type: 'expense', amount: 800, category: 'Fuel & Commute', accountId: 'acc_2', date: new Date().toISOString().slice(0, 10), notes: 'Scooter petrol fill' }
-      ],
+      transactions: [],
+      // Khata entries: each record is linked to a person name
       khata: [
-        { id: 'k_1', direction: 'lent', personName: 'Rahul Kumar', amount: 5000, date: new Date().toISOString().slice(0, 10), dueDate: getOffsetDate(5), status: 'pending', notes: 'Emergency medical loan' },
-        { id: 'k_2', direction: 'borrowed', personName: 'Amit Sharma', amount: 2000, date: new Date().toISOString().slice(0, 10), dueDate: getOffsetDate(3), status: 'pending', notes: 'Dinner bill split' }
+        { id: "kh-1", person: "Sarath", type: "TOOK", amount: 2000, date: "2026-10-10", notes: "Cash borrowed", settled: false },
+        { id: "kh-2", person: "Sarath", type: "TOOK", amount: 1500, date: "2026-10-14", notes: "Emergency fuel money", settled: false }
       ],
       loans: [
-        { id: 'loan_1', name: 'Car Loan (SBI)', principalBalance: 245000, emiAmount: 8400, dueDay: 10, interestRate: 8.7, lastPaidMonth: '' }
+        { id: "ln-1", name: "Vehicle EMI (SBI)", emi: 3450, day: 5, principal: 62000, type: "EMI" }
       ]
     };
 
-    function getOffsetDate(daysAhead) {
-      const d = new Date();
-      d.setDate(d.getDate() + daysAhead);
-      return d.toISOString().slice(0, 10);
-    }
+    let appState = loadState();
+    let currentViewingPerson = null;
 
-    let appData = loadData();
-
-    function loadData() {
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return defaultState;
       try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          return JSON.parse(stored);
-        }
+        return JSON.parse(saved);
       } catch (e) {
-        console.error("Failed to load local data:", e);
-      }
-      return JSON.parse(JSON.stringify(defaultSeedData));
-    }
-
-    function saveData() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-        refreshAllViews();
-      } catch (e) {
-        console.error("Storage error:", e);
+        return defaultState;
       }
     }
 
-    /* =========================================================
-       VIEW NAVIGATION
-       ========================================================= */
-    let currentTab = 'dashboard';
-    let khataFilter = 'all';
-    let currentTxType = 'expense';
-    let currentKhataDirection = 'lent';
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      refreshUI();
+    }
 
+    // --- CURRENCY FORMATTER ---
+    const fmt = (num) => "₹" + Number(num || 0).toLocaleString("en-IN");
+
+    // --- TAB NAVIGATION ---
     function switchTab(tabName) {
-      currentTab = tabName;
-      ['dashboard', 'transactions', 'khata', 'loans', 'accounts'].forEach(tab => {
-        const viewEl = document.getElementById(`view-${tab}`);
-        const navEl = document.getElementById(`nav-${tab}`);
-        if (viewEl) {
-          if (tab === tabName) {
-            viewEl.classList.remove('hidden');
-          } else {
-            viewEl.classList.add('hidden');
-          }
-        }
-        if (navEl) {
-          if (tab === tabName) {
-            navEl.classList.add('text-emerald-400');
-            navEl.classList.remove('text-slate-400');
-          } else {
-            navEl.classList.remove('text-emerald-400');
-            navEl.classList.add('text-slate-400');
-          }
-        }
+      ["dashboard", "khata", "loans", "accounts"].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add("hidden");
+        const navBtn = document.getElementById(`nav-${t}`);
+        navBtn.classList.remove("text-emerald-400");
+        navBtn.classList.add("text-slate-400");
       });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      refreshAllViews();
+
+      document.getElementById(`view-${tabName}`).classList.remove("hidden");
+      const activeNav = document.getElementById(`nav-${tabName}`);
+      activeNav.classList.remove("text-slate-400");
+      activeNav.classList.add("text-emerald-400");
+      lucide.createIcons();
     }
 
-    /* =========================================================
-       REMINDERS & CALENDAR GENERATION LOGIC
-       ========================================================= */
-    function computeReminders() {
-      const today = new Date();
-      const currentDay = today.getDate();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
+    // --- KHATA AGGREGATION LOGIC ---
+    // Computes net totals per contact
+    function getAggregatedContacts() {
+      const contactsMap = {};
 
-      const reminders = [];
-
-      // 1. Loans EMIs
-      appData.loans.forEach(loan => {
-        let diffDays = loan.dueDay - currentDay;
-        let isPast = diffDays < 0;
-        let status = 'upcoming';
-        if (diffDays === 0) status = 'today';
-        else if (isPast) status = 'overdue';
-        else if (diffDays <= 7) status = 'soon';
-
-        reminders.push({
-          type: 'EMI',
-          title: `${loan.name} EMI`,
-          amount: loan.emiAmount,
-          dueDayText: `Due on ${loan.dueDay}th of this month`,
-          status: status,
-          targetDate: new Date(currentYear, currentMonth, loan.dueDay),
-          raw: loan
-        });
-      });
-
-      // 2. Credit Card bills
-      appData.accounts.filter(a => a.type === 'credit_card' && a.currentDue > 0).forEach(card => {
-        let diffDays = (card.dueDay || 15) - currentDay;
-        let status = 'upcoming';
-        if (diffDays === 0) status = 'today';
-        else if (diffDays < 0) status = 'overdue';
-        else if (diffDays <= 7) status = 'soon';
-
-        reminders.push({
-          type: 'Credit Card Due',
-          title: `${card.name}`,
-          amount: card.currentDue,
-          dueDayText: `Due on ${card.dueDay || 15}th of this month`,
-          status: status,
-          targetDate: new Date(currentYear, currentMonth, card.dueDay || 15),
-          raw: card
-        });
-      });
-
-      // 3. Khata entries
-      appData.khata.filter(k => k.status === 'pending' && k.dueDate).forEach(k => {
-        const dueObj = new Date(k.dueDate);
-        const timeDiff = dueObj.setHours(0,0,0,0) - today.setHours(0,0,0,0);
-        const dayDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
-        let status = 'upcoming';
-        if (dayDiff === 0) status = 'today';
-        else if (dayDiff < 0) status = 'overdue';
-        else if (dayDiff <= 7) status = 'soon';
-
-        reminders.push({
-          type: k.direction === 'lent' ? 'Cash Collection' : 'Cash Return',
-          title: `${k.personName} (${k.direction === 'lent' ? 'Collect from' : 'Pay to'})`,
-          amount: k.amount,
-          dueDayText: `Due on ${k.dueDate}`,
-          status: status,
-          targetDate: new Date(k.dueDate),
-          raw: k
-        });
-      });
-
-      // Sort: overdue first, then today, then soon
-      const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
-      reminders.sort((a, b) => (priority[a.status] || 99) - (priority[b.status] || 99));
-
-      return reminders;
-    }
-
-    function generateCalendarLink(reminder) {
-      // Direct Web Google Calendar Event URL (Works seamlessly on Android & iOS Chrome/Safari)
-      const dateStr = reminder.targetDate.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 8);
-      const title = encodeURIComponent(`PocketLedger Reminder: ₹${reminder.amount} for ${reminder.title}`);
-      const details = encodeURIComponent(`Payment reminder for ${reminder.type}. Amount: ₹${reminder.amount}. Set via PocketLedger.`);
-      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}&sf=true&output=xml`;
-      return url;
-    }
-
-    function renderRemindersUI() {
-      const reminders = computeReminders();
-      const badge = document.getElementById('headerReminderBadge');
-      const urgentContainer = document.getElementById('urgentAlertContainer');
-      const modalList = document.getElementById('remindersListContent');
-
-      const urgentDues = reminders.filter(r => r.status === 'overdue' || r.status === 'today' || r.status === 'soon');
-
-      if (urgentDues.length > 0) {
-        badge.classList.remove('hidden');
-        urgentContainer.classList.remove('hidden');
-
-        const topAlert = urgentDues[0];
-        let alertColor = 'from-rose-950/70 border-rose-800/60 text-rose-200';
-        let badgeColor = 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
-        let label = 'OVERDUE';
-
-        if (topAlert.status === 'today') {
-          alertColor = 'from-amber-950/70 border-amber-800/60 text-amber-200';
-          badgeColor = 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-          label = 'DUE TODAY';
-        } else if (topAlert.status === 'soon') {
-          alertColor = 'from-sky-950/70 border-sky-800/60 text-sky-200';
-          badgeColor = 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
-          label = 'DUE SOON';
+      appState.khata.forEach(entry => {
+        const p = entry.person.trim();
+        if (!contactsMap[p]) {
+          contactsMap[p] = {
+            name: p,
+            netBalance: 0, // > 0 means you owe them, < 0 means they owe you
+            totalTook: 0,
+            totalGave: 0,
+            lastDate: entry.date,
+            entries: []
+          };
         }
 
-        urgentContainer.innerHTML = `
-          <div onclick="toggleRemindersModal()" class="cursor-pointer bg-gradient-to-r ${alertColor} bg-slate-900 border p-3 rounded-2xl flex items-center justify-between shadow-lg">
+        const amt = Number(entry.amount);
+        if (entry.type === "TOOK") {
+          contactsMap[p].netBalance += amt;
+          contactsMap[p].totalTook += amt;
+        } else {
+          contactsMap[p].netBalance -= amt;
+          contactsMap[p].totalGave += amt;
+        }
+
+        contactsMap[p].entries.push(entry);
+        if (new Date(entry.date) > new Date(contactsMap[p].lastDate)) {
+          contactsMap[p].lastDate = entry.date;
+        }
+      });
+
+      return Object.values(contactsMap);
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function refreshUI() {
+      renderDashboard();
+      renderKhataView();
+      renderLoansView();
+      renderAccountsView();
+      lucide.createIcons();
+    }
+
+    function renderDashboard() {
+      const contacts = getAggregatedContacts();
+      let totalGet = 0;
+      let totalGiveKhata = 0;
+
+      contacts.forEach(c => {
+        if (c.netBalance < 0) totalGet += Math.abs(c.netBalance);
+        if (c.netBalance > 0) totalGiveKhata += c.netBalance;
+      });
+
+      // Total Give = Khata Owed + Active Loans Principal
+      const totalLoans = appState.loans.reduce((acc, l) => acc + Number(l.principal || 0), 0);
+      document.getElementById("dashTotalGet").innerText = fmt(totalGet);
+      document.getElementById("dashTotalGive").innerText = fmt(totalGiveKhata + totalLoans);
+
+      // Liquid balance display
+      const accListEl = document.getElementById("dashAccountsList");
+      accListEl.innerHTML = appState.accounts.map(acc => `
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <p class="text-[10px] text-slate-400 truncate">${acc.name}</p>
+          <p class="text-xs font-bold text-slate-100 mt-0.5">${fmt(acc.balance)}</p>
+        </div>
+      `).join("");
+
+      // Recent Transactions
+      const txFeedEl = document.getElementById("recentTxList");
+      if (appState.transactions.length === 0) {
+        txFeedEl.innerHTML = `<p class="text-xs text-slate-500 py-3 text-center">No transactions recorded yet.</p>`;
+      } else {
+        txFeedEl.innerHTML = appState.transactions.slice(0, 5).map(tx => `
+          <div class="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-800/80 rounded-xl">
             <div class="flex items-center gap-2.5">
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${label}</span>
-              <div class="text-xs">
-                <span class="font-bold text-white">${topAlert.title}</span>: ₹${topAlert.amount.toLocaleString('en-IN')}
+              <div class="w-7 h-7 rounded-lg ${tx.type === 'INCOME' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-300'} flex items-center justify-center text-xs">
+                <i data-lucide="${tx.type === 'INCOME' ? 'arrow-down-left' : 'shopping-bag'}" class="w-3.5 h-3.5"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-white leading-tight">${tx.category} ${tx.desc ? '• ' + tx.desc : ''}</p>
+                <p class="text-[10px] text-slate-500">${tx.date} via ${tx.accountName || 'Cash'}</p>
               </div>
             </div>
-            <span class="text-xs font-semibold text-emerald-400 flex items-center">
-              ${urgentDues.length > 1 ? `+${urgentDues.length - 1} more` : 'Details'} <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span class="text-xs font-bold ${tx.type === 'INCOME' ? 'text-emerald-400' : 'text-slate-200'}">
+              ${tx.type === 'INCOME' ? '+' : '-'}${fmt(tx.amount)}
             </span>
           </div>
-        `;
-      } else {
-        badge.classList.add('hidden');
-        urgentContainer.classList.add('hidden');
+        `).join("");
       }
 
-      if (reminders.length === 0) {
-        modalList.innerHTML = `<div class="py-8 text-center text-slate-400 text-xs">No pending dues or upcoming reminders! You are all caught up.</div>`;
-      } else {
-        modalList.innerHTML = reminders.map(r => {
-          let badgeHtml = '';
-          if (r.status === 'overdue') badgeHtml = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">OVERDUE</span>`;
-          else if (r.status === 'today') badgeHtml = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">TODAY</span>`;
-          else if (r.status === 'soon') badgeHtml = `<span class="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">IN 7 DAYS</span>`;
-          else badgeHtml = `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-medium">UPCOMING</span>`;
-
-          const calLink = generateCalendarLink(r);
-
-          return `
-            <div class="bg-slate-800/80 border border-slate-700/60 p-3 rounded-xl flex items-center justify-between">
-              <div>
-                <div class="flex items-center gap-1.5 mb-1">
-                  ${badgeHtml}
-                  <span class="text-[11px] text-slate-400">${r.type}</span>
-                </div>
-                <h4 class="font-bold text-white text-sm">${r.title}</h4>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">${r.dueDayText}</p>
-                <div class="text-emerald-400 font-bold text-sm mt-1">₹${r.amount.toLocaleString('en-IN')}</div>
-              </div>
-
-              <div>
-                <a href="${calLink}" target="_blank" rel="noopener" class="flex flex-col items-center justify-center bg-slate-700 hover:bg-slate-650 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold text-slate-200 border border-slate-600 transition">
-                  <i data-lucide="calendar-plus" class="w-4 h-4 text-emerald-400 mb-0.5"></i>
-                  Sync Cal
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-
-      lucide.createIcons();
+      // Check upcoming reminders (within 7 days)
+      evaluateReminders();
     }
 
-    /* =========================================================
-       DATA COMPUTATIONS & VIEWS RENDERING
-       ========================================================= */
-    function refreshAllViews() {
-      // 1. Calculate liquid wealth (Debit cash + bank accounts - credit card dues)
-      let liquidCash = 0;
-      let cardDues = 0;
-      appData.accounts.forEach(acc => {
-        if (acc.type === 'debit_bank' || acc.type === 'debit_cash') {
-          liquidCash += Number(acc.balance || 0);
-        } else if (acc.type === 'credit_card') {
-          cardDues += Number(acc.currentDue || 0);
+    function evaluateReminders() {
+      const banner = document.getElementById("reminderBannerSection");
+      const listEl = document.getElementById("reminderItemsList");
+      const badge = document.getElementById("reminderCountBadge");
+
+      const today = new Date();
+      const currentDay = today.getDate();
+      let alerts = [];
+
+      // 1. Check EMI due dates
+      appState.loans.forEach(loan => {
+        const diff = loan.day - currentDay;
+        if (diff >= 0 && diff <= 7) {
+          alerts.push({
+            title: `${loan.name} (EMI)`,
+            amount: loan.emi,
+            day: loan.day,
+            dueLabel: diff === 0 ? "Due Today" : `Due in ${diff} days`
+          });
         }
       });
-      const netWealth = liquidCash - cardDues;
-      document.getElementById('netWealthDisplay').innerText = `₹${netWealth.toLocaleString('en-IN')}`;
 
-      // 2. Month Inflow and Outflow
-      const currentMonthPrefix = new Date().toISOString().slice(0, 7);
-      const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
-      let monthInflow = 0;
-      let monthSpent = 0;
-
-      currentMonthTx.forEach(t => {
-        if (t.type === 'income') monthInflow += Number(t.amount || 0);
-        if (t.type === 'expense') monthSpent += Number(t.amount || 0);
-      });
-
-      document.getElementById('monthInflowDisplay').innerText = `+₹${monthInflow.toLocaleString('en-IN')}`;
-      document.getElementById('monthSpentDisplay').innerText = `-₹${monthSpent.toLocaleString('en-IN')}`;
-      
-      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const now = new Date();
-      document.getElementById('currentMonthYear').innerText = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-
-      // 3. Khata calculations
-      let totalLent = 0;
-      let totalBorrowed = 0;
-      appData.khata.forEach(k => {
-        if (k.status === 'pending') {
-          if (k.direction === 'lent') totalLent += Number(k.amount || 0);
-          if (k.direction === 'borrowed') totalBorrowed += Number(k.amount || 0);
-        }
-      });
-      document.getElementById('totalToCollectDisplay').innerText = `₹${totalLent.toLocaleString('en-IN')}`;
-      document.getElementById('totalToReturnDisplay').innerText = `₹${totalBorrowed.toLocaleString('en-IN')}`;
-
-      // 4. Loans summary
-      let totalPrincipal = 0;
-      let totalEmi = 0;
-      appData.loans.forEach(l => {
-        totalPrincipal += Number(l.principalBalance || 0);
-        totalEmi += Number(l.emiAmount || 0);
-      });
-      document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
-      document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
-
-      // 5. Populate views
-      renderDashboardFeed();
-      renderTransactions();
-      renderKhata();
-      renderLoans();
-      renderAccounts();
-      renderRemindersUI();
-
-      // Populate Select Accounts in Transaction Form
-      const selectAcc = document.getElementById('txAccount');
-      if (selectAcc) {
-        selectAcc.innerHTML = appData.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
-      }
-
-      lucide.createIcons();
-    }
-
-    /* Render Recent dashboard feed */
-    function renderDashboardFeed() {
-      const recentTxContainer = document.getElementById('dashboardRecentTxList');
-      const recentLoansContainer = document.getElementById('dashboardLoansList');
-
-      const recentTx = [...appData.transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
-
-      if (recentTx.length === 0) {
-        recentTxContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">No transactions recorded yet.</div>`;
-      } else {
-        recentTxContainer.innerHTML = recentTx.map(t => createTxRowHtml(t)).join('');
-      }
-
-      if (appData.loans.length === 0) {
-        recentLoansContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500">No active loans added.</div>`;
-      } else {
-        recentLoansContainer.innerHTML = appData.loans.slice(0, 2).map(loan => {
-          return `
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/50">
-              <div>
-                <h4 class="text-xs font-bold text-white">${loan.name}</h4>
-                <p class="text-[10px] text-slate-400">Due on ${loan.dueDay}th • EMI ₹${loan.emiAmount.toLocaleString('en-IN')}</p>
-              </div>
-              <button onclick="payEmi('${loan.id}')" class="px-2.5 py-1 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 text-xs font-semibold transition">
-                Pay EMI
-              </button>
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    /* Render Full Transactions list */
-    function renderTransactions() {
-      const container = document.getElementById('fullTxList');
-      const searchQuery = (document.getElementById('txSearchInput')?.value || '').toLowerCase();
-      const filterType = document.getElementById('txFilterType')?.value || 'all';
-
-      let filtered = [...appData.transactions].filter(t => {
-        if (filterType !== 'all' && t.type !== filterType) return false;
-        if (searchQuery) {
-          const matchNote = (t.notes || '').toLowerCase().includes(searchQuery);
-          const matchCat = (t.category || '').toLowerCase().includes(searchQuery);
-          return matchNote || matchCat;
-        }
-        return true;
-      });
-
-      filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No transactions found matching your criteria.</div>`;
-      } else {
-        container.innerHTML = filtered.map(t => createTxRowHtml(t, true)).join('');
-      }
-      lucide.createIcons();
-    }
-
-    function createTxRowHtml(t, canDelete = false) {
-      const isExpense = t.type === 'expense';
-      const account = appData.accounts.find(a => a.id === t.accountId);
-      const accName = account ? account.name : 'Account';
-
-      return `
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/70 border border-slate-700/50">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl ${isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'} flex items-center justify-center">
-              <i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="text-xs font-bold text-white">${t.category}</div>
-              <div class="text-[11px] text-slate-400">${t.notes || accName} • <span class="font-mono">${t.date}</span></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="text-right">
-              <div class="text-xs font-bold ${isExpense ? 'text-rose-400' : 'text-emerald-400'}">
-                ${isExpense ? '-' : '+'}₹${Number(t.amount).toLocaleString('en-IN')}
-              </div>
-              <div class="text-[10px] text-slate-500">${accName}</div>
-            </div>
-            ${canDelete ? `
-              <button onclick="deleteTransaction('${t.id}')" class="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            ` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    /* Render Person-to-Person Khata */
-    function setKhataFilter(filter) {
-      khataFilter = filter;
-      ['all', 'lent', 'borrowed'].forEach(f => {
-        const btn = document.getElementById(`tabKhata${f.charAt(0).toUpperCase() + f.slice(1)}`);
-        if (btn) {
-          if (f === filter) {
-            btn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition bg-slate-700 text-white";
-          } else {
-            btn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition text-slate-400";
+      // 2. Check Khata promised dates
+      appState.khata.forEach(k => {
+        if (!k.settled && k.dueDate) {
+          const due = new Date(k.dueDate);
+          const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+          if (diffDays <= 7) {
+            alerts.push({
+              title: `${k.person} (${k.type === 'TOOK' ? 'You need to give' : 'They must return'})`,
+              amount: k.amount,
+              day: due.getDate(),
+              dueLabel: diffDays <= 0 ? "Overdue / Today" : `Due in ${diffDays} days`
+            });
           }
         }
       });
-      renderKhata();
+
+      if (alerts.length > 0) {
+        banner.classList.remove("hidden");
+        badge.innerText = `${alerts.length} upcoming`;
+        listEl.innerHTML = alerts.map(a => `
+          <div class="flex items-center justify-between text-xs bg-slate-900/60 p-2 rounded-xl">
+            <div>
+              <p class="font-medium text-white">${a.title}</p>
+              <p class="text-[10px] text-amber-300">${a.dueLabel} • ${fmt(a.amount)}</p>
+            </div>
+            <a href="https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(a.title)}&details=Payment+due+of+₹${a.amount}" target="_blank" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-1 rounded-lg border border-amber-500/30 flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3 h-3"></i> Add Alert
+            </a>
+          </div>
+        `).join("");
+      } else {
+        banner.classList.add("hidden");
+      }
     }
 
-    function renderKhata() {
-      const container = document.getElementById('khataList');
-      let filtered = [...appData.khata];
+    function renderKhataView() {
+      const container = document.getElementById("khataContactList");
+      const searchQuery = (document.getElementById("khataSearchInput").value || "").toLowerCase().trim();
+      const contacts = getAggregatedContacts();
 
-      if (khataFilter !== 'all') {
-        filtered = filtered.filter(k => k.direction === khataFilter);
-      }
+      const filtered = contacts.filter(c => c.name.toLowerCase().includes(searchQuery));
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No person ledger entries found.</div>`;
-      } else {
-        container.innerHTML = filtered.map(k => {
-          const isLent = k.direction === 'lent'; // Gave cash
-          const isSettled = k.status === 'settled';
-
-          return `
-            <div class="p-3.5 rounded-2xl bg-slate-800/80 border ${isSettled ? 'border-slate-800 opacity-60' : (isLent ? 'border-emerald-900/40' : 'border-rose-900/40')} space-y-2">
-              <div class="flex items-center justify-between">
-                <div>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isLent ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
-                    ${isLent ? 'GAVE CASH (THEY OWE)' : 'BORROWED (I OWE)'}
-                  </span>
-                  <h4 class="text-sm font-bold text-white mt-1">${k.personName}</h4>
-                </div>
-                <div class="text-right">
-                  <div class="text-base font-black ${isLent ? 'text-emerald-400' : 'text-rose-400'}">
-                    ₹${Number(k.amount).toLocaleString('en-IN')}
-                  </div>
-                  <span class="text-[10px] text-slate-400">${isSettled ? 'Settled' : 'Pending'}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40">
-                <div>
-                  ${k.dueDate ? `Due: <span class="text-slate-200 font-mono">${k.dueDate}</span>` : `Recorded: ${k.date}`}
-                  ${k.notes ? ` • ${k.notes}` : ''}
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                  ${!isSettled ? `
-                    <button onclick="settleKhata('${k.id}')" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition">
-                      Mark Settled
-                    </button>
-                  ` : ''}
-                  <button onclick="deleteKhata('${k.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
+        container.innerHTML = `
+          <div class="text-center py-10 bg-slate-900 rounded-2xl border border-slate-800 p-6">
+            <i data-lucide="users" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
+            <p class="text-xs text-slate-400">No contacts found in Khata.</p>
+            <button onclick="openKhataEntryModal()" class="mt-3 text-xs bg-emerald-600 text-white font-semibold px-4 py-2 rounded-xl">
+              Add First Person
+            </button>
+          </div>
+        `;
+        return;
       }
-      lucide.createIcons();
-    }
 
-    /* Render Loans List */
-    function renderLoans() {
-      const container = document.getElementById('allLoansList');
-      if (appData.loans.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No bank or EMI loans added.</div>`;
-      } else {
-        container.innerHTML = appData.loans.map(loan => {
-          return `
-            <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="font-bold text-white text-sm">${loan.name}</h4>
-                  <p class="text-xs text-sky-400 mt-0.5">Due Day: ${loan.dueDay}th of every month</p>
-                </div>
-                <button onclick="deleteLoan('${loan.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
-              </div>
+      container.innerHTML = filtered.map(c => {
+        const owesYou = c.netBalance < 0;
+        const youOwe = c.netBalance > 0;
+        const isSettled = c.netBalance === 0;
 
-              <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <div>
-                  <span class="text-[10px] text-slate-400 uppercase">Principal Balance</span>
-                  <div class="text-sm font-bold text-white">₹${Number(loan.principalBalance).toLocaleString('en-IN')}</div>
-                </div>
-                <div>
-                  <span class="text-[10px] text-slate-400 uppercase">Monthly EMI</span>
-                  <div class="text-sm font-bold text-emerald-400">₹${Number(loan.emiAmount).toLocaleString('en-IN')}</div>
-                </div>
-              </div>
+        let statusText = "Settled (₹0)";
+        let statusColor = "text-slate-400";
+        let subText = "All dues cleared";
 
-              <div class="flex items-center justify-between pt-1">
-                <span class="text-xs text-slate-400">${loan.interestRate ? `${loan.interestRate}% Interest` : ''}</span>
-                <button onclick="payEmi('${loan.id}')" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1">
-                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Record EMI Payment
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-      }
-      lucide.createIcons();
-    }
+        if (youOwe) {
+          statusText = `You owe ${fmt(Math.abs(c.netBalance))}`;
+          statusColor = "text-rose-400";
+          subText = `Total took: ${fmt(c.totalTook)} • Returned: ${fmt(c.totalGave)}`;
+        } else if (owesYou) {
+          statusText = `Owes you ${fmt(Math.abs(c.netBalance))}`;
+          statusColor = "text-emerald-400";
+          subText = `Total gave: ${fmt(c.totalGave)} • Returned: ${fmt(c.totalTook)}`;
+        }
 
-    /* Render Accounts List */
-    function renderAccounts() {
-      const debitContainer = document.getElementById('debitAccountsList');
-      const creditContainer = document.getElementById('creditCardsList');
-
-      const debitAccs = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash');
-      const creditCards = appData.accounts.filter(a => a.type === 'credit_card');
-
-      debitContainer.innerHTML = debitAccs.map(acc => {
         return `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-            <div class="flex items-center gap-2.5">
-              <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                <i data-lucide="${acc.type === 'debit_cash' ? 'banknote' : 'landmark'}" class="w-4 h-4"></i>
+          <div onclick="openContactStatement('${c.name.replace(/'/g, "\\'")}')" class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl active:bg-slate-800/80 transition flex items-center justify-between cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-sm text-emerald-400">
+                ${c.name.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h4 class="text-xs font-bold text-white">${acc.name}</h4>
-                <p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p>
+                <h4 class="font-bold text-sm text-white">${c.name}</h4>
+                <p class="text-[11px] text-slate-400">${subText}</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <div class="text-sm font-bold text-white">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
-              <button onclick="deleteAccount('${acc.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
+            <div class="text-right">
+              <p class="text-sm font-extrabold ${statusColor}">${statusText}</p>
+              <p class="text-[10px] text-slate-500">${c.entries.length} entries &rarr;</p>
             </div>
           </div>
         `;
-      }).join('');
+      }).join("");
+    }
 
-      if (creditCards.length === 0) {
-        creditContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500">No credit cards added.</div>`;
-      } else {
-        creditContainer.innerHTML = creditCards.map(card => {
-          return `
-            <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 space-y-2">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="text-xs font-bold text-white">${card.name}</h4>
-                  <p class="text-[10px] text-slate-400">Limit: ₹${Number(card.limit).toLocaleString('en-IN')} • Due Day: ${card.dueDay || 15}th</p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="text-right">
-                    <span class="text-[10px] text-rose-400 uppercase font-semibold">Current Due</span>
-                    <div class="text-sm font-bold text-rose-400">₹${Number(card.currentDue).toLocaleString('en-IN')}</div>
-                  </div>
-                  <button onclick="deleteAccount('${card.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
+    function renderLoansView() {
+      const container = document.getElementById("loansList");
+      if (appState.loans.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-500 py-6 text-center">No active loans or bills tracked.</p>`;
+        return;
       }
+
+      container.innerHTML = appState.loans.map(loan => `
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-bold text-sm text-white">${loan.name}</h4>
+              <p class="text-xs text-slate-400">Due every month on the <strong>${loan.day}th</strong></p>
+            </div>
+            <span class="text-sm font-extrabold text-amber-400">${fmt(loan.emi)}/mo</span>
+          </div>
+          ${loan.principal ? `
+            <div class="pt-2 border-t border-slate-800/80 flex justify-between items-center text-xs">
+              <span class="text-slate-400">Balance Remaining:</span>
+              <span class="font-semibold text-slate-200">${fmt(loan.principal)}</span>
+            </div>
+          ` : ''}
+          <div class="pt-2 flex justify-end gap-2">
+            <button onclick="recordLoanPayment('${loan.id}')" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 px-3 py-1.5 rounded-xl font-medium border border-slate-700">
+              Pay EMI
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderAccountsView() {
+      const container = document.getElementById("accountsFullList");
+      container.innerHTML = appState.accounts.map(acc => `
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400">
+              <i data-lucide="${acc.type === 'CASH' ? 'banknote' : acc.type === 'CARD' ? 'credit-card' : 'building-2'}" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-white">${acc.name}</h4>
+              <p class="text-[10px] text-slate-400">${acc.type}</p>
+            </div>
+          </div>
+          <p class="text-sm font-bold text-slate-100">${fmt(acc.balance)}</p>
+        </div>
+      `).join("");
+    }
+
+    // --- CONTACT STATEMENT SLIDE-OVER ---
+    function openContactStatement(personName) {
+      currentViewingPerson = personName;
+      const contacts = getAggregatedContacts();
+      const contact = contacts.find(c => c.name === personName);
+      if (!contact) return;
+
+      document.getElementById("statementContactName").innerText = contact.name;
+      document.getElementById("statementContactAvatar").innerText = contact.name.charAt(0).toUpperCase();
+      document.getElementById("statementLastUpdated").innerText = `Last record: ${contact.lastDate}`;
+
+      const netEl = document.getElementById("statementNetBadge");
+      if (contact.netBalance > 0) {
+        netEl.innerText = `YOU OWE ${fmt(contact.netBalance)}`;
+        netEl.className = "text-base font-bold text-rose-400";
+      } else if (contact.netBalance < 0) {
+        netEl.innerText = `THEY OWE YOU ${fmt(Math.abs(contact.netBalance))}`;
+        netEl.className = "text-base font-bold text-emerald-400";
+      } else {
+        netEl.innerText = "SETTLED (₹0)";
+        netEl.className = "text-base font-bold text-slate-400";
+      }
+
+      // Render timeline list
+      const historyList = document.getElementById("statementTxHistoryList");
+      historyList.innerHTML = contact.entries.slice().reverse().map(e => `
+        <div class="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${e.type === 'TOOK' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}">
+                ${e.type === 'TOOK' ? 'YOU TOOK' : 'YOU GAVE'}
+              </span>
+              <span class="text-xs text-slate-400">${e.date}</span>
+            </div>
+            ${e.notes ? `<p class="text-xs text-slate-300 mt-1">${e.notes}</p>` : ''}
+            ${e.dueDate ? `<p class="text-[10px] text-amber-400/80 mt-0.5">Promised return: ${e.dueDate}</p>` : ''}
+          </div>
+          <span class="font-extrabold text-sm ${e.type === 'TOOK' ? 'text-rose-400' : 'text-emerald-400'}">
+            ${fmt(e.amount)}
+          </span>
+        </div>
+      `).join("");
+
+      document.getElementById("contactStatementModal").classList.remove("hidden");
       lucide.createIcons();
     }
 
-    /* =========================================================
-       FORM HANDLERS & ENTITY ACTIONS
-       ========================================================= */
-
-    /* 1. Transaction Handlers */
-    function openTransactionModal(type = 'expense') {
-      currentTxType = type;
-      setTxType(type);
-      document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
-      document.getElementById('txAmount').value = '';
-      document.getElementById('txNotes').value = '';
-      openModal('txModal');
+    function closeContactStatementModal() {
+      document.getElementById("contactStatementModal").classList.add("hidden");
+      currentViewingPerson = null;
     }
 
-    function setTxType(type) {
-      currentTxType = type;
-      const btnExp = document.getElementById('btnTxTypeExpense');
-      const btnInc = document.getElementById('btnTxTypeIncome');
-      const title = document.getElementById('txModalTitle');
-
-      if (type === 'expense') {
-        btnExp.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition";
-        btnInc.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
-        title.innerText = "Add Expense";
-      } else {
-        btnInc.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition";
-        btnExp.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
-        title.innerText = "Add Income";
-      }
+    function quickAddKhataForContact(type) {
+      if (!currentViewingPerson) return;
+      openKhataEntryModal();
+      document.getElementById("khataPersonName").value = currentViewingPerson;
+      document.querySelector(`input[name="khataType"][value="${type}"]`).checked = true;
     }
 
-    function handleSaveTransaction(e) {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      const category = document.getElementById('txCategory').value;
-      const accountId = document.getElementById('txAccount').value;
-      const date = document.getElementById('txDate').value;
-      const notes = document.getElementById('txNotes').value;
-
-      if (!amount || amount <= 0) return;
-
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type: currentTxType,
-        amount,
-        category,
-        accountId,
-        date,
-        notes
-      };
-
-      appData.transactions.unshift(newTx);
-
-      // Adjust account balance accordingly
-      const acc = appData.accounts.find(a => a.id === accountId);
-      if (acc) {
-        if (acc.type === 'credit_card') {
-          if (currentTxType === 'expense') acc.currentDue += amount;
-          else acc.currentDue = Math.max(0, acc.currentDue - amount);
-        } else {
-          if (currentTxType === 'expense') acc.balance -= amount;
-          else acc.balance += amount;
-        }
-      }
-
-      saveData();
-      closeModal('txModal');
+    // --- MODAL HANDLERS ---
+    function openKhataEntryModal() {
+      document.getElementById("khataDate").valueAsDate = new Date();
+      document.getElementById("khataEntryModal").classList.remove("hidden");
+    }
+    function closeKhataEntryModal() {
+      document.getElementById("khataForm").reset();
+      document.getElementById("khataEntryModal").classList.add("hidden");
     }
 
-    function deleteTransaction(id) {
-      appData.transactions = appData.transactions.filter(t => t.id !== id);
-      saveData();
+    function openTxModal(type = "expense") {
+      const select = document.getElementById("txAccount");
+      select.innerHTML = appState.accounts.map(a => `<option value="${a.id}">${a.name} (${fmt(a.balance)})</option>`).join("");
+      document.getElementById("txModal").classList.remove("hidden");
+    }
+    function closeTxModal() {
+      document.getElementById("txForm").reset();
+      document.getElementById("txModal").classList.add("hidden");
     }
 
-    /* 2. Khata Handlers */
-    function openKhataModal() {
-      document.getElementById('khataDate').value = new Date().toISOString().slice(0, 10);
-      document.getElementById('khataDueDate').value = getOffsetDate(7);
-      document.getElementById('khataPersonName').value = '';
-      document.getElementById('khataAmount').value = '';
-      document.getElementById('khataNotes').value = '';
-      setKhataDirection('lent');
-      openModal('khataModal');
-    }
-
-    function setKhataDirection(dir) {
-      currentKhataDirection = dir;
-      const btnLent = document.getElementById('btnKhataLent');
-      const btnBorrow = document.getElementById('btnKhataBorrowed');
-
-      if (dir === 'lent') {
-        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition";
-        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
-      } else {
-        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition";
-        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
-      }
-    }
-
-    function handleSaveKhata(e) {
-      e.preventDefault();
-      const personName = document.getElementById('khataPersonName').value.trim();
-      const amount = parseFloat(document.getElementById('khataAmount').value);
-      const date = document.getElementById('khataDate').value;
-      const dueDate = document.getElementById('khataDueDate').value;
-      const notes = document.getElementById('khataNotes').value;
-
-      if (!personName || !amount) return;
-
-      const newKhata = {
-        id: 'k_' + Date.now(),
-        direction: currentKhataDirection,
-        personName,
-        amount,
-        date,
-        dueDate,
-        status: 'pending',
-        notes
-      };
-
-      appData.khata.unshift(newKhata);
-      saveData();
-      closeModal('khataModal');
-    }
-
-    function settleKhata(id) {
-      const item = appData.khata.find(k => k.id === id);
-      if (item) {
-        item.status = 'settled';
-        saveData();
-      }
-    }
-
-    function deleteKhata(id) {
-      appData.khata = appData.khata.filter(k => k.id !== id);
-      saveData();
-    }
-
-    /* 3. Loan Handlers */
     function openLoanModal() {
-      document.getElementById('loanName').value = '';
-      document.getElementById('loanBalance').value = '';
-      document.getElementById('loanEmi').value = '';
-      document.getElementById('loanInterest').value = '';
-      openModal('loanModal');
+      document.getElementById("loanModal").classList.remove("hidden");
+    }
+    function closeLoanModal() {
+      document.getElementById("loanForm").reset();
+      document.getElementById("loanModal").classList.add("hidden");
     }
 
-    function handleSaveLoan(e) {
-      e.preventDefault();
-      const name = document.getElementById('loanName').value.trim();
-      const balance = parseFloat(document.getElementById('loanBalance').value);
-      const emi = parseFloat(document.getElementById('loanEmi').value);
-      const dueDay = parseInt(document.getElementById('loanDueDay').value);
-      const interest = parseFloat(document.getElementById('loanInterest').value) || null;
-
-      if (!name || !balance || !emi) return;
-
-      const newLoan = {
-        id: 'loan_' + Date.now(),
-        name,
-        principalBalance: balance,
-        emiAmount: emi,
-        dueDay,
-        interestRate: interest,
-        lastPaidMonth: ''
-      };
-
-      appData.loans.push(newLoan);
-      saveData();
-      closeModal('loanModal');
-    }
-
-    function payEmi(id) {
-      const loan = appData.loans.find(l => l.id === id);
-      if (!loan) return;
-
-      // Reduce principal by EMI and log an expense
-      loan.principalBalance = Math.max(0, loan.principalBalance - loan.emiAmount);
-      
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type: 'expense',
-        amount: loan.emiAmount,
-        category: 'Utilities & Bills',
-        accountId: appData.accounts[0]?.id || 'acc_1',
-        date: new Date().toISOString().slice(0, 10),
-        notes: `EMI payment for ${loan.name}`
-      };
-      appData.transactions.unshift(newTx);
-
-      saveData();
-    }
-
-    function deleteLoan(id) {
-      appData.loans = appData.loans.filter(l => l.id !== id);
-      saveData();
-    }
-
-    /* 4. Accounts Handlers */
     function openAccountModal() {
-      document.getElementById('accName').value = '';
-      document.getElementById('accBalance').value = '';
-      document.getElementById('cardDue').value = '';
-      document.getElementById('cardLimit').value = '';
-      toggleAccountFields();
-      openModal('accountModal');
+      document.getElementById("accountModal").classList.remove("hidden");
     }
-
-    function toggleAccountFields() {
-      const type = document.getElementById('accType').value;
-      const debitGroup = document.getElementById('accDebitBalanceGroup');
-      const creditGroup = document.getElementById('accCreditCardGroup');
-
-      if (type === 'credit_card') {
-        debitGroup.classList.add('hidden');
-        creditGroup.classList.remove('hidden');
-      } else {
-        debitGroup.classList.remove('hidden');
-        creditGroup.classList.add('hidden');
-      }
-    }
-
-    function handleSaveAccount(e) {
-      e.preventDefault();
-      const type = document.getElementById('accType').value;
-      const name = document.getElementById('accName').value.trim();
-
-      if (!name) return;
-
-      const newAcc = {
-        id: 'acc_' + Date.now(),
-        name,
-        type
-      };
-
-      if (type === 'credit_card') {
-        newAcc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
-        newAcc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0;
-        newAcc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
-      } else {
-        newAcc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
-      }
-
-      appData.accounts.push(newAcc);
-      saveData();
-      closeModal('accountModal');
-    }
-
-    function deleteAccount(id) {
-      if (appData.accounts.length <= 1) {
-        return; // Retain at least 1 account
-      }
-      appData.accounts = appData.accounts.filter(a => a.id !== id);
-      saveData();
-    }
-
-    /* =========================================================
-       MODAL CONTROLS & EXPORT / IMPORT
-       ========================================================= */
-    function openModal(id) {
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function toggleRemindersModal() {
-      const modal = document.getElementById('remindersModal');
-      modal.classList.toggle('hidden');
-      if (!modal.classList.contains('hidden')) {
-        renderRemindersUI();
-      }
+    function closeAccountModal() {
+      document.getElementById("accountForm").reset();
+      document.getElementById("accountModal").classList.add("hidden");
     }
 
     function openSettingsModal() {
-      openModal('settingsModal');
+      document.getElementById("settingsModal").classList.remove("hidden");
+    }
+    function closeSettingsModal() {
+      document.getElementById("settingsModal").classList.add("hidden");
     }
 
-    /* Export JSON */
-    function exportDataJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
-      const downloadAnchor = document.createElement('a');
-      const filename = `PocketLedger_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", filename);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+    // --- FORM SUBMIT HANDLERS ---
+    function handleKhataSubmit(e) {
+      e.preventDefault();
+      const person = document.getElementById("khataPersonName").value.trim();
+      const type = document.querySelector('input[name="khataType"]:checked').value;
+      const amount = parseFloat(document.getElementById("khataAmount").value);
+      const date = document.getElementById("khataDate").value;
+      const dueDate = document.getElementById("khataDueDate").value || null;
+      const notes = document.getElementById("khataNotes").value.trim();
+
+      appState.khata.push({
+        id: "kh-" + Date.now(),
+        person,
+        type,
+        amount,
+        date,
+        dueDate,
+        notes,
+        settled: false
+      });
+
+      saveState();
+      closeKhataEntryModal();
+
+      if (currentViewingPerson === person) {
+        openContactStatement(person);
+      }
     }
 
-    /* Import JSON */
-    function importDataJSON(event) {
+    function handleTxSubmit(e) {
+      e.preventDefault();
+      const type = document.querySelector('input[name="txType"]:checked').value;
+      const amount = parseFloat(document.getElementById("txAmount").value);
+      const category = document.getElementById("txCategory").value;
+      const accountId = document.getElementById("txAccount").value;
+      const desc = document.getElementById("txDesc").value.trim();
+
+      const account = appState.accounts.find(a => a.id === accountId);
+      if (account) {
+        if (type === "EXPENSE") account.balance -= amount;
+        else account.balance += amount;
+      }
+
+      appState.transactions.unshift({
+        id: "tx-" + Date.now(),
+        type,
+        amount,
+        category,
+        accountId,
+        accountName: account ? account.name : "Cash",
+        desc,
+        date: new Date().toISOString().split("T")[0]
+      });
+
+      saveState();
+      closeTxModal();
+    }
+
+    function handleLoanSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("loanName").value.trim();
+      const emi = parseFloat(document.getElementById("loanEmi").value);
+      const day = parseInt(document.getElementById("loanDay").value);
+      const principal = parseFloat(document.getElementById("loanPrincipal").value) || null;
+
+      appState.loans.push({
+        id: "ln-" + Date.now(),
+        name,
+        emi,
+        day,
+        principal,
+        type: "EMI"
+      });
+
+      saveState();
+      closeLoanModal();
+    }
+
+    function recordLoanPayment(loanId) {
+      const loan = appState.loans.find(l => l.id === loanId);
+      if (!loan) return;
+      if (loan.principal) {
+        loan.principal = Math.max(0, loan.principal - loan.emi);
+      }
+      appState.transactions.unshift({
+        id: "tx-" + Date.now(),
+        type: "EXPENSE",
+        amount: loan.emi,
+        category: "Bills",
+        desc: `EMI: ${loan.name}`,
+        date: new Date().toISOString().split("T")[0]
+      });
+      saveState();
+    }
+
+    function handleAccountSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("accName").value.trim();
+      const type = document.getElementById("accType").value;
+      const balance = parseFloat(document.getElementById("accBalance").value) || 0;
+
+      appState.accounts.push({
+        id: "acc-" + Date.now(),
+        name,
+        type,
+        balance
+      });
+
+      saveState();
+      closeAccountModal();
+    }
+
+    // --- BACKUP & RESTORE ---
+    function exportDataBackup() {
+      const blob = new Blob([JSON.stringify(appState, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `my_ledger_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importDataBackup(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = (e) => {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (parsed && parsed.accounts && parsed.transactions) {
-            appData = parsed;
-            saveData();
-            closeModal('settingsModal');
+          if (parsed && parsed.accounts && parsed.khata) {
+            appState = parsed;
+            saveState();
+            closeSettingsModal();
+            alert("Backup imported successfully!");
+          } else {
+            alert("Invalid backup file structure.");
           }
         } catch (err) {
-          console.error("Invalid JSON file uploaded", err);
+          alert("Error parsing JSON file.");
         }
       };
       reader.readAsText(file);
     }
 
-    function clearAllData() {
-      appData = JSON.parse(JSON.stringify(defaultSeedData));
-      saveData();
-      closeModal('settingsModal');
+    function resetAllData() {
+      if (confirm("Are you sure? This will delete all your local financial records.")) {
+        localStorage.removeItem(STORAGE_KEY);
+        appState = defaultState;
+        saveState();
+        closeSettingsModal();
+      }
     }
 
-    /* =========================================================
-       INIT & OFFLINE SERVICE WORKER
-       ========================================================= */
-    window.addEventListener('DOMContentLoaded', () => {
-      // Populate day dropdowns (1 - 31)
-      const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      const loanDueDay = document.getElementById('loanDueDay');
-      const cardDueDay = document.getElementById('cardDueDay');
-      if (loanDueDay) loanDueDay.innerHTML = dayOptions;
-      if (cardDueDay) cardDueDay.innerHTML = dayOptions;
-
-      refreshAllViews();
-
-      // Register offline capability if available
-      if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-        try {
-          const swCode = `
-            self.addEventListener('install', e => self.skipWaiting());
-            self.addEventListener('activate', e => self.clients.claim());
-            self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
-          `;
-          const blob = new Blob([swCode], { type: 'application/javascript' });
-          navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
-        } catch(e) {}
-      }
+    // --- INITIALIZATION ---
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("currentDateStr").innerText = new Date().toLocaleDateString("en-IN", {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      });
+      refreshUI();
     });
   </script>
 </body>
