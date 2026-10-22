@@ -129,6 +129,31 @@
         </div>
       </div>
 
+      <!-- Investments & Loans Quick Glance -->
+      <div class="grid grid-cols-2 gap-3">
+        <div onclick="switchTab('assets')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-sky-900/40 p-3 rounded-2xl transition active:scale-98">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span>
+            <div class="p-1 rounded-md bg-sky-500/10 text-sky-400">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+            </div>
+          </div>
+          <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white">₹0</div>
+          <p class="text-[10px] text-slate-400 mt-0.5">Current portfolio</p>
+        </div>
+
+        <div onclick="switchTab('loans')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-indigo-900/40 p-3 rounded-2xl transition active:scale-98">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span>
+            <div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400">
+              <i data-lucide="landmark" class="w-3.5 h-3.5"></i>
+            </div>
+          </div>
+          <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white">₹0</div>
+          <p class="text-[10px] text-slate-400 mt-0.5">Total principal due</p>
+        </div>
+      </div>
+
       <!-- Khata Peer-to-Peer Quick Glance -->
       <div class="grid grid-cols-2 gap-3">
         <div onclick="switchTab('khata'); setKhataFilter('lent')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
@@ -319,33 +344,77 @@
         </div>
       </div>
     </section>
+
+    <!-- VIEW 6: ASSETS (INVESTMENTS & INSURANCES) -->
+    <section id="view-assets" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white">Wealth & Protection</h2>
+          <p class="text-xs text-slate-400">PF, Mutual Funds & Insurances</p>
+        </div>
+        <div class="flex gap-1.5">
+          <button onclick="openInvestmentModal()" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Invest
+          </button>
+          <button onclick="openInsuranceModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
+            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Insure
+          </button>
+        </div>
+      </div>
+
+      <!-- Investments Section -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5 mt-2">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> Savings & Investments
+        </h3>
+        <div id="investmentsList" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Insurances Section -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i> Insurance Policies
+        </h3>
+        <div id="insurancesList" class="space-y-2">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- BOTTOM MOBILE NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1 flex justify-around items-center max-w-lg mx-auto">
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1 flex justify-around items-center max-w-lg mx-auto">
     <button onclick="switchTab('dashboard')" id="nav-dashboard" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-emerald-400 transition">
-      <i data-lucide="layout-grid" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Home</span>
+      <i data-lucide="layout-grid" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Home</span>
     </button>
 
     <button onclick="switchTab('transactions')" id="nav-transactions" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Expenses</span>
+      <i data-lucide="arrow-left-right" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Expenses</span>
     </button>
 
     <button onclick="switchTab('khata')" id="nav-khata" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="users" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Khata</span>
+      <i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Khata</span>
     </button>
 
     <button onclick="switchTab('loans')" id="nav-loans" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="landmark" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Loans/EMI</span>
+      <i data-lucide="landmark" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Loans</span>
+    </button>
+
+    <button onclick="switchTab('assets')" id="nav-assets" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
+      <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Assets</span>
     </button>
 
     <button onclick="switchTab('accounts')" id="nav-accounts" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 hover:text-slate-200 transition">
-      <i data-lucide="credit-card" class="w-5 h-5"></i>
-      <span class="text-[10px] font-semibold mt-0.5">Accounts</span>
+      <i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5"></i>
+      <span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Accounts</span>
     </button>
   </nav>
 
@@ -487,15 +556,16 @@
     </div>
   </div>
 
-  <!-- 4. ADD LOAN MODAL -->
+  <!-- 4. ADD / EDIT LOAN MODAL -->
   <div id="loanModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Add Bank / Institutional Loan</h3>
+        <h3 id="loanModalTitle" class="font-bold text-base text-white">Add Bank / Institutional Loan</h3>
         <button onclick="closeModal('loanModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <form id="loanForm" onsubmit="handleSaveLoan(event)" class="space-y-3 pt-3">
+        <input type="hidden" id="loanEditId" value="">
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Lender / Loan Name</label>
           <input type="text" id="loanName" required placeholder="e.g. HDFC Car Loan, SBI Home Loan" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
@@ -526,7 +596,7 @@
         </div>
 
         <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">
-          Add Loan Account
+          Save Loan Account
         </button>
       </form>
     </div>
@@ -586,7 +656,81 @@
     </div>
   </div>
 
-  <!-- 6. SETTINGS & JSON BACKUP MODAL -->
+  <!-- 6. ADD / EDIT INVESTMENT MODAL -->
+  <div id="investmentModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 id="invModalTitle" class="font-bold text-base text-white">Add Investment</h3>
+        <button onclick="closeModal('investmentModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="investmentForm" onsubmit="handleSaveInvestment(event)" class="space-y-3 pt-3">
+        <input type="hidden" id="invEditId" value="">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Investment Type</label>
+          <select id="invType" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+            <option value="Mutual Fund">Mutual Fund</option>
+            <option value="Gold">Gold</option>
+            <option value="Provident Fund">Provident Fund</option>
+            <option value="Fixed Deposit">Fixed Deposit</option>
+            <option value="Stocks">Stocks</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Name</label>
+          <input type="text" id="invName" required placeholder="e.g. Parag Parikh Flexi Cap" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Valuation (₹)</label>
+          <input type="number" step="0.01" id="invAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+        </div>
+        <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">
+          Save Investment
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 7. ADD / EDIT INSURANCE MODAL -->
+  <div id="insuranceModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 id="insModalTitle" class="font-bold text-base text-white">Add Insurance</h3>
+        <button onclick="closeModal('insuranceModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="insuranceForm" onsubmit="handleSaveInsurance(event)" class="space-y-3 pt-3">
+        <input type="hidden" id="insEditId" value="">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Insurance Type</label>
+          <select id="insType" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+            <option value="Health Insurance">Health Insurance</option>
+            <option value="Vehicle Insurance">Vehicle Insurance</option>
+            <option value="Term Life">Term Life</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Policy Name</label>
+          <input type="text" id="insName" required placeholder="e.g. Star Health Family" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Premium (₹)</label>
+            <input type="number" step="0.01" id="insPremium" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal Due Date</label>
+            <input type="date" id="insDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-950/40 active:scale-98 transition">
+          Save Insurance
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 8. SETTINGS & JSON BACKUP MODAL -->
   <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -652,6 +796,12 @@
       ],
       loans: [
         { id: 'loan_1', name: 'Car Loan (SBI)', principalBalance: 245000, emiAmount: 8400, dueDay: 10, interestRate: 8.7, lastPaidMonth: '' }
+      ],
+      investments: [
+        { id: 'inv_1', type: 'Mutual Fund', name: 'Parag Parikh Flexi Cap', amount: 125000 }
+      ],
+      insurances: [
+        { id: 'ins_1', type: 'Health Insurance', name: 'Star Health Family', premium: 14500, dueDate: getOffsetDate(45) }
       ]
     };
 
@@ -667,7 +817,10 @@
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-          return JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          if (!parsed.investments) parsed.investments = [];
+          if (!parsed.insurances) parsed.insurances = [];
+          return parsed;
         }
       } catch (e) {
         console.error("Failed to load local data:", e);
@@ -694,7 +847,7 @@
 
     function switchTab(tabName) {
       currentTab = tabName;
-      ['dashboard', 'transactions', 'khata', 'loans', 'accounts'].forEach(tab => {
+      ['dashboard', 'transactions', 'khata', 'loans', 'assets', 'accounts'].forEach(tab => {
         const viewEl = document.getElementById(`view-${tab}`);
         const navEl = document.getElementById(`nav-${tab}`);
         if (viewEl) {
@@ -788,6 +941,27 @@
           raw: k
         });
       });
+      
+      // 4. Insurance Renewals
+      appData.insurances.forEach(ins => {
+        const dueObj = new Date(ins.dueDate);
+        const timeDiff = dueObj.setHours(0,0,0,0) - today.setHours(0,0,0,0);
+        const dayDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+        let status = 'upcoming';
+        if (dayDiff === 0) status = 'today';
+        else if (dayDiff < 0) status = 'overdue';
+        else if (dayDiff <= 14) status = 'soon'; 
+
+        reminders.push({
+          type: 'Insurance Renewal',
+          title: `${ins.name} Premium`,
+          amount: ins.premium,
+          dueDayText: `Due on ${ins.dueDate}`,
+          status: status,
+          targetDate: new Date(ins.dueDate),
+          raw: ins
+        });
+      });
 
       // Sort: overdue first, then today, then soon
       const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
@@ -797,7 +971,7 @@
     }
 
     function generateCalendarLink(reminder) {
-      // Direct Web Google Calendar Event URL (Works seamlessly on Android & iOS Chrome/Safari)
+      // Direct Web Google Calendar Event URL
       const dateStr = reminder.targetDate.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 8);
       const title = encodeURIComponent(`PocketLedger Reminder: ₹${reminder.amount} for ${reminder.title}`);
       const details = encodeURIComponent(`Payment reminder for ${reminder.type}. Amount: ₹${reminder.amount}. Set via PocketLedger.`);
@@ -857,7 +1031,7 @@
           let badgeHtml = '';
           if (r.status === 'overdue') badgeHtml = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">OVERDUE</span>`;
           else if (r.status === 'today') badgeHtml = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">TODAY</span>`;
-          else if (r.status === 'soon') badgeHtml = `<span class="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">IN 7 DAYS</span>`;
+          else if (r.status === 'soon') badgeHtml = `<span class="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">SOON</span>`;
           else badgeHtml = `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-medium">UPCOMING</span>`;
 
           const calLink = generateCalendarLink(r);
@@ -892,7 +1066,7 @@
        DATA COMPUTATIONS & VIEWS RENDERING
        ========================================================= */
     function refreshAllViews() {
-      // 1. Calculate liquid wealth (Debit cash + bank accounts - credit card dues)
+      // 1. Calculate liquid wealth
       let liquidCash = 0;
       let cardDues = 0;
       appData.accounts.forEach(acc => {
@@ -945,11 +1119,22 @@
       document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
       document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
 
-      // 5. Populate views
+      // 5. Total Dashboard Metrics
+      let totalInvested = 0;
+      appData.investments.forEach(i => totalInvested += Number(i.amount || 0));
+      const dashTotalInvDisplay = document.getElementById('dashTotalInvestmentsDisplay');
+      if (dashTotalInvDisplay) dashTotalInvDisplay.innerText = `₹${totalInvested.toLocaleString('en-IN')}`;
+
+      const dashTotalLoansDisplay = document.getElementById('dashTotalLoansDisplay');
+      if (dashTotalLoansDisplay) dashTotalLoansDisplay.innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
+
+
+      // 6. Populate views
       renderDashboardFeed();
       renderTransactions();
       renderKhata();
       renderLoans();
+      renderAssets();
       renderAccounts();
       renderRemindersUI();
 
@@ -1139,9 +1324,14 @@
                   <h4 class="font-bold text-white text-sm">${loan.name}</h4>
                   <p class="text-xs text-sky-400 mt-0.5">Due Day: ${loan.dueDay}th of every month</p>
                 </div>
-                <button onclick="deleteLoan('${loan.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
+                <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2 ml-2">
+                  <button onclick="editLoan('${loan.id}')" class="p-1.5 text-slate-400 hover:text-white" title="Edit">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="deleteLoan('${loan.id}')" class="p-1.5 text-slate-500 hover:text-rose-400" title="Delete">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
               </div>
 
               <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
@@ -1164,6 +1354,66 @@
             </div>
           `;
         }).join('');
+      }
+      lucide.createIcons();
+    }
+
+    /* Render Assets (Investments & Insurance) */
+    function renderAssets() {
+      const invContainer = document.getElementById('investmentsList');
+      const insContainer = document.getElementById('insurancesList');
+
+      if (appData.investments.length === 0) {
+        invContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No investments added yet.</div>`;
+      } else {
+        invContainer.innerHTML = appData.investments.map(i => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+            <div class="flex items-center gap-2.5">
+              <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400">
+                <i data-lucide="trending-up" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-white">${i.name}</h4>
+                <p class="text-[10px] text-slate-400">${i.type}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</div>
+              <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
+                <button onclick="editInvestment('${i.id}')" class="p-1 text-slate-400 hover:text-white" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                <button onclick="deleteInvestment('${i.id}')" class="p-1 text-slate-500 hover:text-rose-400" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (appData.insurances.length === 0) {
+        insContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No insurances tracked.</div>`;
+      } else {
+        insContainer.innerHTML = appData.insurances.map(i => `
+          <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${i.type}</span>
+                <h4 class="text-xs font-bold text-white">${i.name}</h4>
+              </div>
+              <div class="flex items-center gap-2 text-right">
+                <div class="mr-1">
+                  <div class="text-[10px] text-slate-400 uppercase">Premium</div>
+                  <div class="text-sm font-bold text-white">₹${Number(i.premium).toLocaleString('en-IN')}</div>
+                </div>
+                <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
+                  <button onclick="editInsurance('${i.id}')" class="p-1 text-slate-400 hover:text-white" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                  <button onclick="deleteInsurance('${i.id}')" class="p-1 text-slate-500 hover:text-rose-400" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40">
+              <span>Renew by: <strong class="text-white font-mono">${i.dueDate}</strong></span>
+            </div>
+          </div>
+        `).join('');
       }
       lucide.createIcons();
     }
@@ -1366,6 +1616,8 @@
 
     /* 3. Loan Handlers */
     function openLoanModal() {
+      document.getElementById('loanEditId').value = '';
+      document.getElementById('loanModalTitle').innerText = 'Add Bank / Institutional Loan';
       document.getElementById('loanName').value = '';
       document.getElementById('loanBalance').value = '';
       document.getElementById('loanEmi').value = '';
@@ -1373,8 +1625,22 @@
       openModal('loanModal');
     }
 
+    function editLoan(id) {
+      const loan = appData.loans.find(l => l.id === id);
+      if (!loan) return;
+      document.getElementById('loanEditId').value = loan.id;
+      document.getElementById('loanModalTitle').innerText = 'Edit Loan Details';
+      document.getElementById('loanName').value = loan.name;
+      document.getElementById('loanBalance').value = loan.principalBalance;
+      document.getElementById('loanEmi').value = loan.emiAmount;
+      document.getElementById('loanDueDay').value = loan.dueDay;
+      document.getElementById('loanInterest').value = loan.interestRate || '';
+      openModal('loanModal');
+    }
+
     function handleSaveLoan(e) {
       e.preventDefault();
+      const editId = document.getElementById('loanEditId').value;
       const name = document.getElementById('loanName').value.trim();
       const balance = parseFloat(document.getElementById('loanBalance').value);
       const emi = parseFloat(document.getElementById('loanEmi').value);
@@ -1383,17 +1649,28 @@
 
       if (!name || !balance || !emi) return;
 
-      const newLoan = {
-        id: 'loan_' + Date.now(),
-        name,
-        principalBalance: balance,
-        emiAmount: emi,
-        dueDay,
-        interestRate: interest,
-        lastPaidMonth: ''
-      };
-
-      appData.loans.push(newLoan);
+      if (editId) {
+        const loan = appData.loans.find(l => l.id === editId);
+        if (loan) {
+          loan.name = name;
+          loan.principalBalance = balance;
+          loan.emiAmount = emi;
+          loan.dueDay = dueDay;
+          loan.interestRate = interest;
+        }
+      } else {
+        const newLoan = {
+          id: 'loan_' + Date.now(),
+          name,
+          principalBalance: balance,
+          emiAmount: emi,
+          dueDay,
+          interestRate: interest,
+          lastPaidMonth: ''
+        };
+        appData.loans.push(newLoan);
+      }
+      
       saveData();
       closeModal('loanModal');
     }
@@ -1424,7 +1701,119 @@
       saveData();
     }
 
-    /* 4. Accounts Handlers */
+    /* 4. Assets Handlers (Investments & Insurance) */
+    function openInvestmentModal() {
+      document.getElementById('invEditId').value = '';
+      document.getElementById('invModalTitle').innerText = 'Add Investment';
+      document.getElementById('invName').value = '';
+      document.getElementById('invAmount').value = '';
+      openModal('investmentModal');
+    }
+
+    function editInvestment(id) {
+      const inv = appData.investments.find(i => i.id === id);
+      if (!inv) return;
+      document.getElementById('invEditId').value = inv.id;
+      document.getElementById('invModalTitle').innerText = 'Edit Investment';
+      document.getElementById('invType').value = inv.type;
+      document.getElementById('invName').value = inv.name;
+      document.getElementById('invAmount').value = inv.amount;
+      openModal('investmentModal');
+    }
+
+    function handleSaveInvestment(e) {
+      e.preventDefault();
+      const editId = document.getElementById('invEditId').value;
+      const type = document.getElementById('invType').value;
+      const name = document.getElementById('invName').value.trim();
+      const amount = parseFloat(document.getElementById('invAmount').value);
+
+      if (!name || isNaN(amount)) return;
+
+      if (editId) {
+        const inv = appData.investments.find(i => i.id === editId);
+        if (inv) {
+          inv.type = type;
+          inv.name = name;
+          inv.amount = amount;
+        }
+      } else {
+        appData.investments.push({
+          id: 'inv_' + Date.now(),
+          type,
+          name,
+          amount
+        });
+      }
+      
+      saveData();
+      closeModal('investmentModal');
+    }
+
+    function deleteInvestment(id) {
+      appData.investments = appData.investments.filter(i => i.id !== id);
+      saveData();
+    }
+
+    function openInsuranceModal() {
+      document.getElementById('insEditId').value = '';
+      document.getElementById('insModalTitle').innerText = 'Add Insurance';
+      document.getElementById('insName').value = '';
+      document.getElementById('insPremium').value = '';
+      document.getElementById('insDueDate').value = getOffsetDate(30);
+      openModal('insuranceModal');
+    }
+
+    function editInsurance(id) {
+      const ins = appData.insurances.find(i => i.id === id);
+      if (!ins) return;
+      document.getElementById('insEditId').value = ins.id;
+      document.getElementById('insModalTitle').innerText = 'Edit Insurance';
+      document.getElementById('insType').value = ins.type;
+      document.getElementById('insName').value = ins.name;
+      document.getElementById('insPremium').value = ins.premium;
+      document.getElementById('insDueDate').value = ins.dueDate;
+      openModal('insuranceModal');
+    }
+
+    function handleSaveInsurance(e) {
+      e.preventDefault();
+      const editId = document.getElementById('insEditId').value;
+      const type = document.getElementById('insType').value;
+      const name = document.getElementById('insName').value.trim();
+      const premium = parseFloat(document.getElementById('insPremium').value);
+      const dueDate = document.getElementById('insDueDate').value;
+
+      if (!name || isNaN(premium) || !dueDate) return;
+
+      if (editId) {
+        const ins = appData.insurances.find(i => i.id === editId);
+        if (ins) {
+          ins.type = type;
+          ins.name = name;
+          ins.premium = premium;
+          ins.dueDate = dueDate;
+        }
+      } else {
+        appData.insurances.push({
+          id: 'ins_' + Date.now(),
+          type,
+          name,
+          premium,
+          dueDate
+        });
+      }
+
+      saveData();
+      closeModal('insuranceModal');
+    }
+
+    function deleteInsurance(id) {
+      appData.insurances = appData.insurances.filter(i => i.id !== id);
+      saveData();
+    }
+
+    /* 5. Accounts Handlers */
     function openAccountModal() {
       document.getElementById('accName').value = '';
       document.getElementById('accBalance').value = '';
@@ -1527,6 +1916,8 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && parsed.accounts && parsed.transactions) {
+            if (!parsed.investments) parsed.investments = [];
+            if (!parsed.insurances) parsed.insurances = [];
             appData = parsed;
             saveData();
             closeModal('settingsModal');
