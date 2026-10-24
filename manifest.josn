@@ -1,9 +1,9 @@
 {
-  "id": "/kanakku_pusthakam/",
-  "name": "PocketLedger - Personal Finance",
+  "id": "/kanakku_pusthakam/index.html",
+  "name": "PocketLedger",
   "short_name": "PocketLedger",
   "description": "Offline-first personal finance, khata, and loan tracker.",
-  "start_url": "/kanakku_pusthakam/",
+  "start_url": "/kanakku_pusthakam/index.html",
   "scope": "/kanakku_pusthakam/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -12,21 +12,21 @@
   "icons": [
     {
       "src": "/kanakku_pusthakam/icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%230f172a'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='110' fill='%2310b981'%3E%E2%82%B9%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/kanakku_pusthakam/icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f172a'/%3E%3Crect x='24' y='24' width='464' height='464' rx='96' fill='none' stroke='%2310b981' stroke-width='16'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='280' fill='%2310b981'%3E%E2%82%B9%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192 512x512 any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f172a'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='280' fill='%2310b981'%3E%E2%82%B9%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
