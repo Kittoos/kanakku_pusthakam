@@ -164,7 +164,7 @@
             </div>
           </div>
           <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Cash given to others</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Net cash to collect</p>
         </div>
 
         <div onclick="switchTab('khata'); setKhataFilter('borrowed')" class="cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
@@ -175,7 +175,7 @@
             </div>
           </div>
           <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Cash borrowed</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Net cash to pay back</p>
         </div>
       </div>
 
@@ -510,11 +510,12 @@
   <div id="khataModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Person-to-Person Entry (Khata)</h3>
+        <h3 id="khataModalTitle" class="font-bold text-base text-white">Person-to-Person Entry (Khata)</h3>
         <button onclick="closeModal('khataModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
       <form id="khataForm" onsubmit="handleSaveKhata(event)" class="space-y-3 pt-3">
+        <input type="hidden" id="khataEditId" value="">
         <div class="flex bg-slate-800 p-1 rounded-xl">
           <button type="button" onclick="setKhataDirection('lent')" id="btnKhataLent" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition">I Gave Cash (They Owe)</button>
           <button type="button" onclick="setKhataDirection('borrowed')" id="btnKhataBorrowed" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">I Took Cash (I Owe)</button>
@@ -553,6 +554,36 @@
           Save Khata Entry
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- CONTACT STATEMENT MODAL (DRAWER VIEW FOR KHATA) -->
+  <div id="contactStatementModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col w-full sm:max-w-md overflow-hidden">
+      <!-- Drawer Header -->
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400" id="statementContactAvatar">S</div>
+          <div>
+            <h3 class="font-bold text-base text-white" id="statementContactName">Contact Name</h3>
+            <p class="text-[10px] text-slate-400" id="statementLastUpdated"></p>
+          </div>
+        </div>
+        <button onclick="closeModal('contactStatementModal')" class="p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Net Balance Header Inside Drawer -->
+      <div class="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
+        <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
+        <span class="text-base font-extrabold" id="statementNetBadge">₹0</span>
+      </div>
+
+      <!-- Itemized Ledger Timeline -->
+      <div class="p-4 overflow-y-auto space-y-2.5 flex-1 no-scrollbar" id="statementTxHistoryList">
+        <!-- Rendered dynamically -->
+      </div>
     </div>
   </div>
 
@@ -754,12 +785,12 @@
           <p class="text-[10px] text-slate-400 mt-1 text-center">Downloads a single backup file to your phone's storage.</p>
         </div>
 
-        <!-- Import JSON -->
+        <!-- Import JSON (Mobile Fixed) -->
         <div>
-          <label class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs cursor-pointer active:scale-98 transition">
+          <button onclick="document.getElementById('importJsonFileInput').click()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">
             <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> Import / Restore Data (JSON)
-            <input type="file" id="importJsonFileInput" accept=".json" onchange="importDataJSON(event)" class="hidden">
-          </label>
+          </button>
+          <input type="file" id="importJsonFileInput" accept=".json,application/json" onchange="importDataJSON(event)" style="display: none;">
         </div>
 
         <!-- Reset / Clear -->
@@ -812,6 +843,7 @@
     }
 
     let appData = loadData();
+    let currentViewingContact = null;
 
     function loadData() {
       try {
@@ -1063,6 +1095,34 @@
     }
 
     /* =========================================================
+       KHATA AGGREGATION LOGIC
+       ========================================================= */
+    function getAggregatedContacts() {
+      const map = {};
+      appData.khata.forEach(k => {
+        const name = k.personName.trim();
+        if (!map[name]) {
+          map[name] = { name: name, netBalance: 0, totalTook: 0, totalGave: 0, lastDate: k.date, entries: [] };
+        }
+        const amt = Number(k.amount || 0);
+        if (k.status !== 'settled') {
+          if (k.direction === 'borrowed') { // I took cash (I owe them)
+            map[name].netBalance += amt;
+            map[name].totalTook += amt;
+          } else { // I gave cash (They owe me)
+            map[name].netBalance -= amt;
+            map[name].totalGave += amt;
+          }
+        }
+        map[name].entries.push(k);
+        if (new Date(k.date) > new Date(map[name].lastDate)) {
+          map[name].lastDate = k.date;
+        }
+      });
+      return Object.values(map);
+    }
+
+    /* =========================================================
        DATA COMPUTATIONS & VIEWS RENDERING
        ========================================================= */
     function refreshAllViews() {
@@ -1100,11 +1160,10 @@
       // 3. Khata calculations
       let totalLent = 0;
       let totalBorrowed = 0;
-      appData.khata.forEach(k => {
-        if (k.status === 'pending') {
-          if (k.direction === 'lent') totalLent += Number(k.amount || 0);
-          if (k.direction === 'borrowed') totalBorrowed += Number(k.amount || 0);
-        }
+      const contacts = getAggregatedContacts();
+      contacts.forEach(c => {
+        if (c.netBalance < 0) totalLent += Math.abs(c.netBalance); // They owe me
+        if (c.netBalance > 0) totalBorrowed += c.netBalance;       // I owe them
       });
       document.getElementById('totalToCollectDisplay').innerText = `₹${totalLent.toLocaleString('en-IN')}`;
       document.getElementById('totalToReturnDisplay').innerText = `₹${totalBorrowed.toLocaleString('en-IN')}`;
@@ -1256,51 +1315,50 @@
 
     function renderKhata() {
       const container = document.getElementById('khataList');
-      let filtered = [...appData.khata];
+      const contacts = getAggregatedContacts();
 
-      if (khataFilter !== 'all') {
-        filtered = filtered.filter(k => k.direction === khataFilter);
-      }
+      let filtered = contacts.filter(c => {
+        if (khataFilter === 'lent') return c.netBalance < 0; // they owe you
+        if (khataFilter === 'borrowed') return c.netBalance > 0; // you owe them
+        return true;
+      });
 
       if (filtered.length === 0) {
         container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No person ledger entries found.</div>`;
       } else {
-        container.innerHTML = filtered.map(k => {
-          const isLent = k.direction === 'lent'; // Gave cash
-          const isSettled = k.status === 'settled';
+        container.innerHTML = filtered.map(c => {
+          const owesYou = c.netBalance < 0;
+          const youOwe = c.netBalance > 0;
+          const isSettled = c.netBalance === 0;
+
+          let statusText = "Settled (₹0)";
+          let statusColor = "text-slate-400";
+          
+          if (youOwe) {
+            statusText = `You owe ₹${Math.abs(c.netBalance).toLocaleString('en-IN')}`;
+            statusColor = "text-rose-400";
+          } else if (owesYou) {
+            statusText = `Owes you ₹${Math.abs(c.netBalance).toLocaleString('en-IN')}`;
+            statusColor = "text-emerald-400";
+          }
 
           return `
-            <div class="p-3.5 rounded-2xl bg-slate-800/80 border ${isSettled ? 'border-slate-800 opacity-60' : (isLent ? 'border-emerald-900/40' : 'border-rose-900/40')} space-y-2">
+            <div onclick="openContactStatement('${c.name.replace(/'/g, "\\'")}')" class="p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border ${isSettled ? 'border-slate-800 opacity-60' : (owesYou ? 'border-emerald-900/40' : 'border-rose-900/40')} cursor-pointer transition active:scale-98">
               <div class="flex items-center justify-between">
-                <div>
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-md ${isLent ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
-                    ${isLent ? 'GAVE CASH (THEY OWE)' : 'BORROWED (I OWE)'}
-                  </span>
-                  <h4 class="text-sm font-bold text-white mt-1">${k.personName}</h4>
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400">
+                    ${c.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-bold text-white">${c.name}</h4>
+                    <p class="text-[10px] text-slate-400">${c.entries.length} Transaction(s)</p>
+                  </div>
                 </div>
                 <div class="text-right">
-                  <div class="text-base font-black ${isLent ? 'text-emerald-400' : 'text-rose-400'}">
-                    ₹${Number(k.amount).toLocaleString('en-IN')}
+                  <div class="text-sm font-extrabold ${statusColor}">
+                    ${statusText}
                   </div>
-                  <span class="text-[10px] text-slate-400">${isSettled ? 'Settled' : 'Pending'}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40">
-                <div>
-                  ${k.dueDate ? `Due: <span class="text-slate-200 font-mono">${k.dueDate}</span>` : `Recorded: ${k.date}`}
-                  ${k.notes ? ` • ${k.notes}` : ''}
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                  ${!isSettled ? `
-                    <button onclick="settleKhata('${k.id}')" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition">
-                      Mark Settled
-                    </button>
-                  ` : ''}
-                  <button onclick="deleteKhata('${k.id}')" class="p-1 text-slate-500 hover:text-rose-400">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                  </button>
+                  <span class="text-[10px] text-slate-400">View details &rarr;</span>
                 </div>
               </div>
             </div>
@@ -1309,6 +1367,64 @@
       }
       lucide.createIcons();
     }
+
+    function openContactStatement(personName) {
+      currentViewingContact = personName;
+      const contact = getAggregatedContacts().find(c => c.name === personName);
+      if (!contact) return;
+
+      document.getElementById('statementContactName').innerText = contact.name;
+      document.getElementById('statementContactAvatar').innerText = contact.name.charAt(0).toUpperCase();
+      document.getElementById('statementLastUpdated').innerText = `Last entry: ${contact.lastDate}`;
+
+      const netBadge = document.getElementById('statementNetBadge');
+      if (contact.netBalance > 0) {
+        netBadge.innerText = `YOU OWE ₹${contact.netBalance.toLocaleString('en-IN')}`;
+        netBadge.className = "text-base font-extrabold text-rose-400";
+      } else if (contact.netBalance < 0) {
+        netBadge.innerText = `THEY OWE YOU ₹${Math.abs(contact.netBalance).toLocaleString('en-IN')}`;
+        netBadge.className = "text-base font-extrabold text-emerald-400";
+      } else {
+        netBadge.innerText = "SETTLED (₹0)";
+        netBadge.className = "text-base font-extrabold text-slate-400";
+      }
+
+      const historyList = document.getElementById('statementTxHistoryList');
+      historyList.innerHTML = contact.entries.slice().reverse().map(e => {
+        const isSettled = e.status === 'settled';
+        return `
+        <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between mb-2">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${e.direction === 'borrowed' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}">
+                ${e.direction === 'borrowed' ? 'YOU TOOK' : 'YOU GAVE'}
+              </span>
+              <span class="text-xs text-slate-400 font-mono">${e.date}</span>
+              ${isSettled ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-1 rounded">Settled</span>' : ''}
+            </div>
+            ${e.notes ? `<p class="text-xs text-slate-300 mt-1">${e.notes}</p>` : ''}
+            ${e.dueDate ? `<p class="text-[10px] text-amber-400/80 mt-0.5">Promised Return: ${e.dueDate}</p>` : ''}
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-sm ${e.direction === 'borrowed' ? 'text-rose-400' : 'text-emerald-400'}">
+              ₹${Number(e.amount).toLocaleString('en-IN')}
+            </span>
+            <div class="flex flex-col gap-1 border-l border-slate-800 pl-2 ml-1">
+              <button onclick="editKhataEntry('${e.id}')" class="p-1 text-slate-400 hover:text-white" title="Edit">
+                <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteKhata('${e.id}')" class="p-1 text-slate-500 hover:text-rose-400" title="Delete">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `}).join('');
+
+      openModal('contactStatementModal');
+      lucide.createIcons();
+    }
+
 
     /* Render Loans List */
     function renderLoans() {
@@ -1378,7 +1494,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <div class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</div>
+              <span class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</span>
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
                 <button onclick="editInvestment('${i.id}')" class="p-1 text-slate-400 hover:text-white" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
                 <button onclick="deleteInvestment('${i.id}')" class="p-1 text-slate-500 hover:text-rose-400" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -1417,6 +1533,7 @@
       }
       lucide.createIcons();
     }
+
 
     /* Render Accounts List */
     function renderAccounts() {
@@ -1552,12 +1669,28 @@
 
     /* 2. Khata Handlers */
     function openKhataModal() {
+      document.getElementById('khataEditId').value = '';
+      document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
       document.getElementById('khataDate').value = new Date().toISOString().slice(0, 10);
       document.getElementById('khataDueDate').value = getOffsetDate(7);
       document.getElementById('khataPersonName').value = '';
       document.getElementById('khataAmount').value = '';
       document.getElementById('khataNotes').value = '';
       setKhataDirection('lent');
+      openModal('khataModal');
+    }
+
+    function editKhataEntry(id) {
+      const entry = appData.khata.find(k => k.id === id);
+      if (!entry) return;
+      document.getElementById('khataEditId').value = entry.id;
+      document.getElementById('khataModalTitle').innerText = 'Edit Entry';
+      document.getElementById('khataPersonName').value = entry.personName;
+      document.getElementById('khataAmount').value = entry.amount;
+      document.getElementById('khataDate').value = entry.date;
+      document.getElementById('khataDueDate').value = entry.dueDate || '';
+      document.getElementById('khataNotes').value = entry.notes || '';
+      setKhataDirection(entry.direction);
       openModal('khataModal');
     }
 
@@ -1577,6 +1710,7 @@
 
     function handleSaveKhata(e) {
       e.preventDefault();
+      const editId = document.getElementById('khataEditId').value;
       const personName = document.getElementById('khataPersonName').value.trim();
       const amount = parseFloat(document.getElementById('khataAmount').value);
       const date = document.getElementById('khataDate').value;
@@ -1585,33 +1719,49 @@
 
       if (!personName || !amount) return;
 
-      const newKhata = {
-        id: 'k_' + Date.now(),
-        direction: currentKhataDirection,
-        personName,
-        amount,
-        date,
-        dueDate,
-        status: 'pending',
-        notes
-      };
+      if (editId) {
+        const entry = appData.khata.find(k => k.id === editId);
+        if (entry) {
+          entry.personName = personName;
+          entry.amount = amount;
+          entry.date = date;
+          entry.dueDate = dueDate;
+          entry.notes = notes;
+          entry.direction = currentKhataDirection;
+        }
+      } else {
+        const newKhata = {
+          id: 'k_' + Date.now(),
+          direction: currentKhataDirection,
+          personName,
+          amount,
+          date,
+          dueDate,
+          status: 'pending',
+          notes
+        };
+        appData.khata.unshift(newKhata);
+      }
 
-      appData.khata.unshift(newKhata);
       saveData();
       closeModal('khataModal');
-    }
-
-    function settleKhata(id) {
-      const item = appData.khata.find(k => k.id === id);
-      if (item) {
-        item.status = 'settled';
-        saveData();
+      
+      // Auto-refresh the drawer if it's currently open
+      if (currentViewingContact === personName) {
+        openContactStatement(personName);
       }
     }
 
     function deleteKhata(id) {
+      const entry = appData.khata.find(k => k.id === id);
       appData.khata = appData.khata.filter(k => k.id !== id);
       saveData();
+
+      if (entry && currentViewingContact === entry.personName) {
+        const hasMore = appData.khata.some(k => k.personName === entry.personName);
+        if (hasMore) openContactStatement(entry.personName);
+        else closeModal('contactStatementModal');
+      }
     }
 
     /* 3. Loan Handlers */
@@ -1894,19 +2044,24 @@
       openModal('settingsModal');
     }
 
-    /* Export JSON */
+    /* Export JSON (Mobile Blob Fix) */
     function exportDataJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
       const downloadAnchor = document.createElement('a');
-      const filename = `PocketLedger_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", filename);
+      downloadAnchor.href = url;
+      downloadAnchor.download = `PocketLedger_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
-      downloadAnchor.remove();
+      
+      // Clean up after 100ms
+      setTimeout(() => {
+        document.body.removeChild(downloadAnchor);
+        URL.revokeObjectURL(url);
+      }, 100);
     }
 
-    /* Import JSON */
+    /* Import JSON (Mobile File Input Fix) */
     function importDataJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1921,18 +2076,27 @@
             appData = parsed;
             saveData();
             closeModal('settingsModal');
+            alert("Database backup restored successfully!");
+          } else {
+            alert("Invalid backup file format.");
           }
         } catch (err) {
           console.error("Invalid JSON file uploaded", err);
+          alert("Error parsing backup file.");
         }
+        
+        // Reset file input so user can pick the same file again if needed
+        document.getElementById('importJsonFileInput').value = '';
       };
       reader.readAsText(file);
     }
 
     function clearAllData() {
-      appData = JSON.parse(JSON.stringify(defaultSeedData));
-      saveData();
-      closeModal('settingsModal');
+      if (confirm("Reset all data to default? This cannot be undone.")) {
+        appData = JSON.parse(JSON.stringify(defaultSeedData));
+        saveData();
+        closeModal('settingsModal');
+      }
     }
 
     /* =========================================================
