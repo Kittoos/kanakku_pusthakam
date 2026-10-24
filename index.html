@@ -32,8 +32,9 @@
     }
   </script>
 
-  <!-- Lucide Icons CDN -->
+  <!-- Lucide Icons & Chart.js CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     /* Mobile-first safe area insets for notches & home bars */
@@ -229,33 +230,41 @@
       </div>
     </section>
 
-    <!-- VIEW 2: TRANSACTIONS & EXPENSES -->
+    <!-- VIEW 2: TRANSACTIONS, EXPENSES & ANALYTICS -->
     <section id="view-transactions" class="hidden space-y-4">
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-lg font-bold text-white">Expenses & Income</h2>
-          <p class="text-xs text-slate-400">Track and filter day-to-day cash flow</p>
+          <p class="text-xs text-slate-400">Track and analyze cash flow</p>
         </div>
         <button onclick="openTransactionModal('expense')" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
         </button>
       </div>
 
-      <!-- Search & Filters -->
+      <!-- Search, Filters & Chart Toggle -->
       <div class="flex gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="txSearchInput" oninput="renderTransactions()" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <input type="text" id="txSearchInput" oninput="resetPaginationAndRender()" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
-        <select id="txFilterType" onchange="renderTransactions()" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-          <option value="all">All Types</option>
-          <option value="expense">Expense Only</option>
-          <option value="income">Income Only</option>
+        <select id="txFilterType" onchange="resetPaginationAndRender()" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
+          <option value="all">All</option>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
         </select>
+        <button onclick="toggleTxChart()" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 hover:text-emerald-400 transition" title="Show Chart">
+          <i data-lucide="pie-chart" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Analytical Chart Container -->
+      <div id="chartContainer" class="hidden p-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-inner">
+        <canvas id="txChartCanvas" height="220"></canvas>
       </div>
 
       <div id="fullTxList" class="space-y-2">
-        <!-- Rendered dynamically -->
+        <!-- Rendered dynamically with pagination -->
       </div>
     </section>
 
@@ -470,21 +479,14 @@
 
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</label>
-          <select id="txCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="Fuel & Commute">Fuel & Commute</option>
-            <option value="Groceries & Food">Groceries & Food</option>
-            <option value="Utilities & Bills">Utilities & Bills</option>
-            <option value="Maintenance & Repairs">Maintenance & Repairs</option>
-            <option value="Shopping & Personal">Shopping & Personal</option>
-            <option value="Salary & Wages">Salary & Wages</option>
-            <option value="Interest / Return">Interest / Return</option>
-            <option value="General">General / Others</option>
+          <select id="txCategory" required onchange="handleCategoryChange()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+            <!-- Dynamically populated via JS -->
           </select>
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Paid From/To</label>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account</label>
             <select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
               <!-- Dynamically populated from Accounts -->
             </select>
@@ -622,7 +624,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate % (Optional)</label>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Annual Interest Rate %</label>
             <input type="number" step="0.1" min="0" id="loanInterest" placeholder="e.g. 8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
           </div>
         </div>
@@ -783,7 +785,13 @@
           <button onclick="exportDataJSON()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">
             <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)
           </button>
-          <p class="text-[10px] text-slate-400 mt-1 text-center">Downloads a single backup file to your phone's storage.</p>
+        </div>
+        
+        <!-- Export CSV (Spreadsheet) -->
+        <div>
+          <button onclick="exportDataCSV()" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">
+            <i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)
+          </button>
         </div>
 
         <!-- Import JSON (Mobile Fixed) -->
@@ -812,6 +820,10 @@
     const STORAGE_KEY = 'pocketledger_data_v1';
 
     const defaultSeedData = {
+      categories: {
+        expense: ['Fuel & Commute', 'Groceries & Food', 'Utilities & Bills', 'Maintenance & Repairs', 'Shopping & Personal', 'Interest / Return', 'General'],
+        income: ['Salary & Wages', 'Investment Inflow/Return', 'General']
+      },
       accounts: [
         { id: 'acc_1', name: 'Primary Bank (HDFC)', type: 'debit_bank', balance: 48500 },
         { id: 'acc_2', name: 'Cash in Hand', type: 'debit_cash', balance: 6400 },
@@ -845,6 +857,8 @@
 
     let appData = loadData();
     let currentViewingContact = null;
+    let txRenderLimit = 20; // Pagination limit
+    let txChartInstance = null; // Chart reference
 
     function loadData() {
       try {
@@ -853,6 +867,7 @@
           const parsed = JSON.parse(stored);
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
+          if (!parsed.categories) parsed.categories = defaultSeedData.categories;
           return parsed;
         }
       } catch (e) {
@@ -915,7 +930,6 @@
 
       const reminders = [];
 
-      // 1. Loans EMIs
       appData.loans.forEach(loan => {
         if(loan.principalBalance <= 0) return; // Ignore cleared loans
         let diffDays = loan.dueDay - currentDay;
@@ -936,7 +950,6 @@
         });
       });
 
-      // 2. Credit Card bills
       appData.accounts.filter(a => a.type === 'credit_card' && a.currentDue > 0).forEach(card => {
         let diffDays = (card.dueDay || 15) - currentDay;
         let status = 'upcoming';
@@ -955,7 +968,6 @@
         });
       });
 
-      // 3. Khata entries
       appData.khata.filter(k => k.status === 'pending' && k.dueDate).forEach(k => {
         const dueObj = new Date(k.dueDate);
         const timeDiff = dueObj.setHours(0,0,0,0) - today.setHours(0,0,0,0);
@@ -976,7 +988,6 @@
         });
       });
       
-      // 4. Insurance Renewals
       appData.insurances.forEach(ins => {
         const dueObj = new Date(ins.dueDate);
         const timeDiff = dueObj.setHours(0,0,0,0) - today.setHours(0,0,0,0);
@@ -997,7 +1008,6 @@
         });
       });
 
-      // Sort: overdue first, then today, then soon
       const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
       reminders.sort((a, b) => (priority[a.status] || 99) - (priority[b.status] || 99));
 
@@ -1005,7 +1015,6 @@
     }
 
     function generateCalendarLink(reminder) {
-      // Direct Web Google Calendar Event URL
       const dateStr = reminder.targetDate.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 8);
       const title = encodeURIComponent(`PocketLedger Reminder: ₹${reminder.amount} for ${reminder.title}`);
       const details = encodeURIComponent(`Payment reminder for ${reminder.type}. Amount: ₹${reminder.amount}. Set via PocketLedger.`);
@@ -1243,7 +1252,18 @@
       }
     }
 
-    /* Render Full Transactions list */
+    /* Reset pagination trigger */
+    function resetPaginationAndRender() {
+      txRenderLimit = 20;
+      renderTransactions();
+    }
+
+    function loadMoreTransactions() {
+      txRenderLimit += 20;
+      renderTransactions();
+    }
+
+    /* Render Full Transactions list (With Pagination & Chart Logic) */
     function renderTransactions() {
       const container = document.getElementById('fullTxList');
       const searchQuery = (document.getElementById('txSearchInput')?.value || '').toLowerCase();
@@ -1261,10 +1281,21 @@
 
       filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
 
+      // Re-render chart if visible
+      if (!document.getElementById('chartContainer').classList.contains('hidden')) {
+        updateTxChart(filtered);
+      }
+
       if (filtered.length === 0) {
         container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No transactions found matching your criteria.</div>`;
       } else {
-        container.innerHTML = filtered.map(t => createTxRowHtml(t, true)).join('');
+        const paginated = filtered.slice(0, txRenderLimit);
+        let html = paginated.map(t => createTxRowHtml(t, true)).join('');
+        
+        if (filtered.length > txRenderLimit) {
+          html += `<button onclick="loadMoreTransactions()" class="w-full py-2.5 mt-2 text-xs font-bold text-slate-400 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-slate-700 transition">Load More (${filtered.length - txRenderLimit} remaining)</button>`;
+        }
+        container.innerHTML = html;
       }
       lucide.createIcons();
     }
@@ -1305,6 +1336,54 @@
           </div>
         </div>
       `;
+    }
+
+    /* Analytical Chart Logic */
+    function toggleTxChart() {
+      const container = document.getElementById('chartContainer');
+      container.classList.toggle('hidden');
+      if (!container.classList.contains('hidden')) {
+        renderTransactions(); // This triggers the chart update internally
+      }
+    }
+
+    function updateTxChart(filtered) {
+      const ctx = document.getElementById('txChartCanvas');
+      if (!ctx) return;
+
+      // Ensure we only chart what's visually useful (defaulting to expenses if 'all' is selected)
+      const chartType = document.getElementById('txFilterType').value;
+      const dataToChart = filtered.filter(t => chartType === 'income' ? t.type === 'income' : t.type === 'expense');
+      
+      const dataMap = {};
+      dataToChart.forEach(t => {
+        dataMap[t.category] = (dataMap[t.category] || 0) + Number(t.amount);
+      });
+
+      if (txChartInstance) {
+        txChartInstance.destroy();
+      }
+
+      txChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(dataMap),
+          datasets: [{
+            data: Object.values(dataMap),
+            backgroundColor: ['#f43f5e', '#ec4899', '#d946ef', '#a855f7', '#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 10 } } },
+            tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } }
+          }
+        }
+      });
     }
 
     /* Render Person-to-Person Khata */
@@ -1613,6 +1692,29 @@
        FORM HANDLERS & ENTITY ACTIONS
        ========================================================= */
 
+    /* Customizable Category Support */
+    function populateCategoryDropdown(type) {
+      const select = document.getElementById('txCategory');
+      const cats = appData.categories[type] || [];
+      select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      select.innerHTML += `<option value="__NEW__" class="font-bold text-emerald-400">+ Add New Category...</option>`;
+    }
+
+    function handleCategoryChange() {
+      const select = document.getElementById('txCategory');
+      if (select.value === '__NEW__') {
+        const newCat = prompt("Enter new category name:");
+        if (newCat && newCat.trim() !== '') {
+          appData.categories[currentTxType].push(newCat.trim());
+          saveData(); 
+          setTxType(currentTxType);
+          select.value = newCat.trim();
+        } else {
+          select.selectedIndex = 0; 
+        }
+      }
+    }
+
     /* 1. Transaction Handlers */
     function openTransactionModal(type = 'expense') {
       document.getElementById('txEditId').value = '';
@@ -1655,6 +1757,7 @@
         btnExp.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
         if(!isEdit) title.innerText = "Add Income";
       }
+      populateCategoryDropdown(type);
     }
 
     function handleSaveTransaction(e) {
@@ -1666,7 +1769,7 @@
       const date = document.getElementById('txDate').value;
       const notes = document.getElementById('txNotes').value;
 
-      if (!amount || amount <= 0) return;
+      if (!amount || amount <= 0 || category === '__NEW__') return;
 
       if (editId) {
         const tx = appData.transactions.find(t => t.id === editId);
@@ -1817,7 +1920,6 @@
       saveData();
       closeModal('khataModal');
       
-      // Auto-refresh the drawer if it's currently open
       if (currentViewingContact === personName) {
         openContactStatement(personName);
       }
@@ -1835,7 +1937,7 @@
       }
     }
 
-    /* 3. Loan Handlers */
+    /* 3. Loan Handlers (Proper Amortization) */
     function openLoanModal() {
       document.getElementById('loanEditId').value = '';
       document.getElementById('loanModalTitle').innerText = 'Add Bank / Institutional Loan';
@@ -1900,8 +2002,18 @@
       const loan = appData.loans.find(l => l.id === id);
       if (!loan || loan.principalBalance <= 0) return;
 
-      // Reduce principal by EMI and log an expense
-      loan.principalBalance = Math.max(0, loan.principalBalance - loan.emiAmount);
+      // Compound Interest Split Amortization
+      let interestPart = 0;
+      let principalPart = loan.emiAmount;
+
+      if (loan.interestRate > 0) {
+        interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12);
+        principalPart = loan.emiAmount - interestPart;
+        if (principalPart < 0) principalPart = 0; // Guard if EMI is too low
+      }
+
+      // Reduce principal by the actual principal component
+      loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
       
       const newTx = {
         id: 'tx_' + Date.now(),
@@ -1910,7 +2022,7 @@
         category: 'Utilities & Bills',
         accountId: appData.accounts[0]?.id || 'acc_1',
         date: new Date().toISOString().slice(0, 10),
-        notes: `EMI payment for ${loan.name}`
+        notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})`
       };
       appData.transactions.unshift(newTx);
 
@@ -2089,17 +2201,10 @@
         alert("You must keep at least one account.");
         return; 
       }
-      
-      // Strict guard against orphaned accounts
       if (appData.transactions.some(t => t.accountId === id)) {
         alert("Cannot delete account. It is actively linked to existing transactions.");
         return;
       }
-      if (appData.loans.some(l => l.linkedAccountId === id)) {
-        alert("Cannot delete account. It is linked to an active loan for EMI debits.");
-        return;
-      }
-
       appData.accounts = appData.accounts.filter(a => a.id !== id);
       saveData();
     }
@@ -2127,7 +2232,7 @@
       openModal('settingsModal');
     }
 
-    /* Export JSON (Mobile Blob Fix with Extended Timeout) */
+    /* Export JSON (Mobile Blob Fix) */
     function exportDataJSON() {
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -2137,14 +2242,32 @@
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       
-      // Extended to 2000ms to allow mobile OS download managers to fully intercept
       setTimeout(() => {
         document.body.removeChild(downloadAnchor);
         URL.revokeObjectURL(url);
       }, 2000);
     }
+    
+    /* Export CSV (Analytical Data Fix) */
+    function exportDataCSV() {
+      let csv = "Date,Type,Category,Amount,Account,Notes\n";
+      appData.transactions.forEach(t => {
+          const acc = appData.accounts.find(a => a.id === t.accountId);
+          const accName = acc ? acc.name : "Unknown";
+          const notes = t.notes ? t.notes.replace(/"/g, '""') : '';
+          csv += `${t.date},${t.type},"${t.category}",${t.amount},"${accName}","${notes}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PocketLedger_Transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+    }
 
-    /* Import JSON (Mobile File Input Fix) */
+    /* Import JSON */
     function importDataJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -2156,6 +2279,7 @@
           if (parsed && parsed.accounts && parsed.transactions) {
             if (!parsed.investments) parsed.investments = [];
             if (!parsed.insurances) parsed.insurances = [];
+            if (!parsed.categories) parsed.categories = defaultSeedData.categories;
             appData = parsed;
             saveData();
             closeModal('settingsModal');
@@ -2167,8 +2291,6 @@
           console.error("Invalid JSON file uploaded", err);
           alert("Error parsing backup file.");
         }
-        
-        // Reset file input so user can pick the same file again if needed
         document.getElementById('importJsonFileInput').value = '';
       };
       reader.readAsText(file);
@@ -2186,7 +2308,6 @@
        INIT & OFFLINE SERVICE WORKER
        ========================================================= */
     window.addEventListener('DOMContentLoaded', () => {
-      // Populate day dropdowns (1 - 31)
       const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
       const loanDueDay = document.getElementById('loanDueDay');
       const cardDueDay = document.getElementById('cardDueDay');
@@ -2195,7 +2316,7 @@
 
       refreshAllViews();
 
-      // Secure Service Worker Registration (No Blobs)
+      // Secure Service Worker Registration
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('./sw.js').catch(() => {
            console.log('Service Worker registration skipped or failed.');
