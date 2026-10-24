@@ -1,10 +1,11 @@
-const CACHE_NAME = 'pocketledger-cache-v1';
+const CACHE_NAME = 'pocketledger-cache-v2';
 
 // Files to cache for offline use
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './icon.png',
   'https://cdn.tailwindcss.com/',
   'https://unpkg.com/lucide@latest',
   'https://cdn.jsdelivr.net/npm/chart.js'
