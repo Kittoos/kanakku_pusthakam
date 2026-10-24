@@ -2,7 +2,7 @@
   "name": "PocketLedger - Personal Finance",
   "short_name": "PocketLedger",
   "description": "Offline-first personal finance, khata, and loan tracker.",
-  "start_url": ".",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
