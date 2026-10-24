@@ -1,24 +1,29 @@
-const CACHE_NAME = 'pocketledger-cache-v3';
+const CACHE_NAME = 'pocketledger-cache-v5';
 
-// Removed the './' to prevent GitHub Pages subdirectory 404 errors
-const ASSETS_TO_CACHE = [
-  'index.html',
-  'manifest.json',
-  'icon.png',
-  'https://cdn.tailwindcss.com/',
-  'https://unpkg.com/lucide@latest',
-  'https://cdn.jsdelivr.net/npm/chart.js'
+const CORE_ASSETS = [
+  '/kanakku_pusthakam/',
+  '/kanakku_pusthakam/index.html',
+  '/kanakku_pusthakam/manifest.json',
+  '/kanakku_pusthakam/icon.png'
 ];
 
+// 1. Install Phase: Fault-tolerant caching
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then(async cache => {
+      for (const asset of CORE_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn('Skipped caching asset:', asset);
+        }
+      }
     })
   );
-  self.skipWaiting(); 
+  self.skipWaiting();
 });
 
+// 2. Activate Phase: Clean up older caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -34,11 +39,19 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
+// 3. Fetch Phase: Network first, fallback to cache
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then(response => {
+        const resClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, resClone);
+        });
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
