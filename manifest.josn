@@ -1,23 +1,31 @@
 {
+  "id": "/kanakku_pusthakam/",
   "name": "PocketLedger - Personal Finance",
   "short_name": "PocketLedger",
   "description": "Offline-first personal finance, khata, and loan tracker.",
-  "start_url": "index.html",
+  "start_url": "/kanakku_pusthakam/",
+  "scope": "/kanakku_pusthakam/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "/kanakku_pusthakam/icon.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icon.png",
+      "src": "/kanakku_pusthakam/icon.png",
       "sizes": "512x512",
       "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230f172a'/%3E%3Crect x='24' y='24' width='464' height='464' rx='96' fill='none' stroke='%2310b981' stroke-width='16'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='bold' font-size='280' fill='%2310b981'%3E%E2%82%B9%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
