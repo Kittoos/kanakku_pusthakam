@@ -1,19 +1,25 @@
-const CACHE_NAME = 'pocketledger-cache-v5';
+const CACHE_NAME = 'pocketledger-cache-v7';
 
+// Includes all external CDNs to fix the offline layout breaking issue
 const CORE_ASSETS = [
   '/kanakku_pusthakam/',
   '/kanakku_pusthakam/index.html',
   '/kanakku_pusthakam/manifest.json',
-  '/kanakku_pusthakam/icon.png'
+  '/kanakku_pusthakam/icon.png',
+  'https://cdn.tailwindcss.com/',
+  'https://unpkg.com/lucide@latest',
+  'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
-// 1. Install Phase: Fault-tolerant caching
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async cache => {
       for (const asset of CORE_ASSETS) {
         try {
-          await cache.add(asset);
+          const response = await fetch(new Request(asset, { cache: 'reload' }));
+          if (response.ok) {
+            await cache.put(asset, response);
+          }
         } catch (err) {
           console.warn('Skipped caching asset:', asset);
         }
@@ -23,7 +29,6 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
-// 2. Activate Phase: Clean up older caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -39,19 +44,24 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// 3. Fetch Phase: Network first, fallback to cache
+// Cache-first strategy for instant offline loading
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        const resClone = response.clone();
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(event.request).then(response => {
+        const responseClone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, resClone);
+          cache.put(event.request, responseClone);
         });
         return response;
-      })
-      .catch(() => caches.match(event.request))
+      }).catch(() => {
+        // Fallback gracefully if totally offline and not cached
+      });
+    })
   );
 });
