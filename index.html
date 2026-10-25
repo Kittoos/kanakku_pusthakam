@@ -824,6 +824,34 @@
     </div>
   </div>
 
+  <!-- 9. PAYMENT SOURCE MODAL -->
+  <div id="paymentModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 id="paymentModalTitle" class="font-bold text-base text-white">Make Payment</h3>
+        <button onclick="closeModal('paymentModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form onsubmit="processPayment(event)" class="space-y-4 pt-4">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
+          <input type="number" inputmode="decimal" step="0.01" min="0" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label>
+          <select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2">
+          <i data-lucide="check-circle" class="w-4 h-4"></i> Confirm Payment
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- APPLICATION LOGIC & LOCAL STORAGE SCRIPT -->
   <script>
     /* =========================================================
@@ -869,8 +897,9 @@
 
     let appData = loadData();
     let currentViewingContact = null;
-    let txRenderLimit = 20; // Pagination limit
-    let txChartInstance = null; // Chart reference
+    let txRenderLimit = 20;
+    let txChartInstance = null;
+    let pendingPayment = null; 
 
     function loadData() {
       try {
@@ -951,8 +980,8 @@
       const reminders = [];
 
       appData.loans.forEach(loan => {
-        if(loan.principalBalance <= 0) return; // Ignore cleared loans
-        if(loan.lastPaidMonth === currentMonthKey) return; // Skip if already paid this month
+        if(loan.principalBalance <= 0) return; 
+        if(loan.lastPaidMonth === currentMonthKey) return; 
 
         let diffDays = loan.dueDay - currentDay;
         let isPast = diffDays < 0;
@@ -1162,7 +1191,6 @@
        DATA COMPUTATIONS & VIEWS RENDERING
        ========================================================= */
     function refreshAllViews() {
-      // 1. Calculate liquid wealth
       let liquidCash = 0;
       let cardDues = 0;
       appData.accounts.forEach(acc => {
@@ -1175,7 +1203,6 @@
       const netWealth = liquidCash - cardDues;
       document.getElementById('netWealthDisplay').innerText = `₹${netWealth.toLocaleString('en-IN')}`;
 
-      // 2. Month Inflow and Outflow
       const currentMonthPrefix = new Date().toISOString().slice(0, 7);
       const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
       let monthInflow = 0;
@@ -1193,7 +1220,6 @@
       const now = new Date();
       document.getElementById('currentMonthYear').innerText = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
-      // 3. Khata calculations
       let totalLent = 0;
       let totalBorrowed = 0;
       const contacts = getAggregatedContacts();
@@ -1204,7 +1230,6 @@
       document.getElementById('totalToCollectDisplay').innerText = `₹${totalLent.toLocaleString('en-IN')}`;
       document.getElementById('totalToReturnDisplay').innerText = `₹${totalBorrowed.toLocaleString('en-IN')}`;
 
-      // 4. Loans summary
       let totalPrincipal = 0;
       let totalEmi = 0;
       appData.loans.forEach(l => {
@@ -1214,7 +1239,6 @@
       document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
       document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
 
-      // 5. Total Dashboard Metrics
       let totalInvested = 0;
       appData.investments.forEach(i => totalInvested += Number(i.amount || 0));
       const dashTotalInvDisplay = document.getElementById('dashTotalInvestmentsDisplay');
@@ -1223,7 +1247,6 @@
       const dashTotalLoansDisplay = document.getElementById('dashTotalLoansDisplay');
       if (dashTotalLoansDisplay) dashTotalLoansDisplay.innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
 
-      // 6. Populate views
       renderDashboardFeed();
       renderTransactions();
       renderKhata();
@@ -1232,7 +1255,6 @@
       renderAccounts();
       renderRemindersUI();
 
-      // Populate Select Accounts in Transaction Form
       const selectAcc = document.getElementById('txAccount');
       if (selectAcc) {
         selectAcc.innerHTML = appData.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
@@ -1241,7 +1263,6 @@
       lucide.createIcons();
     }
 
-    /* Render Recent dashboard feed */
     function renderDashboardFeed() {
       const recentTxContainer = document.getElementById('dashboardRecentTxList');
       const recentLoansContainer = document.getElementById('dashboardLoansList');
@@ -1265,7 +1286,7 @@
                 <p class="text-[10px] text-slate-400">Due on ${loan.dueDay}th • EMI ₹${loan.emiAmount.toLocaleString('en-IN')}</p>
               </div>
               ${loan.principalBalance > 0 ? `
-              <button onclick="payEmi('${loan.id}')" class="px-2.5 py-1 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 text-xs font-semibold transition">
+              <button onclick="openPaymentModal('emi', '${loan.id}')" class="px-2.5 py-1 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 text-xs font-semibold transition">
                 Pay EMI
               </button>
               ` : `
@@ -1277,7 +1298,6 @@
       }
     }
 
-    /* Reset pagination trigger */
     function resetPaginationAndRender() {
       txRenderLimit = 20;
       renderTransactions();
@@ -1288,7 +1308,6 @@
       renderTransactions();
     }
 
-    /* Render Full Transactions list (With Pagination & Chart Logic) */
     function renderTransactions() {
       const container = document.getElementById('fullTxList');
       const searchQuery = (document.getElementById('txSearchInput')?.value || '').toLowerCase();
@@ -1306,7 +1325,6 @@
 
       filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-      // Re-render chart if visible
       if (!document.getElementById('chartContainer').classList.contains('hidden')) {
         updateTxChart(filtered);
       }
@@ -1363,12 +1381,11 @@
       `;
     }
 
-    /* Analytical Chart Logic */
     function toggleTxChart() {
       const container = document.getElementById('chartContainer');
       container.classList.toggle('hidden');
       if (!container.classList.contains('hidden')) {
-        renderTransactions(); // This triggers the chart update internally
+        renderTransactions(); 
       }
     }
 
@@ -1376,7 +1393,6 @@
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
 
-      // Ensure we only chart what's visually useful (defaulting to expenses if 'all' is selected)
       const chartType = document.getElementById('txFilterType').value;
       const dataToChart = filtered.filter(t => chartType === 'income' ? t.type === 'income' : t.type === 'expense');
       
@@ -1411,7 +1427,6 @@
       });
     }
 
-    /* Render Person-to-Person Khata */
     function setKhataFilter(filter) {
       khataFilter = filter;
       ['all', 'lent', 'borrowed'].forEach(f => {
@@ -1432,8 +1447,8 @@
       const contacts = getAggregatedContacts();
 
       let filtered = contacts.filter(c => {
-        if (khataFilter === 'lent') return c.netBalance < 0; // they owe you
-        if (khataFilter === 'borrowed') return c.netBalance > 0; // you owe them
+        if (khataFilter === 'lent') return c.netBalance < 0; 
+        if (khataFilter === 'borrowed') return c.netBalance > 0; 
         return true;
       });
 
@@ -1540,7 +1555,6 @@
     }
 
 
-    /* Render Loans List */
     function renderLoans() {
       const container = document.getElementById('allLoansList');
       if (appData.loans.length === 0) {
@@ -1578,7 +1592,7 @@
               <div class="flex items-center justify-between pt-1">
                 <span class="text-xs text-slate-400">${loan.interestRate ? `${loan.interestRate}% Interest` : ''}</span>
                 ${loan.principalBalance > 0 ? `
-                <button onclick="payEmi('${loan.id}')" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1">
+                <button onclick="openPaymentModal('emi', '${loan.id}')" class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1">
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Record EMI Payment
                 </button>
                 ` : `
@@ -1594,7 +1608,6 @@
       lucide.createIcons();
     }
 
-    /* Render Assets (Investments & Insurance) */
     function renderAssets() {
       const invContainer = document.getElementById('investmentsList');
       const insContainer = document.getElementById('insurancesList');
@@ -1655,7 +1668,6 @@
     }
 
 
-    /* Render Accounts List */
     function renderAccounts() {
       const debitContainer = document.getElementById('debitAccountsList');
       const creditContainer = document.getElementById('creditCardsList');
@@ -1708,7 +1720,7 @@
               </div>
               ${Number(card.currentDue) > 0 ? `
               <div class="pt-2 border-t border-slate-800/80 flex justify-end">
-                <button onclick="payCreditCardBill('${card.id}')" class="bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-3 py-1 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+                <button onclick="openPaymentModal('cc', '${card.id}')" class="bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-3 py-1 rounded-xl text-xs font-semibold transition flex items-center gap-1">
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Pay Card Bill
                 </button>
               </div>
@@ -1752,7 +1764,6 @@
       }
     }
 
-    /* 1. Transaction Handlers */
     function openTransactionModal(type = 'expense') {
       document.getElementById('txEditId').value = '';
       currentTxType = type;
@@ -1894,7 +1905,103 @@
       saveData();
     }
 
-    /* 2. Khata Handlers */
+    /* PAYMENT MODAL LOGIC (EMI & Credit Cards) */
+    function openPaymentModal(type, id) {
+      const sourceSelect = document.getElementById('paySourceAccount');
+      const amountInput = document.getElementById('payAmount');
+      const title = document.getElementById('paymentModalTitle');
+
+      const debitAccs = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash');
+      if (debitAccs.length === 0) {
+        alert("No debit or cash accounts available to pay from.");
+        return;
+      }
+      
+      sourceSelect.innerHTML = debitAccs.map(a => `<option value="${a.id}">${a.name} (Balance: ₹${Number(a.balance).toLocaleString('en-IN')})</option>`).join('');
+
+      if (type === 'emi') {
+        const loan = appData.loans.find(l => l.id === id);
+        if (!loan) return;
+        title.innerText = `Pay EMI: ${loan.name}`;
+        amountInput.value = loan.emiAmount;
+        amountInput.readOnly = true; 
+        pendingPayment = { type: 'emi', id: id };
+      } else if (type === 'cc') {
+        const card = appData.accounts.find(a => a.id === id);
+        if (!card) return;
+        title.innerText = `Pay Bill: ${card.name}`;
+        amountInput.value = card.currentDue;
+        amountInput.readOnly = false; 
+        pendingPayment = { type: 'cc', id: id };
+      }
+      openModal('paymentModal');
+    }
+
+    function processPayment(e) {
+      e.preventDefault();
+      if (!pendingPayment) return;
+
+      const amount = parseFloat(document.getElementById('payAmount').value);
+      const sourceAccId = document.getElementById('paySourceAccount').value;
+      const sourceAcc = appData.accounts.find(a => a.id === sourceAccId);
+
+      if (!sourceAcc || isNaN(amount) || amount <= 0) return;
+
+      if (pendingPayment.type === 'emi') {
+        const loan = appData.loans.find(l => l.id === pendingPayment.id);
+        if (!loan) return;
+
+        let interestPart = 0;
+        let principalPart = loan.emiAmount;
+
+        if (loan.interestRate > 0) {
+          interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12);
+          principalPart = loan.emiAmount - interestPart;
+          if (principalPart < 0) principalPart = 0;
+        }
+
+        loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
+        loan.lastPaidMonth = new Date().toISOString().slice(0, 7);
+
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - loan.emiAmount);
+
+        appData.transactions.unshift({
+          id: 'tx_' + Date.now(),
+          type: 'expense',
+          amount: loan.emiAmount,
+          category: 'Utilities & Bills',
+          accountId: sourceAcc.id,
+          date: new Date().toISOString().slice(0, 10),
+          notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})`
+        });
+
+      } else if (pendingPayment.type === 'cc') {
+        const card = appData.accounts.find(a => a.id === pendingPayment.id);
+        if (!card) return;
+
+        card.currentDue = Math.max(0, card.currentDue - amount);
+        if (card.currentDue === 0) {
+          card.lastPaidMonth = new Date().toISOString().slice(0, 7);
+        }
+
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
+
+        appData.transactions.unshift({
+          id: 'tx_' + Date.now(),
+          type: 'expense',
+          amount: amount,
+          category: 'Utilities & Bills',
+          accountId: sourceAcc.id,
+          date: new Date().toISOString().slice(0, 10),
+          notes: `Bill Payment: ${card.name}`
+        });
+      }
+
+      pendingPayment = null;
+      saveData();
+      closeModal('paymentModal');
+    }
+
     function openKhataModal() {
       document.getElementById('khataEditId').value = '';
       document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
@@ -1990,7 +2097,6 @@
       }
     }
 
-    /* 3. Loan Handlers (Proper Amortization) */
     function openLoanModal() {
       document.getElementById('loanEditId').value = '';
       document.getElementById('loanModalTitle').innerText = 'Add Bank / Institutional Loan';
@@ -2051,93 +2157,11 @@
       closeModal('loanModal');
     }
 
-    function payEmi(id) {
-      const loan = appData.loans.find(l => l.id === id);
-      if (!loan || loan.principalBalance <= 0) return;
-
-      let interestPart = 0;
-      let principalPart = loan.emiAmount;
-
-      if (loan.interestRate > 0) {
-        interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12);
-        principalPart = loan.emiAmount - interestPart;
-        if (principalPart < 0) principalPart = 0;
-      }
-
-      loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
-      
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
-      loan.lastPaidMonth = currentMonthKey;
-
-      const defaultAcc = appData.accounts.find(a => a.type === 'debit_bank' || a.type === 'debit_cash') || appData.accounts[0];
-      const defaultAccId = defaultAcc ? defaultAcc.id : 'acc_1';
-
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type: 'expense',
-        amount: loan.emiAmount,
-        category: 'Utilities & Bills',
-        accountId: defaultAccId,
-        date: new Date().toISOString().slice(0, 10),
-        notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})`
-      };
-      appData.transactions.unshift(newTx);
-
-      if (defaultAcc) {
-        if (defaultAcc.type === 'credit_card') {
-          defaultAcc.currentDue += loan.emiAmount;
-        } else {
-          defaultAcc.balance = Math.max(0, defaultAcc.balance - loan.emiAmount);
-        }
-      }
-
-      saveData();
-    }
-
-    function payCreditCardBill(cardId) {
-      const card = appData.accounts.find(a => a.id === cardId);
-      if (!card || card.type !== 'credit_card' || Number(card.currentDue || 0) <= 0) return;
-
-      const payAmountStr = prompt(`Enter amount to pay towards ${card.name} (Current Due: ₹${card.currentDue}):`, card.currentDue);
-      if (payAmountStr === null) return;
-      const payAmount = parseFloat(payAmountStr);
-      if (isNaN(payAmount) || payAmount <= 0) return;
-
-      const sourceAcc = appData.accounts.find(a => a.type === 'debit_bank' || a.type === 'debit_cash') || appData.accounts[0];
-      if (!sourceAcc) {
-        alert("No debit account available to pay from.");
-        return;
-      }
-
-      card.currentDue = Math.max(0, card.currentDue - payAmount);
-
-      if (card.currentDue === 0) {
-        const currentMonthKey = new Date().toISOString().slice(0, 7);
-        card.lastPaidMonth = currentMonthKey;
-      }
-
-      sourceAcc.balance = Math.max(0, sourceAcc.balance - payAmount);
-
-      const newTx = {
-        id: 'tx_' + Date.now(),
-        type: 'expense',
-        amount: payAmount,
-        category: 'Utilities & Bills',
-        accountId: sourceAcc.id,
-        date: new Date().toISOString().slice(0, 10),
-        notes: `Bill Payment: ${card.name}`
-      };
-      appData.transactions.unshift(newTx);
-
-      saveData();
-    }
-
     function deleteLoan(id) {
       appData.loans = appData.loans.filter(l => l.id !== id);
       saveData();
     }
 
-    /* 4. Assets Handlers (Investments & Insurance) */
     function openInvestmentModal() {
       document.getElementById('invEditId').value = '';
       document.getElementById('invModalTitle').innerText = 'Add Investment';
@@ -2249,7 +2273,6 @@
       saveData();
     }
 
-    /* 5. Accounts Handlers */
     function openAccountModal() {
       document.getElementById('accName').value = '';
       document.getElementById('accBalance').value = '';
@@ -2313,9 +2336,6 @@
       saveData();
     }
 
-    /* =========================================================
-       MODAL CONTROLS & EXPORT / IMPORT
-       ========================================================= */
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
@@ -2336,7 +2356,6 @@
       openModal('settingsModal');
     }
 
-    /* Export JSON (Mobile Blob Fix) */
     function exportDataJSON() {
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -2352,7 +2371,6 @@
       }, 60000);
     }
     
-    /* Export CSV (Analytical Data Fix) */
     function exportDataCSV() {
       let csv = "Date,Type,Category,Amount,Account,Notes\n";
       appData.transactions.forEach(t => {
@@ -2371,7 +2389,6 @@
       setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
     }
 
-    /* Import JSON */
     function importDataJSON(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -2408,9 +2425,6 @@
       }
     }
 
-    /* =========================================================
-       INIT & OFFLINE SERVICE WORKER
-       ========================================================= */
     window.addEventListener('DOMContentLoaded', () => {
       const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
       const loanDueDay = document.getElementById('loanDueDay');
@@ -2420,7 +2434,6 @@
 
       refreshAllViews();
 
-      // Secure Service Worker Registration for /kanakku_pusthakam/
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('/kanakku_pusthakam/sw.js').catch(() => {
            console.log('Service Worker registration skipped or failed.');
