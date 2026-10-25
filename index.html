@@ -839,7 +839,7 @@
       accounts: [
         { id: 'acc_1', name: 'Primary Bank (HDFC)', type: 'debit_bank', balance: 48500 },
         { id: 'acc_2', name: 'Cash in Hand', type: 'debit_cash', balance: 6400 },
-        { id: 'acc_3', name: 'Amazon ICICI Credit Card', type: 'credit_card', limit: 100000, currentDue: 14200, dueDay: 18 }
+        { id: 'acc_3', name: 'Amazon ICICI Credit Card', type: 'credit_card', limit: 100000, currentDue: 14200, dueDay: 18, lastPaidMonth: '' }
       ],
       transactions: [
         { id: 'tx_1', type: 'income', amount: 65000, category: 'Salary & Wages', accountId: 'acc_1', date: new Date().toISOString().slice(0, 10), notes: 'Monthly Salary' },
@@ -880,6 +880,13 @@
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.categories) parsed.categories = defaultSeedData.categories;
+          if (parsed.accounts) {
+            parsed.accounts.forEach(acc => {
+              if (acc.type === 'credit_card' && acc.lastPaidMonth === undefined) {
+                acc.lastPaidMonth = '';
+              }
+            });
+          }
           return parsed;
         }
       } catch (e) {
@@ -939,11 +946,14 @@
       const currentDay = today.getDate();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
+      const currentMonthKey = today.toISOString().slice(0, 7);
 
       const reminders = [];
 
       appData.loans.forEach(loan => {
         if(loan.principalBalance <= 0) return; // Ignore cleared loans
+        if(loan.lastPaidMonth === currentMonthKey) return; // Skip if already paid this month
+
         let diffDays = loan.dueDay - currentDay;
         let isPast = diffDays < 0;
         let status = 'upcoming';
@@ -962,7 +972,10 @@
         });
       });
 
-      appData.accounts.filter(a => a.type === 'credit_card' && a.currentDue > 0).forEach(card => {
+      appData.accounts.filter(a => a.type === 'credit_card' && Number(a.currentDue || 0) > 0).forEach(card => {
+        if(card.currentDue <= 0) return;
+        if(card.lastPaidMonth === currentMonthKey) return; 
+
         let diffDays = (card.dueDay || 15) - currentDay;
         let status = 'upcoming';
         if (diffDays === 0) status = 'today';
@@ -1683,16 +1696,23 @@
                   <h4 class="text-xs font-bold text-white">${card.name}</h4>
                   <p class="text-[10px] text-slate-400">Limit: ₹${Number(card.limit).toLocaleString('en-IN')} • Due Day: ${card.dueDay || 15}th</p>
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="text-right">
+                <div class="flex items-center gap-2 text-right">
+                  <div>
                     <span class="text-[10px] text-rose-400 uppercase font-semibold">Current Due</span>
                     <div class="text-sm font-bold text-rose-400">₹${Number(card.currentDue).toLocaleString('en-IN')}</div>
                   </div>
-                  <button onclick="deleteAccount('${card.id}')" class="p-2.5 text-slate-500 active:text-rose-400">
+                  <button onclick="deleteAccount('${card.id}')" class="p-2.5 text-slate-500 active:text-rose-400" title="Delete">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                   </button>
                 </div>
               </div>
+              ${Number(card.currentDue) > 0 ? `
+              <div class="pt-2 border-t border-slate-800/80 flex justify-end">
+                <button onclick="payCreditCardBill('${card.id}')" class="bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white border border-rose-500/30 px-3 py-1 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Pay Card Bill
+                </button>
+              </div>
+              ` : ''}
             </div>
           `;
         }).join('');
@@ -1704,12 +1724,15 @@
        FORM HANDLERS & ENTITY ACTIONS
        ========================================================= */
 
-    /* Customizable Category Support */
-    function populateCategoryDropdown(type) {
+    function populateCategoryDropdown(type, selectedCategory = null) {
       const select = document.getElementById('txCategory');
       const cats = appData.categories[type] || [];
       select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
       select.innerHTML += `<option value="__NEW__" class="font-bold text-emerald-400">+ Add New Category...</option>`;
+      
+      if (selectedCategory && cats.includes(selectedCategory)) {
+        select.value = selectedCategory;
+      }
     }
 
     function handleCategoryChange() {
@@ -1717,10 +1740,12 @@
       if (select.value === '__NEW__') {
         const newCat = prompt("Enter new category name:");
         if (newCat && newCat.trim() !== '') {
-          appData.categories[currentTxType].push(newCat.trim());
-          saveData(); 
-          setTxType(currentTxType);
-          select.value = newCat.trim();
+          const formattedCat = newCat.trim();
+          if (!appData.categories[currentTxType].includes(formattedCat)) {
+            appData.categories[currentTxType].push(formattedCat);
+            saveData();
+          }
+          populateCategoryDropdown(currentTxType, formattedCat);
         } else {
           select.selectedIndex = 0; 
         }
@@ -1746,7 +1771,7 @@
       setTxType(tx.type);
       document.getElementById('txModalTitle').innerText = 'Edit Transaction';
       document.getElementById('txAmount').value = tx.amount;
-      document.getElementById('txCategory').value = tx.category;
+      populateCategoryDropdown(tx.type, tx.category);
       document.getElementById('txAccount').value = tx.accountId;
       document.getElementById('txDate').value = tx.date;
       document.getElementById('txNotes').value = tx.notes || '';
@@ -1786,7 +1811,6 @@
       if (editId) {
         const tx = appData.transactions.find(t => t.id === editId);
         if (tx) {
-          // Reverse previous account balance effect
           const oldAcc = appData.accounts.find(a => a.id === tx.accountId);
           if (oldAcc) {
             if (oldAcc.type === 'credit_card') {
@@ -1798,7 +1822,6 @@
             }
           }
           
-          // Apply new account balance effect
           const newAcc = appData.accounts.find(a => a.id === accountId);
           if (newAcc) {
             if (newAcc.type === 'credit_card') {
@@ -1810,7 +1833,6 @@
             }
           }
 
-          // Update Transaction
           tx.type = currentTxType;
           tx.amount = amount;
           tx.category = category;
@@ -1831,7 +1853,6 @@
 
         appData.transactions.unshift(newTx);
 
-        // Adjust account balance accordingly
         const acc = appData.accounts.find(a => a.id === accountId);
         if (acc) {
           if (acc.type === 'credit_card') {
@@ -1849,6 +1870,26 @@
     }
 
     function deleteTransaction(id) {
+      const tx = appData.transactions.find(t => t.id === id);
+      if (!tx) return;
+
+      const acc = appData.accounts.find(a => a.id === tx.accountId);
+      if (acc) {
+        if (acc.type === 'credit_card') {
+          if (tx.type === 'expense') {
+            acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount));
+          } else {
+            acc.currentDue += Number(tx.amount);
+          }
+        } else {
+          if (tx.type === 'expense') {
+            acc.balance += Number(tx.amount);
+          } else {
+            acc.balance = Math.max(0, acc.balance - Number(tx.amount));
+          }
+        }
+      }
+
       appData.transactions = appData.transactions.filter(t => t.id !== id);
       saveData();
     }
@@ -2014,27 +2055,77 @@
       const loan = appData.loans.find(l => l.id === id);
       if (!loan || loan.principalBalance <= 0) return;
 
-      // Compound Interest Split Amortization
       let interestPart = 0;
       let principalPart = loan.emiAmount;
 
       if (loan.interestRate > 0) {
         interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12);
         principalPart = loan.emiAmount - interestPart;
-        if (principalPart < 0) principalPart = 0; // Guard if EMI is too low
+        if (principalPart < 0) principalPart = 0;
       }
 
-      // Reduce principal by the actual principal component
       loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
       
+      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      loan.lastPaidMonth = currentMonthKey;
+
+      const defaultAcc = appData.accounts.find(a => a.type === 'debit_bank' || a.type === 'debit_cash') || appData.accounts[0];
+      const defaultAccId = defaultAcc ? defaultAcc.id : 'acc_1';
+
       const newTx = {
         id: 'tx_' + Date.now(),
         type: 'expense',
         amount: loan.emiAmount,
         category: 'Utilities & Bills',
-        accountId: appData.accounts[0]?.id || 'acc_1',
+        accountId: defaultAccId,
         date: new Date().toISOString().slice(0, 10),
         notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})`
+      };
+      appData.transactions.unshift(newTx);
+
+      if (defaultAcc) {
+        if (defaultAcc.type === 'credit_card') {
+          defaultAcc.currentDue += loan.emiAmount;
+        } else {
+          defaultAcc.balance = Math.max(0, defaultAcc.balance - loan.emiAmount);
+        }
+      }
+
+      saveData();
+    }
+
+    function payCreditCardBill(cardId) {
+      const card = appData.accounts.find(a => a.id === cardId);
+      if (!card || card.type !== 'credit_card' || Number(card.currentDue || 0) <= 0) return;
+
+      const payAmountStr = prompt(`Enter amount to pay towards ${card.name} (Current Due: ₹${card.currentDue}):`, card.currentDue);
+      if (payAmountStr === null) return;
+      const payAmount = parseFloat(payAmountStr);
+      if (isNaN(payAmount) || payAmount <= 0) return;
+
+      const sourceAcc = appData.accounts.find(a => a.type === 'debit_bank' || a.type === 'debit_cash') || appData.accounts[0];
+      if (!sourceAcc) {
+        alert("No debit account available to pay from.");
+        return;
+      }
+
+      card.currentDue = Math.max(0, card.currentDue - payAmount);
+
+      if (card.currentDue === 0) {
+        const currentMonthKey = new Date().toISOString().slice(0, 7);
+        card.lastPaidMonth = currentMonthKey;
+      }
+
+      sourceAcc.balance = Math.max(0, sourceAcc.balance - payAmount);
+
+      const newTx = {
+        id: 'tx_' + Date.now(),
+        type: 'expense',
+        amount: payAmount,
+        category: 'Utilities & Bills',
+        accountId: sourceAcc.id,
+        date: new Date().toISOString().slice(0, 10),
+        notes: `Bill Payment: ${card.name}`
       };
       appData.transactions.unshift(newTx);
 
@@ -2199,6 +2290,7 @@
         newAcc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
         newAcc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0;
         newAcc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
+        newAcc.lastPaidMonth = '';
       } else {
         newAcc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
       }
@@ -2257,7 +2349,7 @@
       setTimeout(() => {
         document.body.removeChild(downloadAnchor);
         URL.revokeObjectURL(url);
-      }, 2000);
+      }, 60000);
     }
     
     /* Export CSV (Analytical Data Fix) */
@@ -2276,7 +2368,7 @@
       a.download = `PocketLedger_Transactions_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
-      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
     }
 
     /* Import JSON */
