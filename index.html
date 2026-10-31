@@ -68,7 +68,13 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white relative">
+
+  <!-- GLOBAL TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-slate-800/95 backdrop-blur-md border border-slate-700 text-white px-4 py-2.5 rounded-full shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-24 opacity-0 flex items-center gap-2 pointer-events-none">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMsg">Action successful</span>
+  </div>
 
   <!-- TOP APP HEADER -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
@@ -85,11 +91,11 @@
       </div>
     </div>
     <div class="flex items-center space-x-1.5">
-      <button id="btn-reminders" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
+      <button id="btn-reminders" aria-label="Open reminders" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
         <i data-lucide="bell" class="w-5 h-5"></i>
         <span id="headerReminderBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-900 animate-pulse"></span>
       </button>
-      <button id="btn-settings" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
+      <button id="btn-settings" aria-label="Open settings" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
         <i data-lucide="settings" class="w-5 h-5"></i>
       </button>
     </div>
@@ -119,6 +125,40 @@
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
             <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3 text-rose-400"></i> Month Spent</span>
             <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5">₹0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REQUIRED CASH OBLIGATIONS PLANNER -->
+      <div class="bg-slate-800/80 border border-slate-700/60 p-3.5 rounded-2xl shadow-lg">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-1.5">
+            <i data-lucide="target" class="w-4 h-4 text-amber-400"></i>
+            <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Required Cash This Month</span>
+          </div>
+        </div>
+        <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
+        
+        <div class="grid grid-cols-5 gap-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div>
+            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div>
+            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div>
+            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div>
+            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div>
+          </div>
+          <div>
+            <div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div>
+            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div>
           </div>
         </div>
       </div>
@@ -217,7 +257,7 @@
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
-        <button id="btn-toggle-chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
+        <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
           <i data-lucide="pie-chart" class="w-4 h-4"></i>
         </button>
       </div>
@@ -356,7 +396,7 @@
     <div class="bg-slate-850 bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2"><div class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><i data-lucide="bell" class="w-4 h-4"></i></div><h3 class="font-bold text-white text-base">Payment Reminders</h3></div>
-        <button class="close-modal-btn text-slate-400 hover:text-white p-1 rounded-lg" data-target="remindersModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Close reminders modal" data-target="remindersModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div id="remindersListContent" class="overflow-y-auto p-4 space-y-2.5 flex-1 text-sm"></div>
       <div class="p-4 bg-slate-800/40 border-t border-slate-800 text-center"><p class="text-xs text-slate-400">Tap <span class="text-emerald-400 font-semibold">"Sync"</span> on any item to set an alert on your phone.</p></div>
@@ -367,7 +407,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="txModalTitle" class="font-bold text-base text-white">Add Expense</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="txModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close transaction modal" data-target="txModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="txForm" class="space-y-3.5 pt-3">
         <input type="hidden" id="txEditId" value="">
@@ -400,7 +440,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="khataModalTitle" class="font-bold text-base text-white">Person-to-Person Entry</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="khataModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close khata modal" data-target="khataModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="khataForm" class="space-y-3 pt-3">
         <input type="hidden" id="khataEditId" value="">
@@ -436,7 +476,7 @@
           <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400" id="statementContactAvatar">S</div>
           <div><h3 class="font-bold text-base text-white" id="statementContactName">Contact Name</h3><p class="text-[10px] text-slate-400" id="statementLastUpdated"></p></div>
         </div>
-        <button class="close-modal-btn p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800" data-target="contactStatementModal"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button class="close-modal-btn p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800" aria-label="Close statement modal" data-target="contactStatementModal"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <div class="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
         <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
@@ -450,7 +490,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="loanModalTitle" class="font-bold text-base text-white">Add Bank Loan</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="loanModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close loan modal" data-target="loanModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="loanForm" class="space-y-3 pt-3">
         <input type="hidden" id="loanEditId" value="">
@@ -475,7 +515,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="font-bold text-base text-white">Add Account / Card</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="accountModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close account modal" data-target="accountModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="accountForm" class="space-y-3 pt-3">
         <input type="hidden" id="accEditId" value="">
@@ -518,7 +558,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="invModalTitle" class="font-bold text-base text-white">Add Investment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="investmentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close investment modal" data-target="investmentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="investmentForm" class="space-y-3 pt-3">
         <input type="hidden" id="invEditId" value="">
@@ -539,7 +579,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="insModalTitle" class="font-bold text-base text-white">Add Insurance</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="insuranceModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close insurance modal" data-target="insuranceModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="insuranceForm" class="space-y-3 pt-3">
         <input type="hidden" id="insEditId" value="">
@@ -563,7 +603,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="font-bold text-base text-white">Settings & Backup</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="settingsModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close settings" data-target="settingsModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="space-y-4 pt-4">
         <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300">
@@ -585,7 +625,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="paymentModalTitle" class="font-bold text-base text-white">Make Payment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="paymentForm" class="space-y-4 pt-4">
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
@@ -599,7 +639,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="billModalTitle" class="font-bold text-base text-white">Add Monthly Bill</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" data-target="billModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close bill modal" data-target="billModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="billForm" class="space-y-4 pt-4">
         <input type="hidden" id="billEditId" value="">
@@ -658,7 +698,20 @@
     let currentViewingContact = null;
     let txRenderLimit = 20;
     let txChartInstance = null;
-    let pendingPayment = null; 
+    let pendingPayment = null;
+    let toastTimeout = null;
+
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMsg').innerText = message;
+      toast.classList.remove('-translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-24', 'opacity-0');
+      }, 2500);
+    }
 
     function loadData() {
       try {
@@ -689,10 +742,11 @@
       return JSON.parse(JSON.stringify(defaultSeedData));
     }
 
-    function saveData() {
+    function saveData(silent = false) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
         refreshAllViews();
+        if(!silent) showToast('Changes saved successfully');
       } catch (e) {
         console.error("Storage error:", e);
       }
@@ -744,7 +798,8 @@
       const currentMonthKey = new Date().toISOString().slice(0, 7);
       if (!appData.dismissedAlerts) appData.dismissedAlerts = {};
       appData.dismissedAlerts[id] = currentMonthKey;
-      saveData();
+      saveData(true);
+      showToast('Reminder dismissed');
     }
 
     function computeReminders() {
@@ -870,7 +925,7 @@
                 <div class="text-emerald-400 font-bold text-sm mt-1">₹${r.amount.toLocaleString('en-IN')}</div>
               </div>
               <div class="flex flex-col items-end gap-2.5 h-full justify-between">
-                <button class="action-dismiss-reminder text-slate-500 hover:text-white p-1 rounded transition" data-id="${r.id}" title="Dismiss this alert"><i data-lucide="x" class="w-4 h-4"></i></button>
+                <button class="action-dismiss-reminder text-slate-500 hover:text-white p-1 rounded transition" aria-label="Dismiss reminder" data-id="${r.id}" title="Dismiss this alert"><i data-lucide="x" class="w-4 h-4"></i></button>
                 <a href="${generateCalendarLink(r)}" target="_blank" rel="noopener" class="flex flex-col items-center justify-center bg-slate-700 hover:bg-slate-650 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold text-slate-200 border border-slate-600 transition">
                   <i data-lucide="calendar-plus" class="w-3 h-3 text-emerald-400 mb-0.5"></i> Sync
                 </a>
@@ -896,6 +951,25 @@
         if (new Date(k.date) > new Date(map[name].lastDate)) map[name].lastDate = k.date;
       });
       return Object.values(map);
+    }
+    
+    function renderDashboardObligations() {
+      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      
+      let emiReq = appData.loans.filter(l => l.principalBalance > 0 && l.lastPaidMonth !== currentMonthKey).reduce((sum, l) => sum + Number(l.emiAmount), 0);
+      let ccReq = appData.accounts.filter(a => a.type === 'credit_card' && (a.statementBalance || 0) > 0 && a.lastPaidMonth !== currentMonthKey).reduce((sum, a) => sum + Number(a.statementBalance), 0);
+      let billsReq = appData.bills.filter(b => b.lastPaidMonth !== currentMonthKey).reduce((sum, b) => sum + Number(b.amount), 0);
+      let insReq = appData.insurances.filter(i => i.dueDate && i.dueDate.startsWith(currentMonthKey)).reduce((sum, i) => sum + Number(i.premium), 0);
+      let khataReq = appData.khata.filter(k => k.direction === 'borrowed' && k.status !== 'settled' && k.dueDate && k.dueDate.startsWith(currentMonthKey)).reduce((sum, k) => sum + Number(k.amount), 0);
+      
+      const totalReq = emiReq + ccReq + billsReq + insReq + khataReq;
+
+      document.getElementById('dashTotalObligations').innerText = `₹${totalReq.toLocaleString('en-IN')}`;
+      document.getElementById('dashObligEmi').innerText = `₹${emiReq.toLocaleString('en-IN')}`;
+      document.getElementById('dashObligCc').innerText = `₹${ccReq.toLocaleString('en-IN')}`;
+      document.getElementById('dashObligBills').innerText = `₹${billsReq.toLocaleString('en-IN')}`;
+      document.getElementById('dashObligIns').innerText = `₹${insReq.toLocaleString('en-IN')}`;
+      document.getElementById('dashObligKhata').innerText = `₹${khataReq.toLocaleString('en-IN')}`;
     }
 
     function refreshAllViews() {
@@ -939,7 +1013,15 @@
       if (document.getElementById('dashTotalInvestmentsDisplay')) document.getElementById('dashTotalInvestmentsDisplay').innerText = `₹${totalInvested.toLocaleString('en-IN')}`;
       if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
 
-      renderDashboardFeed(); renderTransactions(); renderKhata(); renderLoans(); renderAssets(); renderAccounts(); renderBills(); renderRemindersUI();
+      renderDashboardObligations();
+      renderDashboardFeed(); 
+      renderTransactions(); 
+      renderKhata(); 
+      renderLoans(); 
+      renderAssets(); 
+      renderAccounts(); 
+      renderBills(); 
+      renderRemindersUI();
 
       const selectAcc = document.getElementById('txAccount');
       if (selectAcc) selectAcc.innerHTML = appData.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
@@ -1009,8 +1091,8 @@
             </div>
             ${canDelete ? `
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
-                <button class="action-edit-tx p-2.5 text-slate-400 active:text-white" data-id="${t.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                <button class="action-delete-tx p-2.5 text-slate-500 active:text-rose-400" data-id="${t.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                <button class="action-edit-tx p-2.5 text-slate-400 active:text-white" aria-label="Edit transaction" data-id="${t.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                <button class="action-delete-tx p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete transaction" data-id="${t.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
               </div>` : ''}
           </div>
         </div>
@@ -1093,8 +1175,8 @@
           <div class="flex items-center gap-2">
             <span class="font-extrabold text-sm ${e.direction === 'borrowed' ? 'text-rose-400' : 'text-emerald-400'}">₹${Number(e.amount).toLocaleString('en-IN')}</span>
             <div class="flex flex-col gap-1 border-l border-slate-800 pl-2 ml-1">
-              <button class="action-edit-khata p-2.5 text-slate-400 active:text-white" data-id="${e.id}"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
-              <button class="action-delete-khata p-2.5 text-slate-500 active:text-rose-400" data-id="${e.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button class="action-edit-khata p-2.5 text-slate-400 active:text-white" aria-label="Edit khata entry" data-id="${e.id}"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
+              <button class="action-delete-khata p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete khata entry" data-id="${e.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
           </div>
         </div>
@@ -1111,8 +1193,8 @@
               <div class="flex items-center justify-between">
                 <div><h4 class="font-bold text-white text-sm">${loan.name}</h4><p class="text-xs text-sky-400 mt-0.5">Due Day: ${loan.dueDay}th of every month</p></div>
                 <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2 ml-2">
-                  <button class="action-edit-loan p-2.5 text-slate-400 active:text-white" data-id="${loan.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                  <button class="action-delete-loan p-2.5 text-slate-500 active:text-rose-400" data-id="${loan.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                  <button class="action-edit-loan p-2.5 text-slate-400 active:text-white" aria-label="Edit loan" data-id="${loan.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                  <button class="action-delete-loan p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete loan" data-id="${loan.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
@@ -1134,7 +1216,7 @@
       else invContainer.innerHTML = appData.investments.map(i => `
           <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
             <div class="flex items-center gap-2.5"><div class="p-2 rounded-lg bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-4 h-4"></i></div><div><h4 class="text-xs font-bold text-white">${i.name}</h4><p class="text-[10px] text-slate-400">${i.type}</p></div></div>
-            <div class="flex items-center gap-2"><span class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</span><div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-inv p-2.5 text-slate-400 active:text-white" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-inv p-2.5 text-slate-500 active:text-rose-400" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>
+            <div class="flex items-center gap-2"><span class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</span><div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-inv p-2.5 text-slate-400 active:text-white" aria-label="Edit investment" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-inv p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete investment" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>
           </div>`).join('');
       if (appData.insurances.length === 0) insContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No insurances tracked.</div>`;
       else insContainer.innerHTML = appData.insurances.map(i => `
@@ -1143,7 +1225,7 @@
               <div class="flex items-center gap-2"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${i.type}</span><h4 class="text-xs font-bold text-white">${i.name}</h4></div>
               <div class="flex items-center gap-2 text-right">
                 <div class="mr-1"><div class="text-[10px] text-slate-400 uppercase">Premium</div><div class="text-sm font-bold text-white">₹${Number(i.premium).toLocaleString('en-IN')}</div></div>
-                <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>
+                <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" aria-label="Edit insurance" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete insurance" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>
               </div>
             </div>
             <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40"><span>Renew by: <strong class="text-white font-mono">${i.dueDate}</strong></span></div>
@@ -1163,8 +1245,8 @@
             </div>
             <div class="flex items-center gap-1">
               <div class="text-sm font-bold text-white mr-2">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
-              <button class="action-edit-acc p-2.5 text-slate-400 active:text-white" data-id="${acc.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-              <button class="action-delete-acc p-2.5 text-slate-500 active:text-rose-400" data-id="${acc.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button class="action-edit-acc p-2.5 text-slate-400 active:text-white" aria-label="Edit account" data-id="${acc.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="action-delete-acc p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete account" data-id="${acc.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
           </div>`).join('');
 
@@ -1180,8 +1262,8 @@
                   <p class="text-[10px] text-slate-400">Limit: ₹${Number(card.limit).toLocaleString('en-IN')} • Bill Gen: ${card.billGenDay || 1}st • Due: ${card.dueDay || 15}th</p>
                 </div>
                 <div class="flex items-center gap-1">
-                  <button class="action-edit-acc p-2 text-slate-400 active:text-white" data-id="${card.id}" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                  <button class="action-delete-acc p-2 text-slate-500 active:text-rose-400" data-id="${card.id}" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                  <button class="action-edit-acc p-2 text-slate-400 active:text-white" aria-label="Edit card" data-id="${card.id}" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                  <button class="action-delete-acc p-2 text-slate-500 active:text-rose-400" aria-label="Delete card" data-id="${card.id}" title="Delete"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>
               
@@ -1229,8 +1311,8 @@
                 <div><h4 class="font-bold text-white text-sm">${bill.title}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • ₹${Number(bill.amount).toLocaleString('en-IN')}</p></div>
               </div>
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
-                <button class="action-edit-bill p-2.5 text-slate-400 hover:text-white" data-id="${bill.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                <button class="action-delete-bill p-2.5 text-slate-500 hover:text-rose-400" data-id="${bill.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                <button class="action-edit-bill p-2.5 text-slate-400 hover:text-white" aria-label="Edit bill" data-id="${bill.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                <button class="action-delete-bill p-2.5 text-slate-500 hover:text-rose-400" aria-label="Delete bill" data-id="${bill.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
               </div>
             </div>
             <div class="flex items-center justify-between pt-1 border-t border-slate-700/40">
@@ -1255,7 +1337,7 @@
         const newCat = prompt("Enter new category name:");
         if (newCat && newCat.trim() !== '') {
           const formattedCat = newCat.trim();
-          if (!appData.categories[currentTxType].includes(formattedCat)) { appData.categories[currentTxType].push(formattedCat); saveData(); }
+          if (!appData.categories[currentTxType].includes(formattedCat)) { appData.categories[currentTxType].push(formattedCat); saveData(true); }
           populateCategoryDropdown(currentTxType, formattedCat);
         } else select.selectedIndex = 0; 
       }
@@ -1321,19 +1403,24 @@
           else { if (currentTxType === 'expense') acc.balance -= amount; else acc.balance += amount; }
         }
       }
-      saveData(); closeModal('txModal');
+      saveData(true); 
+      closeModal('txModal');
+      showToast('Transaction saved successfully');
     }
 
     function deleteTransaction(id) {
       const tx = appData.transactions.find(t => t.id === id);
       if (!tx) return;
-      const acc = appData.accounts.find(a => a.id === tx.accountId);
-      if (acc) {
-        if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount)); else acc.currentDue += Number(tx.amount); } 
-        else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance = Math.max(0, acc.balance - Number(tx.amount)); }
+      if(confirm('Delete this transaction?')) {
+        const acc = appData.accounts.find(a => a.id === tx.accountId);
+        if (acc) {
+          if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount)); else acc.currentDue += Number(tx.amount); } 
+          else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance = Math.max(0, acc.balance - Number(tx.amount)); }
+        }
+        appData.transactions = appData.transactions.filter(t => t.id !== id);
+        saveData(true);
+        showToast('Transaction deleted');
       }
-      appData.transactions = appData.transactions.filter(t => t.id !== id);
-      saveData();
     }
 
     function openPaymentModal(type, id) {
@@ -1391,14 +1478,22 @@
         sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `Recurring Bill: ${bill.title}` });
       }
-      pendingPayment = null; saveData(); closeModal('paymentModal');
+      pendingPayment = null; 
+      saveData(true); 
+      closeModal('paymentModal');
+      showToast('Payment recorded successfully');
     }
 
     function openKhataModal() {
-      document.getElementById('khataEditId').value = ''; document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
-      document.getElementById('khataDate').value = new Date().toISOString().slice(0, 10); document.getElementById('khataDueDate').value = getOffsetDate(7);
-      document.getElementById('khataPersonName').value = ''; document.getElementById('khataAmount').value = ''; document.getElementById('khataNotes').value = '';
-      setKhataDirection('lent'); openModal('khataModal');
+      document.getElementById('khataEditId').value = ''; 
+      document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
+      document.getElementById('khataDate').value = new Date().toISOString().slice(0, 10); 
+      document.getElementById('khataDueDate').value = ''; 
+      document.getElementById('khataPersonName').value = ''; 
+      document.getElementById('khataAmount').value = ''; 
+      document.getElementById('khataNotes').value = '';
+      setKhataDirection('lent'); 
+      openModal('khataModal');
     }
 
     function editKhataEntry(id) {
@@ -1413,8 +1508,13 @@
     function setKhataDirection(dir) {
       currentKhataDirection = dir;
       const btnLent = document.getElementById('btnKhataLent'), btnBorrow = document.getElementById('btnKhataBorrowed');
-      if (dir === 'lent') { btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition"; btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; } 
-      else { btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition"; btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; }
+      if (dir === 'lent') { 
+        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition"; 
+        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; 
+      } else { 
+        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition"; 
+        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; 
+      }
     }
 
     function handleSaveKhata(e) {
@@ -1427,14 +1527,18 @@
         if (entry) { entry.personName = personName; entry.amount = amount; entry.date = date; entry.dueDate = dueDate; entry.notes = notes; entry.direction = currentKhataDirection; }
       } else appData.khata.unshift({ id: 'k_' + Date.now(), direction: currentKhataDirection, personName, amount, date, dueDate, status: 'pending', notes });
 
-      saveData(); closeModal('khataModal');
+      saveData(true); 
+      closeModal('khataModal');
+      showToast('Khata entry saved');
       if (currentViewingContact === personName) openContactStatement(personName);
     }
 
     function deleteKhata(id) {
+      if(!confirm('Delete this entry?')) return;
       const entry = appData.khata.find(k => k.id === id);
       appData.khata = appData.khata.filter(k => k.id !== id);
-      saveData();
+      saveData(true);
+      showToast('Entry deleted');
       if (entry && currentViewingContact === entry.personName) {
         if (appData.khata.some(k => k.personName === entry.personName)) openContactStatement(entry.personName);
         else closeModal('contactStatementModal');
@@ -1465,10 +1569,19 @@
         const loan = appData.loans.find(l => l.id === editId);
         if (loan) { loan.name = name; loan.principalBalance = balance; loan.emiAmount = emi; loan.dueDay = dueDay; loan.interestRate = interest; }
       } else appData.loans.push({ id: 'loan_' + Date.now(), name, principalBalance: balance, emiAmount: emi, dueDay, interestRate: interest, lastPaidMonth: '' });
-      saveData(); closeModal('loanModal');
+      
+      saveData(true); 
+      closeModal('loanModal');
+      showToast('Loan details saved');
     }
 
-    function deleteLoan(id) { appData.loans = appData.loans.filter(l => l.id !== id); saveData(); }
+    function deleteLoan(id) { 
+      if(confirm('Delete this loan?')) {
+        appData.loans = appData.loans.filter(l => l.id !== id); 
+        saveData(true); 
+        showToast('Loan deleted');
+      }
+    }
 
     function openInvestmentModal() {
       document.getElementById('invEditId').value = ''; document.getElementById('invModalTitle').innerText = 'Add Investment';
@@ -1492,10 +1605,19 @@
         const inv = appData.investments.find(i => i.id === editId);
         if (inv) { inv.type = type; inv.name = name; inv.amount = amount; }
       } else appData.investments.push({ id: 'inv_' + Date.now(), type, name, amount });
-      saveData(); closeModal('investmentModal');
+      
+      saveData(true); 
+      closeModal('investmentModal');
+      showToast('Investment saved');
     }
 
-    function deleteInvestment(id) { appData.investments = appData.investments.filter(i => i.id !== id); saveData(); }
+    function deleteInvestment(id) { 
+      if(confirm('Delete this investment?')) {
+        appData.investments = appData.investments.filter(i => i.id !== id); 
+        saveData(true);
+        showToast('Investment deleted');
+      } 
+    }
 
     function openInsuranceModal() {
       document.getElementById('insEditId').value = ''; document.getElementById('insModalTitle').innerText = 'Add Insurance';
@@ -1519,10 +1641,19 @@
         const ins = appData.insurances.find(i => i.id === editId);
         if (ins) { ins.type = type; ins.name = name; ins.premium = premium; ins.dueDate = dueDate; }
       } else appData.insurances.push({ id: 'ins_' + Date.now(), type, name, premium, dueDate });
-      saveData(); closeModal('insuranceModal');
+      
+      saveData(true); 
+      closeModal('insuranceModal');
+      showToast('Insurance saved');
     }
 
-    function deleteInsurance(id) { appData.insurances = appData.insurances.filter(i => i.id !== id); saveData(); }
+    function deleteInsurance(id) { 
+      if(confirm('Delete this insurance?')) {
+        appData.insurances = appData.insurances.filter(i => i.id !== id); 
+        saveData(true);
+        showToast('Insurance deleted');
+      }
+    }
 
     function toggleAccountFields() {
       const type = document.getElementById('accType').value, debitGroup = document.getElementById('accDebitBalanceGroup'), creditGroup = document.getElementById('accCreditCardGroup');
@@ -1600,13 +1731,19 @@
         }
         appData.accounts.push(newAcc); 
       }
-      saveData(); closeModal('accountModal');
+      saveData(true); 
+      closeModal('accountModal');
+      showToast('Account saved successfully');
     }
 
     function deleteAccount(id) {
       if (appData.accounts.length <= 1) { alert("You must keep at least one account."); return; }
       if (appData.transactions.some(t => t.accountId === id)) { alert("Cannot delete account. It is linked to existing transactions."); return; }
-      appData.accounts = appData.accounts.filter(a => a.id !== id); saveData();
+      if(confirm('Delete this account?')) {
+        appData.accounts = appData.accounts.filter(a => a.id !== id); 
+        saveData(true);
+        showToast('Account deleted');
+      }
     }
 
     function openBillModal() {
@@ -1631,10 +1768,20 @@
 
       if (editId) { const bill = appData.bills.find(b => b.id === editId); if (bill) { bill.title = title; bill.amount = amount; bill.dueDay = dueDay; } } 
       else appData.bills.push({ id: 'bill_' + Date.now(), title, amount, dueDay, lastPaidMonth: '' });
-      saveData(); closeModal('billModal');
+      
+      saveData(true); 
+      closeModal('billModal');
+      showToast('Bill saved');
     }
 
-    function deleteBill(id) { if(confirm("Delete this bill?")) { appData.bills = appData.bills.filter(b => b.id !== id); saveData(); } }
+    function deleteBill(id) { 
+      if(confirm("Delete this bill?")) { 
+        appData.bills = appData.bills.filter(b => b.id !== id); 
+        saveData(true); 
+        showToast('Bill deleted');
+      } 
+    }
+
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function toggleRemindersModal() { const modal = document.getElementById('remindersModal'); modal.classList.toggle('hidden'); if (!modal.classList.contains('hidden')) renderRemindersUI(); }
@@ -1645,6 +1792,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
+      showToast('Data exported successfully');
     }
 
     function exportDataCSV() {
@@ -1657,6 +1805,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Transactions_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
+      showToast('CSV downloaded');
     }
 
     function importDataJSON(event) {
@@ -1667,7 +1816,8 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && parsed.accounts && parsed.transactions) {
-            appData = parsed; saveData(); closeModal('settingsModal'); alert("Backup restored successfully!");
+            appData = parsed; saveData(true); closeModal('settingsModal'); 
+            showToast("Backup restored successfully!");
           } else alert("Invalid backup format.");
         } catch (err) { alert("Error parsing backup file."); }
         document.getElementById('importJsonFileInput').value = '';
@@ -1677,7 +1827,8 @@
 
     function clearAllData() {
       if (confirm("Reset all data to default? This cannot be undone.")) {
-        appData = JSON.parse(JSON.stringify(defaultSeedData)); saveData(); closeModal('settingsModal');
+        appData = JSON.parse(JSON.stringify(defaultSeedData)); saveData(true); closeModal('settingsModal');
+        showToast("App reset successfully");
       }
     }
 
