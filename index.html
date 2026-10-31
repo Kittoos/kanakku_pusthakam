@@ -489,22 +489,26 @@
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account / Card Name</label>
-          <input type="text" id="accName" required placeholder="e.g. ICICI Salary, Amazon Pay ICICI" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+          <input type="text" id="accName" required placeholder="e.g. ICICI Salary, Amazon Pay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
         </div>
+        
         <div id="accDebitBalanceGroup">
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
           <input type="number" inputmode="decimal" step="0.01" min="0" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
         </div>
+        
         <div id="accCreditCardGroup" class="hidden space-y-2">
           <div class="grid grid-cols-2 gap-2">
             <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Outstanding (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardDue" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Everything you owe in total right now"></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Credit Limit (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Generated Bill (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardStatement" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Amount officially billed for this cycle"></div>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Gen Day</label><select id="cardBillGenDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Payment Due Day</label><select id="cardDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Limit (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-white focus:outline-none"></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Gen</label><select id="cardBillGenDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="cardDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
           </div>
         </div>
+
         <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition">Save Account</button>
       </form>
     </div>
@@ -1531,6 +1535,7 @@
       document.getElementById('accName').value = ''; 
       document.getElementById('accBalance').value = ''; 
       document.getElementById('cardDue').value = ''; 
+      document.getElementById('cardStatement').value = '';
       document.getElementById('cardLimit').value = '';
       toggleAccountFields(); 
       openModal('accountModal');
@@ -1546,6 +1551,7 @@
       if (acc.type === 'credit_card') {
         document.getElementById('cardLimit').value = acc.limit;
         document.getElementById('cardDue').value = acc.currentDue;
+        document.getElementById('cardStatement').value = acc.statementBalance !== undefined ? acc.statementBalance : acc.currentDue;
         document.getElementById('cardDueDay').value = acc.dueDay || 15;
         document.getElementById('cardBillGenDay').value = acc.billGenDay || 1;
       } else {
@@ -1570,6 +1576,8 @@
           if (type === 'credit_card') {
             acc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
             acc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0; 
+            let stmtVal = document.getElementById('cardStatement').value;
+            acc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : acc.currentDue;
             acc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
             acc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
           } else {
@@ -1581,9 +1589,10 @@
         if (type === 'credit_card') {
           newAcc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
           newAcc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0; 
+          let stmtVal = document.getElementById('cardStatement').value;
+          newAcc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : newAcc.currentDue;
           newAcc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
           newAcc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
-          newAcc.statementBalance = newAcc.currentDue; 
           newAcc.lastBilledMonth = '';
           newAcc.lastPaidMonth = '';
         } else {
