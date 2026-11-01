@@ -21,12 +21,7 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#f0fdf4',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857'
-            }
+            brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 700: '#047857' }
           }
         }
       }
@@ -44,27 +39,16 @@
       user-select: none;
       overscroll-behavior-y: none;
     }
-    input, textarea, select {
-      user-select: text;
-    }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .sheet-enter {
-      transform: translateY(100%);
-    }
+    input, textarea, select { user-select: text; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .sheet-enter { transform: translateY(100%); }
     .sheet-enter-active {
       transform: translateY(0);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @media screen and (max-height: 500px) {
-      nav.fixed.bottom-0 {
-        display: none !important;
-      }
+      nav.fixed.bottom-0 { display: none !important; }
     }
   </style>
 </head>
@@ -79,13 +63,10 @@
   <!-- TOP APP HEADER -->
   <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
     <div class="flex items-center space-x-2.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">
-        ₹
-      </div>
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger
-          <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -111,12 +92,9 @@
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-850 to-slate-900 border border-slate-700/60 p-4 shadow-xl">
         <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-          <span>Net Liquid Wealth</span>
-          <span id="currentMonthYear" class="text-slate-400 font-medium font-mono text-[11px]"></span>
+          <span>Net Liquid Wealth</span><span id="currentMonthYear" class="text-slate-400 font-medium font-mono text-[11px]"></span>
         </div>
-        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1">
-          <span id="netWealthDisplay">₹0</span>
-        </div>
+        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1"><span id="netWealthDisplay">₹0</span></div>
         <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-700/50">
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
             <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Month Inflow</span>
@@ -138,45 +116,23 @@
           </div>
         </div>
         <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
-        
         <div class="grid grid-cols-5 gap-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
-          <div>
-            <div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div>
-            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div>
-          </div>
-          <div>
-            <div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div>
-            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div>
-          </div>
-          <div>
-            <div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div>
-            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div>
-          </div>
-          <div>
-            <div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div>
-            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div>
-          </div>
-          <div>
-            <div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div>
-            <div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div>
-          </div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div></div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-assets" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-sky-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span>
-            <div class="p-1 rounded-md bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div>
-          </div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span><div class="p-1 rounded-md bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div></div>
           <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Current portfolio</p>
         </div>
         <div id="btn-dash-loans" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-indigo-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span>
-            <div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400"><i data-lucide="landmark" class="w-3.5 h-3.5"></i></div>
-          </div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span><div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400"><i data-lucide="landmark" class="w-3.5 h-3.5"></i></div></div>
           <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Total principal due</p>
         </div>
@@ -184,18 +140,12 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-khata-lent" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span>
-            <div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400"><i data-lucide="hand-coins" class="w-3.5 h-3.5"></i></div>
-          </div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span><div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400"><i data-lucide="hand-coins" class="w-3.5 h-3.5"></i></div></div>
           <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to collect</p>
         </div>
         <div id="btn-dash-khata-borrowed" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span>
-            <div class="p-1 rounded-md bg-rose-500/10 text-rose-400"><i data-lucide="receipt-text" class="w-3.5 h-3.5"></i></div>
-          </div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span><div class="p-1 rounded-md bg-rose-500/10 text-rose-400"><i data-lucide="receipt-text" class="w-3.5 h-3.5"></i></div></div>
           <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to pay back</p>
         </div>
@@ -218,10 +168,7 @@
 
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
         <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3>
-          </div>
+          <div class="flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i><h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3></div>
           <button id="btn-view-all-loans" class="text-xs text-sky-400 font-semibold hover:underline">View All</button>
         </div>
         <div id="dashboardLoansList" class="space-y-2"></div>
@@ -239,10 +186,7 @@
     <!-- VIEW 2: TRANSACTIONS -->
     <section id="view-transactions" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Expenses & Income</h2>
-          <p class="text-xs text-slate-400">Track and analyze cash flow</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Expenses & Income</h2><p class="text-xs text-slate-400">Track and analyze cash flow</p></div>
         <button id="btn-view-add-tx" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
         </button>
@@ -253,9 +197,7 @@
           <input type="text" id="txSearchInput" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
         <select id="txFilterType" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-          <option value="all">All</option>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
+          <option value="all">All</option><option value="expense">Expense</option><option value="income">Income</option>
         </select>
         <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
           <i data-lucide="pie-chart" class="w-4 h-4"></i>
@@ -270,10 +212,7 @@
     <!-- VIEW 3: KHATA -->
     <section id="view-khata" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Person-to-Person Ledger</h2>
-          <p class="text-xs text-slate-400">Udhar / Cash given & borrowed</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Person-to-Person Ledger</h2><p class="text-xs text-slate-400">Udhar / Cash given & borrowed</p></div>
         <button id="btn-view-add-khata" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Entry
         </button>
@@ -289,23 +228,14 @@
     <!-- VIEW 4: LOANS -->
     <section id="view-loans" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2>
-          <p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2><p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p></div>
         <button id="btn-view-add-loan" class="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Loan
         </button>
       </div>
       <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
-        <div>
-          <span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span>
-          <div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div>
-        </div>
-        <div class="text-right">
-          <span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span>
-          <div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div>
-        </div>
+        <div><span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span><div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div></div>
+        <div class="text-right"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span><div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div></div>
       </div>
       <div id="allLoansList" class="space-y-3"></div>
     </section>
@@ -313,24 +243,17 @@
     <!-- VIEW 5: ACCOUNTS -->
     <section id="view-accounts" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Debit & Credit Accounts</h2>
-          <p class="text-xs text-slate-400">Bank accounts, cash in hand & cards</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Debit & Credit Accounts</h2><p class="text-xs text-slate-400">Bank accounts, cash in hand & cards</p></div>
         <button id="btn-view-add-account" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Account
         </button>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Cash & Debit Accounts
-        </h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Cash & Debit Accounts</h3>
         <div id="debitAccountsList" class="space-y-2"></div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="credit-card" class="w-4 h-4 text-rose-400"></i> Credit Cards & Billing Due
-        </h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="credit-card" class="w-4 h-4 text-rose-400"></i> Credit Cards & Billing Due</h3>
         <div id="creditCardsList" class="space-y-2"></div>
       </div>
     </section>
@@ -338,10 +261,7 @@
     <!-- VIEW 6: ASSETS -->
     <section id="view-assets" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Wealth & Protection</h2>
-          <p class="text-xs text-slate-400">PF, Mutual Funds & Insurances</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Wealth & Protection</h2><p class="text-xs text-slate-400">PF, Mutual Funds & Insurances</p></div>
         <div class="flex gap-1.5">
           <button id="btn-view-add-investment" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
             <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Invest
@@ -352,15 +272,11 @@
         </div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5 mt-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> Savings & Investments
-        </h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> Savings & Investments</h3>
         <div id="investmentsList" class="space-y-2"></div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i> Insurance Policies
-        </h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i> Insurance Policies</h3>
         <div id="insurancesList" class="space-y-2"></div>
       </div>
     </section>
@@ -368,10 +284,7 @@
     <!-- VIEW 7: MONTHLY BILLS -->
     <section id="view-bills" class="hidden space-y-4">
       <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-bold text-white">Monthly Bills</h2>
-          <p class="text-xs text-slate-400">School fees, rent & subscriptions</p>
-        </div>
+        <div><h2 class="text-lg font-bold text-white">Monthly Bills</h2><p class="text-xs text-slate-400">School fees, rent & subscriptions</p></div>
         <button id="btn-view-add-bill" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
         </button>
@@ -612,10 +525,19 @@
         </div>
         <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)</button></div>
         <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)</button></div>
-        <div>
-          <button id="btn-settings-import" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> Import / Restore Data (JSON)</button>
+        
+        <!-- NEW SMART SYNC SECTIONS -->
+        <div class="pt-4 border-t border-slate-800 space-y-2.5">
+          <p class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Restore & Import</p>
+          <button id="btn-settings-import-merge" class="w-full flex items-center justify-center gap-2 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Safely combine your current data with a backup file">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Smart Sync (Merge with File)
+          </button>
+          <button id="btn-settings-import-overwrite" class="w-full flex items-center justify-center gap-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Completely erase current data and replace with backup">
+            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Restore Backup (Overwrite)
+          </button>
           <input type="file" id="importJsonFileInput" accept=".json,application/json" style="display: none;">
         </div>
+
         <div class="pt-2 border-t border-slate-800"><button id="btn-settings-reset" class="w-full text-rose-400 hover:bg-rose-500/10 py-2 rounded-xl text-xs font-semibold transition">Reset App</button></div>
       </div>
     </div>
@@ -700,6 +622,7 @@
     let txChartInstance = null;
     let pendingPayment = null;
     let toastTimeout = null;
+    let importMode = 'merge'; 
 
     function showToast(message) {
       const toast = document.getElementById('toastNotification');
@@ -838,12 +761,41 @@
         reminders.push({ id: bill.id, type: 'Monthly Bill', title: bill.title, amount: bill.amount, dueDayText: `Due on ${bill.dueDay}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, bill.dueDay), raw: bill });
       });
 
-      appData.khata.filter(k => k.status === 'pending' && k.dueDate).forEach(k => {
-        if(appData.dismissedAlerts && appData.dismissedAlerts[k.id] === currentMonthKey) return;
+      // AGGREGATED KHATA LOGIC
+      const aggregatedContacts = getAggregatedContacts();
+      aggregatedContacts.forEach(contact => {
+        if (contact.netBalance === 0) return;
+        
+        const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
+        if (!entryWithDueDate) return;
+        
+        const dueDateStr = entryWithDueDate.dueDate;
+        const aggId = 'khata_agg_' + contact.name;
 
-        const dayDiff = Math.round((new Date(k.dueDate).setHours(0,0,0,0) - today.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        if (appData.dismissedAlerts && appData.dismissedAlerts[aggId] === currentMonthKey) return;
+
+        const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - today.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 7 ? 'soon' : 'upcoming'));
-        reminders.push({ id: k.id, type: k.direction === 'lent' ? 'Cash Collection' : 'Cash Return', title: `${k.personName} (${k.direction === 'lent' ? 'Collect from' : 'Pay to'})`, amount: k.amount, dueDayText: `Due on ${k.dueDate}`, status: status, targetDate: new Date(k.dueDate), raw: k });
+        
+        let title, type;
+        if (contact.netBalance < 0) { 
+           title = `${contact.name} (Collect Cash)`;
+           type = 'Cash Collection';
+        } else { 
+           title = `${contact.name} (Return Cash)`;
+           type = 'Cash Return';
+        }
+
+        reminders.push({
+          id: aggId,
+          type: type,
+          title: title,
+          amount: Math.abs(contact.netBalance),
+          dueDayText: `Due on ${dueDateStr}`,
+          status: status,
+          targetDate: new Date(dueDateStr),
+          raw: contact
+        });
       });
       
       appData.insurances.forEach(ins => {
@@ -960,7 +912,17 @@
       let ccReq = appData.accounts.filter(a => a.type === 'credit_card' && (a.statementBalance || 0) > 0 && a.lastPaidMonth !== currentMonthKey).reduce((sum, a) => sum + Number(a.statementBalance), 0);
       let billsReq = appData.bills.filter(b => b.lastPaidMonth !== currentMonthKey).reduce((sum, b) => sum + Number(b.amount), 0);
       let insReq = appData.insurances.filter(i => i.dueDate && i.dueDate.startsWith(currentMonthKey)).reduce((sum, i) => sum + Number(i.premium), 0);
-      let khataReq = appData.khata.filter(k => k.direction === 'borrowed' && k.status !== 'settled' && k.dueDate && k.dueDate.startsWith(currentMonthKey)).reduce((sum, k) => sum + Number(k.amount), 0);
+      
+      let khataReq = 0;
+      const aggregatedContacts = getAggregatedContacts();
+      aggregatedContacts.forEach(contact => {
+        if(contact.netBalance > 0) { // you owe them
+           const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
+           if (entryWithDueDate && entryWithDueDate.dueDate.startsWith(currentMonthKey)) {
+              khataReq += contact.netBalance;
+           }
+        }
+      });
       
       const totalReq = emiReq + ccReq + billsReq + insReq + khataReq;
 
@@ -1816,8 +1778,63 @@
         try {
           const parsed = JSON.parse(e.target.result);
           if (parsed && parsed.accounts && parsed.transactions) {
-            appData = parsed; saveData(true); closeModal('settingsModal'); 
-            showToast("Backup restored successfully!");
+            
+            if (importMode === 'overwrite') {
+              appData = parsed; 
+              saveData(true); closeModal('settingsModal'); 
+              showToast("Backup restored completely!");
+            } else if (importMode === 'merge') {
+              
+              const mergeArrays = (baseArr, newArr) => {
+                if(!newArr) return baseArr;
+                const map = new Map(baseArr.map(item => [item.id, item]));
+                newArr.forEach(item => map.set(item.id, item)); 
+                return Array.from(map.values());
+              };
+
+              // 1. Find newly imported transactions
+              const existingTxIds = new Set(appData.transactions.map(t => t.id));
+              const newImportedTxs = (parsed.transactions || []).filter(t => !existingTxIds.has(t.id));
+
+              // 2. Protect local account balances, but add any brand new accounts
+              const localAccountsMap = new Map(appData.accounts.map(a => [a.id, a]));
+              (parsed.accounts || []).forEach(importAcc => {
+                if (!localAccountsMap.has(importAcc.id)) {
+                  localAccountsMap.set(importAcc.id, importAcc);
+                }
+              });
+              appData.accounts = Array.from(localAccountsMap.values());
+
+              // 3. Apply the math of the new transactions to the local accounts
+              newImportedTxs.forEach(tx => {
+                const acc = appData.accounts.find(a => a.id === tx.accountId);
+                if (acc) {
+                  if (acc.type === 'credit_card') {
+                    if (tx.type === 'expense') acc.currentDue += Number(tx.amount);
+                    else acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount));
+                  } else {
+                    if (tx.type === 'expense') acc.balance -= Number(tx.amount);
+                    else acc.balance += Number(tx.amount);
+                  }
+                }
+              });
+              
+              appData.transactions = mergeArrays(appData.transactions, parsed.transactions);
+              appData.khata = mergeArrays(appData.khata, parsed.khata);
+              appData.loans = mergeArrays(appData.loans, parsed.loans);
+              appData.investments = mergeArrays(appData.investments, parsed.investments);
+              appData.insurances = mergeArrays(appData.insurances, parsed.insurances);
+              appData.bills = mergeArrays(appData.bills || [], parsed.bills || []);
+              
+              if (parsed.categories) {
+                appData.categories.expense = [...new Set([...appData.categories.expense, ...(parsed.categories.expense || [])])];
+                appData.categories.income = [...new Set([...appData.categories.income, ...(parsed.categories.income || [])])];
+              }
+              appData.dismissedAlerts = { ...appData.dismissedAlerts, ...(parsed.dismissedAlerts || {}) };
+
+              saveData(true); closeModal('settingsModal'); 
+              showToast("Smart Sync completed successfully!");
+            }
           } else alert("Invalid backup format.");
         } catch (err) { alert("Error parsing backup file."); }
         document.getElementById('importJsonFileInput').value = '';
@@ -1832,9 +1849,6 @@
       }
     }
 
-    // =======================================================
-    // GLOBAL EVENT LISTENER (Replaces inline onclicks)
-    // =======================================================
     document.addEventListener('DOMContentLoaded', () => {
       
       const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
@@ -1922,7 +1936,8 @@
         
         if (target.id === 'btn-settings-export-json') return exportDataJSON();
         if (target.id === 'btn-settings-export-csv') return exportDataCSV();
-        if (target.id === 'btn-settings-import') return document.getElementById('importJsonFileInput').click();
+        if (target.id === 'btn-settings-import-merge') { importMode = 'merge'; return document.getElementById('importJsonFileInput').click(); }
+        if (target.id === 'btn-settings-import-overwrite') { importMode = 'overwrite'; return document.getElementById('importJsonFileInput').click(); }
         if (target.id === 'btn-settings-reset') return clearAllData();
         
         if (target.id?.startsWith('nav-')) return switchTab(target.id.replace('nav-', ''));
