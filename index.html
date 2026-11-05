@@ -114,7 +114,6 @@
             <i data-lucide="target" class="w-4 h-4 text-amber-400"></i>
             <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Required Cash This Month</span>
           </div>
-          <!-- FIX: Restored the missing shortage badge container -->
           <div id="dashObligStatus" class="text-right"></div>
         </div>
         <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
@@ -624,6 +623,13 @@
       d.setDate(d.getDate() + daysAhead);
       return d.toISOString().slice(0, 10);
     }
+    
+    // SAFE RENDER ICONS - PREVENTS CRASH IF OFFLINE
+    function renderIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
 
     let appData = loadData();
     let currentViewingContact = null;
@@ -743,7 +749,7 @@
       const reminders = [];
 
       appData.loans.forEach(loan => {
-        if(loan.principalBalance <= 0) return; 
+        if(!loan.dueDay || loan.principalBalance <= 0) return; 
         if(loan.lastPaidMonth === currentMonthKey) return; 
         if(appData.dismissedAlerts && appData.dismissedAlerts[loan.id] === currentMonthKey) return;
 
@@ -753,16 +759,16 @@
       });
 
       appData.accounts.filter(a => a.type === 'credit_card' && Number(a.statementBalance || 0) > 0).forEach(card => {
-        if(card.lastPaidMonth === currentMonthKey) return; 
+        if(!card.dueDay || card.lastPaidMonth === currentMonthKey) return; 
         if(appData.dismissedAlerts && appData.dismissedAlerts[card.id] === currentMonthKey) return;
 
-        let diffDays = (card.dueDay || 15) - currentDay;
+        let diffDays = card.dueDay - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
-        reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, card.dueDay || 15), raw: card });
+        reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, card.dueDay), raw: card });
       });
 
       appData.bills.forEach(bill => {
-        if (bill.lastPaidMonth === currentMonthKey) return;
+        if (!bill.dueDay || bill.lastPaidMonth === currentMonthKey) return;
         if (appData.dismissedAlerts && appData.dismissedAlerts[bill.id] === currentMonthKey) return;
 
         let diffDays = bill.dueDay - currentDay;
@@ -771,6 +777,7 @@
       });
 
       appData.investments.filter(i => i.installmentAmount > 0 && i.lastPaidMonth !== currentMonthKey).forEach(inv => {
+        if(!inv.dueDay) return;
         if(appData.dismissedAlerts && appData.dismissedAlerts[inv.id] === currentMonthKey) return;
         let diffDays = inv.dueDay - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
@@ -784,6 +791,8 @@
         if (!entryWithDueDate) return;
         
         const dueDateStr = entryWithDueDate.dueDate;
+        if (!dueDateStr) return; 
+        
         const aggId = 'khata_agg_' + contact.name;
         if (appData.dismissedAlerts && appData.dismissedAlerts[aggId] === currentMonthKey) return;
 
@@ -797,6 +806,7 @@
       });
       
       appData.insurances.forEach(ins => {
+        if(!ins.dueDate) return;
         if(appData.dismissedAlerts && appData.dismissedAlerts[ins.id] === currentMonthKey) return;
 
         const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - today.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
@@ -810,6 +820,7 @@
     }
 
     function generateCalendarLink(reminder) {
+      if(!reminder.targetDate || isNaN(reminder.targetDate)) return "#";
       const dateStr = reminder.targetDate.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 8);
       const title = encodeURIComponent(`PocketLedger Reminder: ₹${reminder.amount} for ${reminder.title}`);
       const details = encodeURIComponent(`Payment reminder for ${reminder.type}. Amount: ₹${reminder.amount}. Set via PocketLedger.`);
@@ -884,7 +895,7 @@
           `;
         }).join('');
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     function getAggregatedContacts() {
@@ -997,7 +1008,7 @@
 
       const selectAcc = document.getElementById('txAccount');
       if (selectAcc) selectAcc.innerHTML = appData.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderDashboardFeed() {
@@ -1045,7 +1056,7 @@
         if (filtered.length > txRenderLimit) html += `<button id="btn-load-more-tx" class="w-full py-2.5 mt-2 text-xs font-bold text-slate-400 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-slate-700 transition">Load More (${filtered.length - txRenderLimit} remaining)</button>`;
         container.innerHTML = html;
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     function createTxRowHtml(t, canDelete = false) {
@@ -1083,6 +1094,7 @@
     }
 
     function updateTxChart(filtered) {
+      if (typeof Chart === 'undefined') return;
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
@@ -1128,7 +1140,7 @@
             </div>`;
         }).join('');
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     function openContactStatement(personName) {
@@ -1159,7 +1171,7 @@
         </div>
       `).join('');
       openModal('contactStatementModal');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderLoans() {
@@ -1183,7 +1195,7 @@
                 ${loan.principalBalance > 0 ? `<button class="action-pay-emi bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1" data-id="${loan.id}"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Record EMI Payment</button>` : `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Cleared</span>`}
               </div>
             </div>`).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderAssets() {
@@ -1221,7 +1233,7 @@
             </div>
             <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40"><span>Renew by: <strong class="text-white font-mono">${i.dueDate}</strong></span></div>
           </div>`).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function toggleAccountFields() {
@@ -1453,6 +1465,57 @@
       }
     }
 
+    // FUNCTION TO HANDLE SAVING INVESTMENTS & SIP
+    function handleSaveInvestment(e) {
+      e.preventDefault();
+      const editId = document.getElementById('invEditId').value;
+      const type = document.getElementById('invType').value;
+      const name = document.getElementById('invName').value.trim();
+      const amount = parseFloat(document.getElementById('invAmount').value);
+      const installmentAmount = parseFloat(document.getElementById('invInstallment').value) || 0;
+      const dueDay = parseInt(document.getElementById('invDueDay').value) || null;
+
+      if (!name || isNaN(amount)) return;
+
+      if (editId) {
+        const inv = appData.investments.find(i => i.id === editId);
+        if (inv) {
+          inv.type = type;
+          inv.name = name;
+          inv.amount = amount;
+          inv.installmentAmount = installmentAmount;
+          inv.dueDay = dueDay;
+        }
+      } else {
+        appData.investments.push({
+          id: 'inv_' + Date.now(),
+          type,
+          name,
+          amount,
+          installmentAmount,
+          dueDay,
+          lastPaidMonth: ''
+        });
+      }
+
+      saveData(true);
+      closeModal('investmentModal');
+      showToast('Investment saved');
+    }
+
+    function editInvestment(id) {
+      const inv = appData.investments.find(i => i.id === id);
+      if (!inv) return;
+      document.getElementById('invEditId').value = inv.id;
+      document.getElementById('invModalTitle').innerText = 'Edit Investment';
+      document.getElementById('invType').value = inv.type;
+      document.getElementById('invName').value = inv.name;
+      document.getElementById('invAmount').value = inv.amount;
+      document.getElementById('invInstallment').value = inv.installmentAmount || '';
+      document.getElementById('invDueDay').value = inv.dueDay || '';
+      openModal('investmentModal');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       
       const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
@@ -1469,9 +1532,7 @@
       if (document.getElementById('txFilterFrom')) document.getElementById('txFilterFrom').value = firstDay;
       if (document.getElementById('txFilterTo')) document.getElementById('txFilterTo').value = lastDay;
 
-      checkCreditCardBills(); 
-      refreshAllViews();
-
+      // REGISTER EVENT LISTENERS *BEFORE* RENDERING
       document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
       document.getElementById('khataForm')?.addEventListener('submit', handleSaveKhata);
       document.getElementById('loanForm')?.addEventListener('submit', handleSaveLoan);
@@ -1561,6 +1622,10 @@
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('/kanakku_pusthakam/sw.js').catch(() => console.log('SW skipped.'));
       }
+
+      // NOW SAFELY RENDER VIEWS AFTER LISTENERS ARE ACTIVE
+      checkCreditCardBills(); 
+      refreshAllViews();
     });
   </script>
 </body>
