@@ -1,599 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>PocketLedger - Personal Finance, Loans & EMI Tracker</title>
-  
-  <link rel="manifest" href="/kanakku_pusthakam/manifest.json">
-  <link rel="icon" type="image/png" href="/kanakku_pusthakam/icon.png">
-  <link rel="apple-touch-icon" href="/kanakku_pusthakam/icon.png">
-  
-  <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PocketLedger">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: { 50: '#f0fdf4', 500: '#10b981', 600: '#059669', 700: '#047857' }
-          }
-        }
-      }
-    }
-  </script>
-
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      overscroll-behavior-y: none;
-    }
-    input, textarea, select { user-select: text; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .sheet-enter { transform: translateY(100%); }
-    .sheet-enter-active {
-      transform: translateY(0);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    @media screen and (max-height: 500px) {
-      nav.fixed.bottom-0 { display: none !important; }
-    }
-  </style>
-</head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white relative">
-
-  <!-- GLOBAL TOAST NOTIFICATION -->
-  <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-slate-800/95 backdrop-blur-md border border-slate-700 text-white px-4 py-2.5 rounded-full shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-24 opacity-0 flex items-center gap-2 pointer-events-none">
-    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-    <span id="toastMsg">Action successful</span>
-  </div>
-
-  <!-- TOP APP HEADER -->
-  <header class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-    <div class="flex items-center space-x-2.5">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
-      <div>
-        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA</span>
-        </h1>
-        <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
-      </div>
-    </div>
-    <div class="flex items-center space-x-1.5">
-      <button id="btn-reminders" aria-label="Open reminders" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
-        <i data-lucide="bell" class="w-5 h-5"></i>
-        <span id="headerReminderBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-900 animate-pulse"></span>
-      </button>
-      <button id="btn-settings" aria-label="Open settings" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
-        <i data-lucide="settings" class="w-5 h-5"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN SCROLLABLE VIEW AREA -->
-  <main class="flex-1 overflow-y-auto px-4 pt-3 pb-24 max-w-lg mx-auto w-full no-scrollbar">
-
-    <div id="urgentAlertContainer" class="hidden mb-3"></div>
-
-    <!-- VIEW 1: DASHBOARD -->
-    <section id="view-dashboard" class="space-y-4">
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-850 to-slate-900 border border-slate-700/60 p-4 shadow-xl">
-        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-          <span>Net Liquid Wealth</span><span id="currentMonthYear" class="text-slate-400 font-medium font-mono text-[11px]"></span>
-        </div>
-        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1"><span id="netWealthDisplay">₹0</span></div>
-        <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-700/50">
-          <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Month Inflow</span>
-            <div id="monthInflowDisplay" class="text-sm font-bold text-emerald-400 mt-0.5">₹0</div>
-          </div>
-          <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3 text-rose-400"></i> Month Spent</span>
-            <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5">₹0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- REQUIRED CASH OBLIGATIONS PLANNER -->
-      <div class="bg-slate-800/80 border border-slate-700/60 p-3.5 rounded-2xl shadow-lg">
-        <div class="flex items-start justify-between mb-1.5">
-          <div class="flex items-center gap-1.5">
-            <i data-lucide="target" class="w-4 h-4 text-amber-400"></i>
-            <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Required Cash This Month</span>
-          </div>
-          <div id="dashObligStatus" class="text-right"></div>
-        </div>
-        <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
-        
-        <div class="grid grid-cols-6 gap-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">SIP/RD</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligSip">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div></div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div id="btn-dash-assets" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-sky-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span><div class="p-1 rounded-md bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div></div>
-          <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Current portfolio</p>
-        </div>
-        <div id="btn-dash-loans" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-indigo-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span><div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400"><i data-lucide="landmark" class="w-3.5 h-3.5"></i></div></div>
-          <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Total principal due</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div id="btn-dash-khata-lent" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span><div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400"><i data-lucide="hand-coins" class="w-3.5 h-3.5"></i></div></div>
-          <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Net cash to collect</p>
-        </div>
-        <div id="btn-dash-khata-borrowed" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span><div class="p-1 rounded-md bg-rose-500/10 text-rose-400"><i data-lucide="receipt-text" class="w-3.5 h-3.5"></i></div></div>
-          <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
-          <p class="text-[10px] text-slate-400 mt-0.5">Net cash to pay back</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-3 gap-2">
-        <button id="btn-add-expense" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1"><i data-lucide="minus" class="w-4 h-4"></i></div>
-          <span class="text-xs font-medium text-slate-200">Expense</span>
-        </button>
-        <button id="btn-add-income" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1"><i data-lucide="plus" class="w-4 h-4"></i></div>
-          <span class="text-xs font-medium text-slate-200">Income</span>
-        </button>
-        <button id="btn-add-khata" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1"><i data-lucide="users" class="w-4 h-4"></i></div>
-          <span class="text-xs font-medium text-slate-200">Khata Entry</span>
-        </button>
-      </div>
-
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i><h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3></div>
-          <button id="btn-view-all-loans" class="text-xs text-sky-400 font-semibold hover:underline">View All</button>
-        </div>
-        <div id="dashboardLoansList" class="space-y-2"></div>
-      </div>
-
-      <div>
-        <div class="flex items-center justify-between mb-2.5 px-0.5">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
-          <button id="btn-view-all-tx" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
-        </div>
-        <div id="dashboardRecentTxList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <!-- VIEW 2: TRANSACTIONS -->
-    <section id="view-transactions" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Expenses & Income</h2><p class="text-xs text-slate-400">Track and analyze cash flow</p></div>
-        <button id="btn-view-add-tx" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
-        </button>
-      </div>
-      
-      <!-- Filters Row 1 -->
-      <div class="flex gap-2">
-        <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="txSearchInput" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
-        </div>
-        <select id="txFilterType" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-          <option value="all">All</option><option value="expense">Expense</option><option value="income">Income</option>
-        </select>
-        <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
-          <i data-lucide="pie-chart" class="w-4 h-4"></i>
-        </button>
-      </div>
-      
-      <!-- Filters Row 2: Custom Date Range -->
-      <div class="flex items-center gap-2 bg-slate-800/60 p-2 rounded-xl border border-slate-700/50 shadow-inner">
-        <span class="text-[9px] font-bold text-slate-400 uppercase w-9 text-center">From</span>
-        <input type="date" id="txFilterFrom" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-        <span class="text-[9px] font-bold text-slate-400 uppercase w-6 text-center">To</span>
-        <input type="date" id="txFilterTo" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
-      </div>
-
-      <div id="chartContainer" class="hidden p-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-inner">
-        <canvas id="txChartCanvas" height="220"></canvas>
-      </div>
-      <div id="fullTxList" class="space-y-2"></div>
-    </section>
-
-    <!-- VIEW 3: KHATA -->
-    <section id="view-khata" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Person-to-Person Ledger</h2><p class="text-xs text-slate-400">Udhar / Cash given & borrowed</p></div>
-        <button id="btn-view-add-khata" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Entry
-        </button>
-      </div>
-      <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
-        <button id="tabKhataAll" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition bg-slate-700 text-white">All</button>
-        <button id="tabKhataLent" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition text-slate-400">Given (To Get)</button>
-        <button id="tabKhataBorrowed" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-center transition text-slate-400">Taken (To Return)</button>
-      </div>
-      <div id="khataList" class="space-y-2"></div>
-    </section>
-
-    <!-- VIEW 4: LOANS -->
-    <section id="view-loans" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2><p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p></div>
-        <button id="btn-view-add-loan" class="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Loan
-        </button>
-      </div>
-      <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
-        <div><span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span><div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div></div>
-        <div class="text-right"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span><div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div></div>
-      </div>
-      <div id="allLoansList" class="space-y-3"></div>
-    </section>
-
-    <!-- VIEW 5: ACCOUNTS -->
-    <section id="view-accounts" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Debit & Credit Accounts</h2><p class="text-xs text-slate-400">Bank accounts, cash in hand & cards</p></div>
-        <button id="btn-view-add-account" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Account
-        </button>
-      </div>
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Cash & Debit Accounts</h3>
-        <div id="debitAccountsList" class="space-y-2"></div>
-      </div>
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="credit-card" class="w-4 h-4 text-rose-400"></i> Credit Cards & Billing Due</h3>
-        <div id="creditCardsList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <!-- VIEW 6: ASSETS -->
-    <section id="view-assets" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Wealth & Protection</h2><p class="text-xs text-slate-400">PF, Mutual Funds, RDs & Insurances</p></div>
-        <div class="flex gap-1.5">
-          <button id="btn-view-add-investment" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
-            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Invest
-          </button>
-          <button id="btn-view-add-insurance" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
-            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Insure
-          </button>
-        </div>
-      </div>
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5 mt-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> Savings & Investments</h3>
-        <div id="investmentsList"></div>
-      </div>
-      <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i> Insurance Policies</h3>
-        <div id="insurancesList" class="space-y-2"></div>
-      </div>
-    </section>
-
-    <!-- VIEW 7: MONTHLY BILLS -->
-    <section id="view-bills" class="hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div><h2 class="text-lg font-bold text-white">Monthly Bills</h2><p class="text-xs text-slate-400">School fees, rent & subscriptions</p></div>
-        <button id="btn-view-add-bill" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
-        </button>
-      </div>
-      <div id="billsListContainer" class="space-y-3"></div>
-    </section>
-  </main>
-
-  <!-- BOTTOM MOBILE NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1 pb-[calc(4px+env(safe-area-inset-bottom))] flex justify-around items-center max-w-lg mx-auto">
-    <button id="nav-dashboard" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-emerald-400 transition"><i data-lucide="layout-grid" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Home</span></button>
-    <button id="nav-transactions" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="arrow-left-right" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Expenses</span></button>
-    <button id="nav-bills" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="receipt" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Bills</span></button>
-    <button id="nav-khata" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Khata</span></button>
-    <button id="nav-loans" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="landmark" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Loans</span></button>
-    <button id="nav-assets" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Assets</span></button>
-    <button id="nav-accounts" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Accounts</span></button>
-  </nav>
-
-  <!-- ================= MODALS & BOTTOM SHEETS ================= -->
-  <div id="remindersModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-850 bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2"><div class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><i data-lucide="bell" class="w-4 h-4"></i></div><h3 class="font-bold text-white text-base">Payment Reminders</h3></div>
-        <button class="close-modal-btn text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Close reminders modal" data-target="remindersModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div id="remindersListContent" class="overflow-y-auto p-4 space-y-2.5 flex-1 text-sm"></div>
-      <div class="p-4 bg-slate-800/40 border-t border-slate-800 text-center"><p class="text-xs text-slate-400">Tap <span class="text-emerald-400 font-semibold">"Sync"</span> on any item to set an alert on your phone.</p></div>
-    </div>
-  </div>
-
-  <div id="txModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="txModalTitle" class="font-bold text-base text-white">Add Expense</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close transaction modal" data-target="txModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="txForm" class="space-y-3.5 pt-3">
-        <input type="hidden" id="txEditId" value="">
-        <div class="flex bg-slate-800 p-1 rounded-xl">
-          <button type="button" id="btnTxTypeExpense" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition">Expense</button>
-          <button type="button" id="btnTxTypeIncome" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Income</button>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative"><span class="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" min="0" id="txAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</label>
-          <select id="txCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account</label><select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" id="txDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes / Description</label>
-          <input type="text" id="txNotes" placeholder="Petrol, tea, vegetables..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-        </div>
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition">Save Transaction</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="khataModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="khataModalTitle" class="font-bold text-base text-white">Person-to-Person Entry</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close khata modal" data-target="khataModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="khataForm" class="space-y-3 pt-3">
-        <input type="hidden" id="khataEditId" value="">
-        <div class="flex bg-slate-800 p-1 rounded-xl">
-          <button type="button" id="btnKhataLent" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition">I Gave Cash</button>
-          <button type="button" id="btnKhataBorrowed" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">I Took Cash</button>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Person Name</label>
-          <input type="text" id="khataPersonName" required placeholder="e.g. Ramesh" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative"><span class="absolute left-3.5 top-2 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" min="0" id="khataAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-base font-bold text-white focus:outline-none focus:border-amber-500"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" id="khataDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Return Due</label><input type="date" id="khataDueDate" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes</label>
-          <input type="text" id="khataNotes" placeholder="Reason..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-        </div>
-        <button type="submit" class="w-full mt-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-amber-950/40 active:scale-98 transition">Save Khata</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="contactStatementModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border-t sm:border border-slate-700 rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col w-full sm:max-w-md overflow-hidden">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400" id="statementContactAvatar">S</div>
-          <div><h3 class="font-bold text-base text-white" id="statementContactName">Contact Name</h3><p class="text-[10px] text-slate-400" id="statementLastUpdated"></p></div>
-        </div>
-        <button class="close-modal-btn p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800" aria-label="Close statement modal" data-target="contactStatementModal"><i data-lucide="x" class="w-4 h-4"></i></button>
-      </div>
-      <div class="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
-        <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
-        <span class="text-base font-extrabold" id="statementNetBadge">₹0</span>
-      </div>
-      <div class="p-4 overflow-y-auto space-y-2.5 flex-1 no-scrollbar" id="statementTxHistoryList"></div>
-    </div>
-  </div>
-
-  <div id="loanModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="loanModalTitle" class="font-bold text-base text-white">Add Bank Loan</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close loan modal" data-target="loanModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="loanForm" class="space-y-3 pt-3">
-        <input type="hidden" id="loanEditId" value="">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Loan Name</label>
-          <input type="text" id="loanName" required placeholder="SBI Home Loan" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Balance (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="loanBalance" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Monthly EMI (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="loanEmi" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="loanDueDay" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" min="0" id="loanInterest" placeholder="8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        </div>
-        <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">Save Loan</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="accountModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Add Account / Card</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close account modal" data-target="accountModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="accountForm" class="space-y-3 pt-3">
-        <input type="hidden" id="accEditId" value="">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Type</label>
-          <select id="accType" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="debit_bank">Savings / Salary Bank Account</option>
-            <option value="debit_cash">Cash in Hand / Wallet</option>
-            <option value="credit_card">Credit Card</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account / Card Name</label>
-          <input type="text" id="accName" required placeholder="e.g. ICICI Salary, Amazon Pay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-        </div>
-        
-        <div id="accDebitBalanceGroup">
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
-          <input type="number" inputmode="decimal" step="0.01" min="0" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
-        </div>
-        
-        <div id="accCreditCardGroup" class="hidden space-y-2">
-          <div class="grid grid-cols-2 gap-2">
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Outstanding (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardDue" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Everything you owe in total right now"></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Generated Bill (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardStatement" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Amount officially billed for this cycle"></div>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Limit (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-white focus:outline-none"></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Gen</label><select id="cardBillGenDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="cardDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
-          </div>
-        </div>
-
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition">Save Account</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="investmentModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="invModalTitle" class="font-bold text-base text-white">Add Investment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close investment modal" data-target="investmentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="investmentForm" class="space-y-3 pt-3">
-        <input type="hidden" id="invEditId" value="">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Type</label>
-          <select id="invType" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="Mutual Fund">Mutual Fund</option><option value="Gold">Gold</option><option value="Provident Fund">Provident Fund</option><option value="Fixed Deposit">Fixed Deposit / RD</option><option value="Stocks">Stocks</option><option value="Other">Other</option>
-          </select>
-        </div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Name</label><input type="text" id="invName" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Valuation (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
-        
-        <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP Amount (Optional)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invInstallment" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-sky-500"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP Due Day</label><select id="invDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"></select></div>
-        </div>
-
-        <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">Save Investment</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="insuranceModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="insModalTitle" class="font-bold text-base text-white">Add Insurance</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close insurance modal" data-target="insuranceModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="insuranceForm" class="space-y-3 pt-3">
-        <input type="hidden" id="insEditId" value="">
-        <div>
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Type</label>
-          <select id="insType" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
-            <option value="Health Insurance">Health Insurance</option><option value="Vehicle Insurance">Vehicle Insurance</option><option value="Term Life">Term Life</option><option value="Other">Other</option>
-          </select>
-        </div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Policy Name</label><input type="text" id="insName" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Premium (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="insPremium" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal Due</label><input type="date" id="insDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        </div>
-        <button type="submit" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-950/40 active:scale-98 transition">Save Insurance</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-base text-white">Settings & Backup</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close settings" data-target="settingsModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="space-y-4 pt-4">
-        <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300">
-          <p class="font-semibold text-white mb-1 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> 100% Private</p>
-          All your personal finances are stored directly inside your device's browser database. No cloud tracking.
-        </div>
-        <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)</button></div>
-        <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)</button></div>
-        
-        <div class="pt-4 border-t border-slate-800 space-y-2.5">
-          <p class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Restore & Import</p>
-          <button id="btn-settings-import-merge" class="w-full flex items-center justify-center gap-2 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Safely combine your current data with a backup file">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Smart Sync (Merge with File)
-          </button>
-          <button id="btn-settings-import-overwrite" class="w-full flex items-center justify-center gap-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Completely erase current data and replace with backup">
-            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Restore Backup (Overwrite)
-          </button>
-          <input type="file" id="importJsonFileInput" accept=".json,application/json" style="display: none;">
-        </div>
-
-        <div class="pt-2 border-t border-slate-800"><button id="btn-settings-reset" class="w-full text-rose-400 hover:bg-rose-500/10 py-2 rounded-xl text-xs font-semibold transition">Reset App</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="paymentModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="paymentModalTitle" class="font-bold text-base text-white">Make Payment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="paymentForm" class="space-y-4 pt-4">
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label><select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select></div>
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirm Payment</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="billModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 id="billModalTitle" class="font-bold text-base text-white">Add Monthly Bill</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close bill modal" data-target="billModal"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <form id="billForm" class="space-y-4 pt-4">
-        <input type="hidden" id="billEditId" value="">
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Name</label><input type="text" id="billTitle" required placeholder="e.g. School Fees, Rent" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"></div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="billAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="billDueDay" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"></select></div>
-        </div>
-        <button type="submit" class="w-full mt-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-purple-950/40 active:scale-98 transition">Save Bill</button>
-      </form>
-    </div>
-  </div>
-
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
 
@@ -622,6 +26,12 @@
       const d = new Date();
       d.setDate(d.getDate() + daysAhead);
       return d.toISOString().slice(0, 10);
+    }
+    
+    function getLocalISOString() {
+      const dateObj = new Date();
+      const tzOffset = dateObj.getTimezoneOffset() * 60000;
+      return new Date(dateObj.getTime() - tzOffset).toISOString().slice(0, 10);
     }
     
     // SAFE RENDER ICONS - PREVENTS CRASH IF OFFLINE
@@ -934,7 +344,6 @@
       
       const totalReq = emiReq + sipReq + ccReq + billsReq + insReq + khataReq;
       
-      // Calculate Liquidity Shortage
       let liquidCash = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash').reduce((sum, a) => sum + Number(a.balance), 0);
       let shortageStatus = '';
       if (liquidCash >= totalReq) {
@@ -1465,7 +874,62 @@
       }
     }
 
-    // FUNCTION TO HANDLE SAVING INVESTMENTS & SIP
+    function processPayment(e) {
+      e.preventDefault();
+      if (!pendingPayment) return;
+      const amount = parseFloat(document.getElementById('payAmount').value);
+      const sourceAcc = appData.accounts.find(a => a.id === document.getElementById('paySourceAccount').value);
+      if (!sourceAcc || isNaN(amount) || amount <= 0) return;
+
+      const paymentDate = getLocalISOString();
+      const currentMonthKey = paymentDate.slice(0, 7);
+
+      if (pendingPayment.type === 'emi') {
+        const loan = appData.loans.find(l => l.id === pendingPayment.id);
+        if (!loan) return;
+        let interestPart = 0, principalPart = loan.emiAmount;
+        if (loan.interestRate > 0) { interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12); principalPart = Math.max(0, loan.emiAmount - interestPart); }
+        loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
+        loan.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - loan.emiAmount);
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: paymentDate, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
+
+      } else if (pendingPayment.type === 'cc') {
+        const card = appData.accounts.find(a => a.id === pendingPayment.id);
+        if (!card) return;
+        card.currentDue = Math.max(0, card.currentDue - amount);
+        card.statementBalance = Math.max(0, (card.statementBalance || 0) - amount);
+        if (card.statementBalance === 0) card.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: paymentDate, notes: `Card Bill Payment: ${card.name}` });
+
+      } else if (pendingPayment.type === 'bill') {
+        const bill = appData.bills.find(b => b.id === pendingPayment.id);
+        if (!bill) return;
+        bill.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: paymentDate, notes: `Recurring Bill: ${bill.title}` });
+        
+      } else if (pendingPayment.type === 'sip') {
+        const inv = appData.investments.find(i => i.id === pendingPayment.id);
+        if (!inv) return;
+        inv.lastPaidMonth = currentMonthKey;
+        inv.amount += amount; 
+        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
+        appData.transactions.unshift({ 
+            id: 'tx_' + Date.now(), type: 'expense', amount: amount, 
+            category: 'Investments', accountId: sourceAcc.id, 
+            date: paymentDate, 
+            notes: `SIP/RD Installment: ${inv.name}` 
+        });
+      }
+      
+      pendingPayment = null; 
+      saveData(true); 
+      closeModal('paymentModal');
+      showToast('Payment recorded successfully');
+    }
+
     function handleSaveInvestment(e) {
       e.preventDefault();
       const editId = document.getElementById('invEditId').value;
@@ -1516,6 +980,13 @@
       openModal('investmentModal');
     }
 
+    function safeBindEvent(id, eventType, callback) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener(eventType, callback);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       
       const dayOptions = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
@@ -1525,30 +996,34 @@
       if (document.getElementById('billDueDay')) document.getElementById('billDueDay').innerHTML = dayOptions;
       if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = `<option value="">None (Lumpsum only)</option>` + dayOptions;
 
-      // SET DEFAULT DATES FOR CUSTOM RANGE PICKER
-      const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
+      const todayLocal = new Date();
+      const pad = function(n) { return String(n).padStart(2, '0'); };
+      const firstDay = todayLocal.getFullYear() + '-' + pad(todayLocal.getMonth() + 1) + '-01';
+      const lastDateObj = new Date(todayLocal.getFullYear(), todayLocal.getMonth() + 1, 0);
+      const lastDay = todayLocal.getFullYear() + '-' + pad(todayLocal.getMonth() + 1) + '-' + pad(lastDateObj.getDate());
+      
       if (document.getElementById('txFilterFrom')) document.getElementById('txFilterFrom').value = firstDay;
       if (document.getElementById('txFilterTo')) document.getElementById('txFilterTo').value = lastDay;
 
-      // REGISTER EVENT LISTENERS *BEFORE* RENDERING
-      document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
-      document.getElementById('khataForm')?.addEventListener('submit', handleSaveKhata);
-      document.getElementById('loanForm')?.addEventListener('submit', handleSaveLoan);
-      document.getElementById('investmentForm')?.addEventListener('submit', handleSaveInvestment);
-      document.getElementById('insuranceForm')?.addEventListener('submit', handleSaveInsurance);
-      document.getElementById('accountForm')?.addEventListener('submit', handleSaveAccount);
-      document.getElementById('billForm')?.addEventListener('submit', handleSaveBill);
-      document.getElementById('paymentForm')?.addEventListener('submit', processPayment);
+      checkCreditCardBills(); 
+      refreshAllViews();
 
-      document.getElementById('txSearchInput')?.addEventListener('input', resetPaginationAndRender);
-      document.getElementById('txFilterType')?.addEventListener('change', resetPaginationAndRender);
-      document.getElementById('txFilterFrom')?.addEventListener('change', resetPaginationAndRender);
-      document.getElementById('txFilterTo')?.addEventListener('change', resetPaginationAndRender);
-      document.getElementById('txCategory')?.addEventListener('change', handleCategoryChange);
-      document.getElementById('accType')?.addEventListener('change', toggleAccountFields);
-      document.getElementById('importJsonFileInput')?.addEventListener('change', importDataJSON);
+      safeBindEvent('txForm', 'submit', handleSaveTransaction);
+      safeBindEvent('khataForm', 'submit', handleSaveKhata);
+      safeBindEvent('loanForm', 'submit', handleSaveLoan);
+      safeBindEvent('investmentForm', 'submit', handleSaveInvestment);
+      safeBindEvent('insuranceForm', 'submit', handleSaveInsurance);
+      safeBindEvent('accountForm', 'submit', handleSaveAccount);
+      safeBindEvent('billForm', 'submit', handleSaveBill);
+      safeBindEvent('paymentForm', 'submit', processPayment);
+
+      safeBindEvent('txSearchInput', 'input', resetPaginationAndRender);
+      safeBindEvent('txFilterType', 'change', resetPaginationAndRender);
+      safeBindEvent('txFilterFrom', 'change', resetPaginationAndRender);
+      safeBindEvent('txFilterTo', 'change', resetPaginationAndRender);
+      safeBindEvent('txCategory', 'change', handleCategoryChange);
+      safeBindEvent('accType', 'change', toggleAccountFields);
+      safeBindEvent('importJsonFileInput', 'change', importDataJSON);
 
       document.addEventListener('click', (e) => {
         const target = e.target.closest('button, .clickable, .close-modal-btn, .action-toggle-reminders');
@@ -1616,17 +1091,14 @@
         if (target.id === 'btn-settings-import-overwrite') { importMode = 'overwrite'; return document.getElementById('importJsonFileInput').click(); }
         if (target.id === 'btn-settings-reset') return clearAllData();
         
-        if (target.id?.startsWith('nav-')) return switchTab(target.id.replace('nav-', ''));
+        if (target.id && target.id.startsWith('nav-')) return switchTab(target.id.replace('nav-', ''));
       });
 
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('/kanakku_pusthakam/sw.js').catch(() => console.log('SW skipped.'));
       }
-
-      // NOW SAFELY RENDER VIEWS AFTER LISTENERS ARE ACTIVE
-      checkCreditCardBills(); 
-      refreshAllViews();
     });
   </script>
 </body>
 </html>
+
