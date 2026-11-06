@@ -28,7 +28,6 @@
     }
   </script>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -56,7 +55,6 @@
 
   <!-- GLOBAL TOAST NOTIFICATION -->
   <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] bg-slate-800/95 backdrop-blur-md border border-slate-700 text-white px-4 py-2.5 rounded-full shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-24 opacity-0 flex items-center gap-2 pointer-events-none">
-    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
     <span id="toastMsg">Action successful</span>
   </div>
 
@@ -72,12 +70,11 @@
       </div>
     </div>
     <div class="flex items-center space-x-1.5">
-      <button id="btn-reminders" aria-label="Open reminders" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
-        <i data-lucide="bell" class="w-5 h-5"></i>
-        <span id="headerReminderBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-900 animate-pulse"></span>
+      <button id="btn-reminders" aria-label="Open reminders" class="relative px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition flex items-center gap-1" title="Reminders">
+        🔔 <span id="headerReminderBadge" class="hidden w-2 h-2 bg-rose-500 rounded-full"></span>
       </button>
-      <button id="btn-settings" aria-label="Open settings" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
-        <i data-lucide="settings" class="w-5 h-5"></i>
+      <button id="btn-settings" aria-label="Open settings" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
+        ⚙️
       </button>
     </div>
   </header>
@@ -97,11 +94,11 @@
         <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1"><span id="netWealthDisplay">₹0</span></div>
         <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-700/50">
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Month Inflow</span>
+            <span class="text-[11px] text-slate-400 flex items-center gap-1">📥 Month Inflow</span>
             <div id="monthInflowDisplay" class="text-sm font-bold text-emerald-400 mt-0.5">₹0</div>
           </div>
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
-            <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3 text-rose-400"></i> Month Spent</span>
+            <span class="text-[11px] text-slate-400 flex items-center gap-1">📤 Month Spent</span>
             <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5">₹0</div>
           </div>
         </div>
@@ -111,7 +108,7 @@
       <div class="bg-slate-800/80 border border-slate-700/60 p-3.5 rounded-2xl shadow-lg">
         <div class="flex items-start justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
-            <i data-lucide="target" class="w-4 h-4 text-amber-400"></i>
+            <span class="text-amber-400 font-bold">🎯</span>
             <span class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Required Cash This Month</span>
           </div>
           <div id="dashObligStatus" class="text-right"></div>
@@ -130,12 +127,12 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-assets" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-sky-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span><div class="p-1 rounded-md bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div></div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span><div class="text-sky-400 font-bold">📈</div></div>
           <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Current portfolio</p>
         </div>
         <div id="btn-dash-loans" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-indigo-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span><div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400"><i data-lucide="landmark" class="w-3.5 h-3.5"></i></div></div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span><div class="text-indigo-400 font-bold">🏛️</div></div>
           <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Total principal due</p>
         </div>
@@ -143,12 +140,12 @@
 
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-khata-lent" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span><div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400"><i data-lucide="hand-coins" class="w-3.5 h-3.5"></i></div></div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span><div class="text-emerald-400 font-bold">🤝</div></div>
           <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to collect</p>
         </div>
         <div id="btn-dash-khata-borrowed" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
-          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span><div class="p-1 rounded-md bg-rose-500/10 text-rose-400"><i data-lucide="receipt-text" class="w-3.5 h-3.5"></i></div></div>
+          <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span><div class="text-rose-400 font-bold">📑</div></div>
           <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to pay back</p>
         </div>
@@ -156,22 +153,22 @@
 
       <div class="grid grid-cols-3 gap-2">
         <button id="btn-add-expense" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1"><i data-lucide="minus" class="w-4 h-4"></i></div>
+          <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-1 font-bold">➖</div>
           <span class="text-xs font-medium text-slate-200">Expense</span>
         </button>
         <button id="btn-add-income" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1"><i data-lucide="plus" class="w-4 h-4"></i></div>
+          <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1 font-bold">➕</div>
           <span class="text-xs font-medium text-slate-200">Income</span>
         </button>
         <button id="btn-add-khata" class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/60 active:bg-slate-700 transition">
-          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1"><i data-lucide="users" class="w-4 h-4"></i></div>
+          <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center mb-1 font-bold">👥</div>
           <span class="text-xs font-medium text-slate-200">Khata Entry</span>
         </button>
       </div>
 
       <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
         <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i><h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3></div>
+          <div class="flex items-center gap-2"><span class="text-sky-400 font-bold">🏛️</span><h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3></div>
           <button id="btn-view-all-loans" class="text-xs text-sky-400 font-semibold hover:underline">View All</button>
         </div>
         <div id="dashboardLoansList" class="space-y-2"></div>
@@ -191,21 +188,20 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Expenses & Income</h2><p class="text-xs text-slate-400">Track and analyze cash flow</p></div>
         <button id="btn-view-add-tx" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+          ➕ Add
         </button>
       </div>
       
       <!-- Filters Row 1 -->
       <div class="flex gap-2">
         <div class="relative flex-1">
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-          <input type="text" id="txSearchInput" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <input type="text" id="txSearchInput" placeholder="🔍 Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
         <select id="txFilterType" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
           <option value="all">All</option><option value="expense">Expense</option><option value="income">Income</option>
         </select>
-        <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
-          <i data-lucide="pie-chart" class="w-4 h-4"></i>
+        <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
+          📊
         </button>
       </div>
       
@@ -228,7 +224,7 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Person-to-Person Ledger</h2><p class="text-xs text-slate-400">Udhar / Cash given & borrowed</p></div>
         <button id="btn-view-add-khata" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Entry
+          ➕ New Entry
         </button>
       </div>
       <div class="flex bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
@@ -244,7 +240,7 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2><p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p></div>
         <button id="btn-view-add-loan" class="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Loan
+          ➕ Add Loan
         </button>
       </div>
       <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
@@ -259,15 +255,15 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Debit & Credit Accounts</h2><p class="text-xs text-slate-400">Bank accounts, cash in hand & cards</p></div>
         <button id="btn-view-add-account" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Account
+          ➕ Add Account
         </button>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i> Cash & Debit Accounts</h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">💳 Cash & Debit Accounts</h3>
         <div id="debitAccountsList" class="space-y-2"></div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="credit-card" class="w-4 h-4 text-rose-400"></i> Credit Cards & Billing Due</h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">💳 Credit Cards & Billing Due</h3>
         <div id="creditCardsList" class="space-y-2"></div>
       </div>
     </section>
@@ -278,19 +274,19 @@
         <div><h2 class="text-lg font-bold text-white">Wealth & Protection</h2><p class="text-xs text-slate-400">PF, Mutual Funds, RDs & Insurances</p></div>
         <div class="flex gap-1.5">
           <button id="btn-view-add-investment" class="bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
-            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> Invest
+            📈 Invest
           </button>
           <button id="btn-view-add-insurance" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-md">
-            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Insure
+            🛡️ Insure
           </button>
         </div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5 mt-2">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="trending-up" class="w-4 h-4 text-sky-400"></i> Savings & Investments</h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">📈 Savings & Investments</h3>
         <div id="investmentsList"></div>
       </div>
       <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3.5">
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i> Insurance Policies</h3>
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">🛡️ Insurance Policies</h3>
         <div id="insurancesList" class="space-y-2"></div>
       </div>
     </section>
@@ -300,7 +296,7 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Monthly Bills</h2><p class="text-xs text-slate-400">School fees, rent & subscriptions</p></div>
         <button id="btn-view-add-bill" class="flex items-center gap-1 bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
+          ➕ Add Bill
         </button>
       </div>
       <div id="billsListContainer" class="space-y-3"></div>
@@ -309,21 +305,21 @@
 
   <!-- BOTTOM MOBILE NAVIGATION BAR -->
   <nav class="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-1 py-1 pb-[calc(4px+env(safe-area-inset-bottom))] flex justify-around items-center max-w-lg mx-auto">
-    <button id="nav-dashboard" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-emerald-400 transition"><i data-lucide="layout-grid" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Home</span></button>
-    <button id="nav-transactions" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="arrow-left-right" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Expenses</span></button>
-    <button id="nav-bills" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="receipt" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Bills</span></button>
-    <button id="nav-khata" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="users" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Khata</span></button>
-    <button id="nav-loans" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="landmark" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Loans</span></button>
-    <button id="nav-assets" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Assets</span></button>
-    <button id="nav-accounts" class="flex flex-col items-center py-1.5 px-1.5 rounded-xl text-slate-400 active:text-slate-200 transition"><i data-lucide="credit-card" class="w-4 h-4 sm:w-5 sm:h-5"></i><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Accounts</span></button>
+    <button id="nav-dashboard" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-emerald-400 transition"><span class="text-sm">🏠</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Home</span></button>
+    <button id="nav-transactions" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">⇄</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Expenses</span></button>
+    <button id="nav-bills" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">📄</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Bills</span></button>
+    <button id="nav-khata" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">👥</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Khata</span></button>
+    <button id="nav-loans" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">🏛️</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Loans</span></button>
+    <button id="nav-assets" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">🛡️</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Assets</span></button>
+    <button id="nav-accounts" class="flex flex-col items-center py-1.5 px-2 rounded-xl text-slate-400 active:text-slate-200 transition"><span class="text-sm">💳</span><span class="text-[9px] sm:text-[10px] font-semibold mt-0.5">Accounts</span></button>
   </nav>
 
   <!-- ================= MODALS & BOTTOM SHEETS ================= -->
   <div id="remindersModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-850 bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl max-h-[85vh] flex flex-col overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center gap-2"><div class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><i data-lucide="bell" class="w-4 h-4"></i></div><h3 class="font-bold text-white text-base">Payment Reminders</h3></div>
-        <button class="close-modal-btn text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Close reminders modal" data-target="remindersModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="flex items-center gap-2"><span class="text-rose-400 font-bold">🔔</span><h3 class="font-bold text-white text-base">Payment Reminders</h3></div>
+        <button class="close-modal-btn text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Close reminders modal" data-target="remindersModal">✕</button>
       </div>
       <div id="remindersListContent" class="overflow-y-auto p-4 space-y-2.5 flex-1 text-sm"></div>
       <div class="p-4 bg-slate-800/40 border-t border-slate-800 text-center"><p class="text-xs text-slate-400">Tap <span class="text-emerald-400 font-semibold">"Sync"</span> on any item to set an alert on your phone.</p></div>
@@ -334,7 +330,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="txModalTitle" class="font-bold text-base text-white">Add Expense</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close transaction modal" data-target="txModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close transaction modal" data-target="txModal">✕</button>
       </div>
       <form id="txForm" class="space-y-3.5 pt-3">
         <input type="hidden" id="txEditId" value="">
@@ -367,7 +363,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="khataModalTitle" class="font-bold text-base text-white">Person-to-Person Entry</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close khata modal" data-target="khataModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close khata modal" data-target="khataModal">✕</button>
       </div>
       <form id="khataForm" class="space-y-3 pt-3">
         <input type="hidden" id="khataEditId" value="">
@@ -403,7 +399,7 @@
           <div class="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400" id="statementContactAvatar">S</div>
           <div><h3 class="font-bold text-base text-white" id="statementContactName">Contact Name</h3><p class="text-[10px] text-slate-400" id="statementLastUpdated"></p></div>
         </div>
-        <button class="close-modal-btn p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800" aria-label="Close statement modal" data-target="contactStatementModal"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button class="close-modal-btn p-1.5 rounded-full text-slate-400 hover:text-white bg-slate-800" aria-label="Close statement modal" data-target="contactStatementModal">✕</button>
       </div>
       <div class="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
         <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
@@ -417,7 +413,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="loanModalTitle" class="font-bold text-base text-white">Add Bank Loan</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close loan modal" data-target="loanModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close loan modal" data-target="loanModal">✕</button>
       </div>
       <form id="loanForm" class="space-y-3 pt-3">
         <input type="hidden" id="loanEditId" value="">
@@ -442,7 +438,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="font-bold text-base text-white">Add Account / Card</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close account modal" data-target="accountModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close account modal" data-target="accountModal">✕</button>
       </div>
       <form id="accountForm" class="space-y-3 pt-3">
         <input type="hidden" id="accEditId" value="">
@@ -485,7 +481,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="invModalTitle" class="font-bold text-base text-white">Add Investment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close investment modal" data-target="investmentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close investment modal" data-target="investmentModal">✕</button>
       </div>
       <form id="investmentForm" class="space-y-3 pt-3">
         <input type="hidden" id="invEditId" value="">
@@ -512,7 +508,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="insModalTitle" class="font-bold text-base text-white">Add Insurance</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close insurance modal" data-target="insuranceModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close insurance modal" data-target="insuranceModal">✕</button>
       </div>
       <form id="insuranceForm" class="space-y-3 pt-3">
         <input type="hidden" id="insEditId" value="">
@@ -536,23 +532,23 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 class="font-bold text-base text-white">Settings & Backup</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close settings" data-target="settingsModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close settings" data-target="settingsModal">✕</button>
       </div>
       <div class="space-y-4 pt-4">
         <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300">
-          <p class="font-semibold text-white mb-1 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> 100% Private</p>
+          <p class="font-semibold text-white mb-1 flex items-center gap-1.5">🛡️ 100% Private</p>
           All your personal finances are stored directly inside your device's browser database. No cloud tracking.
         </div>
-        <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)</button></div>
-        <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)</button></div>
+        <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">📥 Export & Backup Data (JSON)</button></div>
+        <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition">📄 Download as Spreadsheet (CSV)</button></div>
         
         <div class="pt-4 border-t border-slate-800 space-y-2.5">
           <p class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Restore & Import</p>
           <button id="btn-settings-import-merge" class="w-full flex items-center justify-center gap-2 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Safely combine your current data with a backup file">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Smart Sync (Merge with File)
+            🔄 Smart Sync (Merge with File)
           </button>
           <button id="btn-settings-import-overwrite" class="w-full flex items-center justify-center gap-2 bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/30 text-rose-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Completely erase current data and replace with backup">
-            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Restore Backup (Overwrite)
+            ⚠️ Restore Backup (Overwrite)
           </button>
           <input type="file" id="importJsonFileInput" accept=".json,application/json" style="display: none;">
         </div>
@@ -566,12 +562,12 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="paymentModalTitle" class="font-bold text-base text-white">Make Payment</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal">✕</button>
       </div>
       <form id="paymentForm" class="space-y-4 pt-4">
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label><select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select></div>
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirm Payment</button>
+        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2">Confirm Payment</button>
       </form>
     </div>
   </div>
@@ -580,7 +576,7 @@
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
         <h3 id="billModalTitle" class="font-bold text-base text-white">Add Monthly Bill</h3>
-        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close bill modal" data-target="billModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close bill modal" data-target="billModal">✕</button>
       </div>
       <form id="billForm" class="space-y-4 pt-4">
         <input type="hidden" id="billEditId" value="">
@@ -622,13 +618,6 @@
       const d = new Date();
       d.setDate(d.getDate() + daysAhead);
       return d.toISOString().slice(0, 10);
-    }
-    
-    // SAFE RENDER ICONS - PREVENTS CRASH IF OFFLINE
-    function renderIcons() {
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
     }
 
     let appData = loadData();
@@ -800,7 +789,6 @@
         }
         
         if (!entryWithDueDate) return;
-        
         const dueDateStr = entryWithDueDate.dueDate;
         if (!dueDateStr) return; 
         
@@ -871,7 +859,7 @@
                 '</div>' +
               '</div>' +
               '<span class="text-xs font-semibold text-emerald-400 flex items-center">' +
-                (urgentDues.length > 1 ? '+' + (urgentDues.length - 1) + ' more' : 'Details') + ' <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>' +
+                (urgentDues.length > 1 ? '+' + (urgentDues.length - 1) + ' more' : 'Details') + ' &gt;' +
               '</span>' +
             '</div>';
         }
@@ -899,16 +887,15 @@
                   '<div class="text-emerald-400 font-bold text-sm mt-1">₹' + r.amount.toLocaleString('en-IN') + '</div>' +
                 '</div>' +
                 '<div class="flex flex-col items-end gap-2.5 h-full justify-between">' +
-                  '<button class="action-dismiss-reminder text-slate-500 hover:text-white p-1 rounded transition" aria-label="Dismiss reminder" data-id="' + r.id + '" title="Dismiss this alert"><i data-lucide="x" class="w-4 h-4"></i></button>' +
+                  '<button class="action-dismiss-reminder text-slate-500 hover:text-white p-1 rounded transition" aria-label="Dismiss reminder" data-id="' + r.id + '" title="Dismiss this alert">✕</button>' +
                   '<a href="' + generateCalendarLink(r) + '" target="_blank" rel="noopener" class="flex flex-col items-center justify-center bg-slate-700 hover:bg-slate-650 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold text-slate-200 border border-slate-600 transition">' +
-                    '<i data-lucide="calendar-plus" class="w-3 h-3 text-emerald-400 mb-0.5"></i> Sync' +
+                    '📅 Sync' +
                   '</a>' +
                 '</div>' +
               '</div>';
           }).join('');
         }
       }
-      renderIcons();
     }
 
     function getAggregatedContacts() {
@@ -953,7 +940,6 @@
       
       const totalReq = emiReq + sipReq + ccReq + billsReq + insReq + khataReq;
       
-      // Calculate Liquidity Shortage
       let liquidCash = appData.accounts.filter(function(a) { return a.type === 'debit_bank' || a.type === 'debit_cash'; }).reduce(function(sum, a) { return sum + Number(a.balance); }, 0);
       let shortageStatus = '';
       if (liquidCash >= totalReq) {
@@ -1027,7 +1013,6 @@
 
       const selectAcc = document.getElementById('txAccount');
       if (selectAcc) selectAcc.innerHTML = appData.accounts.map(function(a) { return '<option value="' + a.id + '">' + a.name + ' (' + (a.type === 'credit_card' ? 'Credit Card' : 'Debit') + ')</option>'; }).join('');
-      renderIcons();
     }
 
     function renderDashboardFeed() {
@@ -1099,7 +1084,6 @@
         }
         container.innerHTML = html;
       }
-      renderIcons();
     }
 
     function createTxRowHtml(t, canDelete) {
@@ -1110,14 +1094,14 @@
       let deleteHtml = '';
       if(canDelete) {
         deleteHtml = '<div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">' +
-          '<button class="action-edit-tx p-2.5 text-slate-400 active:text-white" aria-label="Edit transaction" data-id="' + t.id + '"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>' +
-          '<button class="action-delete-tx p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete transaction" data-id="' + t.id + '"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+          '<button class="action-edit-tx p-2.5 text-slate-400 active:text-white" aria-label="Edit transaction" data-id="' + t.id + '">✏️</button>' +
+          '<button class="action-delete-tx p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete transaction" data-id="' + t.id + '">🗑️</button>' +
         '</div>';
       }
       
       return '<div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/70 border border-slate-700/50">' +
           '<div class="flex items-center gap-3">' +
-            '<div class="w-8 h-8 rounded-xl ' + (isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400') + ' flex items-center justify-center"><i data-lucide="' + (isExpense ? 'arrow-up-right' : 'arrow-down-left') + '" class="w-4 h-4"></i></div>' +
+            '<div class="w-8 h-8 rounded-xl ' + (isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400') + ' flex items-center justify-center font-bold">' + (isExpense ? '↗' : '↙') + '</div>' +
             '<div>' +
               '<div class="text-xs font-bold text-white">' + t.category + '</div>' +
               '<div class="text-[11px] text-slate-400">' + (t.notes || accName) + ' • <span class="font-mono">' + t.date + '</span></div>' +
@@ -1193,7 +1177,6 @@
             '</div>';
         }).join('');
       }
-      renderIcons();
     }
 
     function openContactStatement(personName) {
@@ -1223,15 +1206,14 @@
             '<div class="flex items-center gap-2">' +
               '<span class="font-extrabold text-sm ' + (e.direction === 'borrowed' ? 'text-rose-400' : 'text-emerald-400') + '">₹' + Number(e.amount).toLocaleString('en-IN') + '</span>' +
               '<div class="flex flex-col gap-1 border-l border-slate-800 pl-2 ml-1">' +
-                '<button class="action-edit-khata p-2.5 text-slate-400 active:text-white" aria-label="Edit khata entry" data-id="' + e.id + '"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>' +
-                '<button class="action-delete-khata p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete khata entry" data-id="' + e.id + '"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+                '<button class="action-edit-khata p-2.5 text-slate-400 active:text-white" aria-label="Edit khata entry" data-id="' + e.id + '">✏️</button>' +
+                '<button class="action-delete-khata p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete khata entry" data-id="' + e.id + '">🗑️</button>' +
               '</div>' +
             '</div>' +
           '</div>';
         }).join('');
       }
       openModal('contactStatementModal');
-      renderIcons();
     }
 
     function renderLoans() {
@@ -1244,8 +1226,8 @@
               '<div class="flex items-center justify-between">' +
                 '<div><h4 class="font-bold text-white text-sm">' + loan.name + '</h4><p class="text-xs text-sky-400 mt-0.5">Due Day: ' + loan.dueDay + 'th of every month</p></div>' +
                 '<div class="flex items-center gap-1 border-l border-slate-700/50 pl-2 ml-2">' +
-                  '<button class="action-edit-loan p-2.5 text-slate-400 active:text-white" aria-label="Edit loan" data-id="' + loan.id + '"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>' +
-                  '<button class="action-delete-loan p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete loan" data-id="' + loan.id + '"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+                  '<button class="action-edit-loan p-2.5 text-slate-400 active:text-white" aria-label="Edit loan" data-id="' + loan.id + '">✏️</button>' +
+                  '<button class="action-delete-loan p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete loan" data-id="' + loan.id + '">🗑️</button>' +
                 '</div>' +
               '</div>' +
               '<div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">' +
@@ -1255,13 +1237,12 @@
               '<div class="flex items-center justify-between pt-1">' +
                 '<span class="text-xs text-slate-400">' + (loan.interestRate ? loan.interestRate + '% Interest' : '') + '</span>' +
                 (loan.principalBalance > 0 
-                  ? '<button class="action-pay-emi bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1" data-id="' + loan.id + '"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Record EMI Payment</button>' 
-                  : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Cleared</span>') +
+                  ? '<button class="action-pay-emi bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1" data-id="' + loan.id + '">Record EMI Payment</button>' 
+                  : '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1">Loan Cleared</span>') +
               '</div>' +
             '</div>';
         }).join('');
       }
-      renderIcons();
     }
 
     function renderAssets() {
@@ -1281,15 +1262,15 @@
               sipHtml = '<div class="flex items-center justify-between pt-2 border-t border-slate-700/40">' +
                 '<span class="text-[10px] text-sky-400 font-semibold">SIP/RD: ₹' + Number(i.installmentAmount).toLocaleString('en-IN') + '/mo (Due: ' + i.dueDay + 'th)</span>' +
                 (isPaid 
-                  ? '<span class="bg-emerald-500/10 text-emerald-400 px-2 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3 h-3"></i> Paid</span>' 
+                  ? '<span class="bg-emerald-500/10 text-emerald-400 px-2 py-1.5 rounded-lg text-[10px] font-bold">Paid</span>' 
                   : '<button class="action-pay-sip bg-sky-600 hover:bg-sky-500 text-white px-2 py-1.5 rounded-lg text-[10px] font-semibold active:scale-95 transition" data-id="' + i.id + '">Pay Installment</button>') +
               '</div>';
             }
             
             return '<div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 mb-2 space-y-2">' +
               '<div class="flex items-center justify-between">' +
-                '<div class="flex items-center gap-2.5"><div class="p-2 rounded-lg bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-4 h-4"></i></div><div><h4 class="text-xs font-bold text-white">' + i.name + '</h4><p class="text-[10px] text-slate-400">' + i.type + '</p></div></div>' +
-                '<div class="flex items-center gap-2"><span class="text-sm font-bold text-white mr-1">₹' + Number(i.amount).toLocaleString('en-IN') + '</span><div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-inv p-2 text-slate-400 active:text-white" aria-label="Edit investment" data-id="' + i.id + '"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-inv p-2 text-slate-500 active:text-rose-400" aria-label="Delete investment" data-id="' + i.id + '"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div></div>' +
+                '<div class="flex items-center gap-2.5"><div class="p-2 rounded-lg bg-sky-500/10 text-sky-400 font-bold">📈</div><div><h4 class="text-xs font-bold text-white">' + i.name + '</h4><p class="text-[10px] text-slate-400">' + i.type + '</p></div></div>' +
+                '<div class="flex items-center gap-2"><span class="text-sm font-bold text-white mr-1">₹' + Number(i.amount).toLocaleString('en-IN') + '</span><div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-inv p-2 text-slate-400 active:text-white" aria-label="Edit investment" data-id="' + i.id + '">✏️</button><button class="action-delete-inv p-2 text-slate-500 active:text-rose-400" aria-label="Delete investment" data-id="' + i.id + '">🗑️</button></div></div>' +
               '</div>' +
               sipHtml +
             '</div>';
@@ -1306,7 +1287,7 @@
                 '<div class="flex items-center gap-2"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">' + i.type + '</span><h4 class="text-xs font-bold text-white">' + i.name + '</h4></div>' +
                 '<div class="flex items-center gap-2 text-right">' +
                   '<div class="mr-1"><div class="text-[10px] text-slate-400 uppercase">Premium</div><div class="text-sm font-bold text-white">₹' + Number(i.premium).toLocaleString('en-IN') + '</div></div>' +
-                  '<div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" aria-label="Edit insurance" data-id="' + i.id + '"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete insurance" data-id="' + i.id + '"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>' +
+                  '<div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" aria-label="Edit insurance" data-id="' + i.id + '">✏️</button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete insurance" data-id="' + i.id + '">🗑️</button></div>' +
                 '</div>' +
               '</div>' +
               '<div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-700/40"><span>Renew by: <strong class="text-white font-mono">' + i.dueDate + '</strong></span></div>' +
@@ -1314,7 +1295,6 @@
           }).join('');
         }
       }
-      renderIcons();
     }
 
     function toggleAccountFields() {
@@ -1595,15 +1575,14 @@
       }
     }
 
-    // FUNCTION TO HANDLE SAVING INVESTMENTS & SIP
     function handleSaveInvestment(e) {
       e.preventDefault();
       const editId = document.getElementById('invEditId').value;
       const type = document.getElementById('invType').value;
       const name = document.getElementById('invName').value.trim();
       const amount = parseFloat(document.getElementById('invAmount').value);
-      const installmentAmount = parseFloat(document.getElementById('invInstallment').value) || 0;
-      const dueDay = parseInt(document.getElementById('invDueDay').value) || null;
+      const installmentAmount = parseFloat(document.getElementById('invInstallment')?.value) || 0;
+      const dueDay = parseInt(document.getElementById('invDueDay')?.value) || null;
 
       if (!name || isNaN(amount)) return;
 
@@ -1646,7 +1625,6 @@
       openModal('investmentModal');
     }
     
-    // MISSING OPEN PAYMENT MODAL LOGIC INJECTED HERE
     function openPaymentModal(type, id) {
       const sourceSelect = document.getElementById('paySourceAccount');
       const amountInput = document.getElementById('payAmount');
@@ -1679,7 +1657,6 @@
       openModal('paymentModal');
     }
 
-    // MISSING PROCESS PAYMENT LOGIC INJECTED HERE
     function processPayment(e) {
       e.preventDefault();
       if (!pendingPayment) return;
@@ -1728,8 +1705,6 @@
       showToast('Payment recorded successfully');
     }
 
-    
-    // SAFE LISTENER ATTACHMENT FUNCTION
     function attachSafeListener(id, eventType, handler) {
       const el = document.getElementById(id);
       if (el) {
@@ -1738,7 +1713,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      
       let dayOptionsArr = [];
       for(let i=1; i<=31; i++) {
         dayOptionsArr.push('<option value="' + i + '">' + i + 'th of month</option>');
@@ -1751,14 +1725,12 @@
       if (document.getElementById('billDueDay')) document.getElementById('billDueDay').innerHTML = dayOptions;
       if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = '<option value="">None (Lumpsum only)</option>' + dayOptions;
 
-      // SET DEFAULT DATES FOR CUSTOM RANGE PICKER
       const today = new Date();
       const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
       const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().slice(0, 10);
       if (document.getElementById('txFilterFrom')) document.getElementById('txFilterFrom').value = firstDay;
       if (document.getElementById('txFilterTo')) document.getElementById('txFilterTo').value = lastDay;
 
-      // REGISTER EVENT LISTENERS SAFELY
       attachSafeListener('txForm', 'submit', handleSaveTransaction);
       attachSafeListener('khataForm', 'submit', handleSaveKhata);
       attachSafeListener('loanForm', 'submit', handleSaveLoan);
@@ -1849,7 +1821,6 @@
         navigator.serviceWorker.register('/kanakku_pusthakam/sw.js').catch(function() { console.log('SW skipped.'); });
       }
 
-      // NOW SAFELY RENDER VIEWS AFTER LISTENERS ARE ACTIVE
       checkCreditCardBills(); 
       refreshAllViews();
     });
