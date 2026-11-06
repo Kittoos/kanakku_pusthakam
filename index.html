@@ -117,7 +117,6 @@
           <div id="liquidityBadgeContainer"></div>
         </div>
         <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
-        <!-- Note: Grid upgraded to 6 columns to fit SIPs gracefully -->
         <div class="grid grid-cols-6 gap-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
@@ -194,6 +193,20 @@
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
         </button>
       </div>
+
+      <!-- NEW: UNIFIED RANGE PICKER -->
+      <div class="flex items-center gap-2 bg-slate-800/80 p-2 rounded-xl border border-slate-700/60">
+        <div class="flex-1">
+          <label class="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5 ml-1">From Date</label>
+          <input type="date" id="txDateFrom" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+        <div class="pt-3 text-slate-500"><i data-lucide="arrow-right" class="w-3 h-3"></i></div>
+        <div class="flex-1">
+          <label class="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5 ml-1">To Date</label>
+          <input type="date" id="txDateTo" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
       <div class="flex gap-2">
         <div class="relative flex-1">
           <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
@@ -487,7 +500,6 @@
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Name</label><input type="text" id="invName" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Valuation (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
         
-        <!-- NEW SIP FIELDS -->
         <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-700/50">
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP / RD Amount</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invInstallment" placeholder="Optional" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP Due Day</label><select id="invDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"><option value="">N/A</option></select></div>
@@ -704,6 +716,20 @@
       if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
     }
 
+    function setDefaultTxDateRange() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const firstDay = `${y}-${m}-01`;
+      const lastDayObj = new Date(y, now.getMonth() + 1, 0);
+      const lastDay = `${y}-${m}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
+      
+      const fromEl = document.getElementById('txDateFrom');
+      const toEl = document.getElementById('txDateTo');
+      if (fromEl && !fromEl.value) fromEl.value = firstDay;
+      if (toEl && !toEl.value) toEl.value = lastDay;
+    }
+
     let currentTab = 'dashboard';
     let khataFilter = 'all';
     let currentTxType = 'expense';
@@ -753,7 +779,6 @@
         reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, loan.dueDay), raw: loan });
       });
 
-      // ADD SIP REMINDERS
       appData.investments.forEach(inv => {
         if(inv.installmentAmount > 0) {
           if(inv.lastPaidMonth === currentMonthKey) return;
@@ -937,8 +962,6 @@
       let ccReq = appData.accounts.filter(a => a.type === 'credit_card' && (a.statementBalance || 0) > 0 && a.lastPaidMonth !== currentMonthKey).reduce((sum, a) => sum + Number(a.statementBalance), 0);
       let billsReq = appData.bills.filter(b => b.lastPaidMonth !== currentMonthKey).reduce((sum, b) => sum + Number(b.amount), 0);
       let insReq = appData.insurances.filter(i => i.dueDate && i.dueDate.startsWith(currentMonthKey)).reduce((sum, i) => sum + Number(i.premium), 0);
-      
-      // ADD SIP/RD to Required Planner
       let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
 
       let khataReq = 0;
@@ -1069,17 +1092,24 @@
       const container = document.getElementById('fullTxList');
       const searchQuery = (document.getElementById('txSearchInput')?.value || '').toLowerCase();
       const filterType = document.getElementById('txFilterType')?.value || 'all';
+      const fromDate = document.getElementById('txDateFrom')?.value;
+      const toDate = document.getElementById('txDateTo')?.value;
 
       let filtered = [...appData.transactions].filter(t => {
         if (filterType !== 'all' && t.type !== filterType) return false;
-        if (searchQuery) return (t.notes || '').toLowerCase().includes(searchQuery) || (t.category || '').toLowerCase().includes(searchQuery);
+        if (searchQuery && !((t.notes || '').toLowerCase().includes(searchQuery) || (t.category || '').toLowerCase().includes(searchQuery))) return false;
+        
+        // NEW: Date Range Filter Logic
+        if (fromDate && t.date < fromDate) return false;
+        if (toDate && t.date > toDate) return false;
+
         return true;
       });
 
       filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
       if (!document.getElementById('chartContainer').classList.contains('hidden')) updateTxChart(filtered);
 
-      if (filtered.length === 0) container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No transactions found.</div>`;
+      if (filtered.length === 0) container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No transactions found in this range.</div>`;
       else {
         const paginated = filtered.slice(0, txRenderLimit);
         let html = paginated.map(t => createTxRowHtml(t, true)).join('');
@@ -1495,7 +1525,6 @@
         if (!bill) return;
         title.innerText = `Pay Bill: ${bill.title}`; amountInput.value = bill.amount; amountInput.readOnly = false; pendingPayment = { type: 'bill', id: id };
       } else if (type === 'sip') {
-        // ADDED SIP PAYMENT HANDLER
         const inv = appData.investments.find(i => i.id === id);
         if (!inv) return;
         title.innerText = `Pay SIP: ${inv.name}`; amountInput.value = inv.installmentAmount; amountInput.readOnly = true; pendingPayment = { type: 'sip', id: id };
@@ -1536,7 +1565,6 @@
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `Recurring Bill: ${bill.title}` });
 
       } else if (pendingPayment.type === 'sip') {
-        // ADDED SIP PAYMENT PROCESSOR
         const inv = appData.investments.find(i => i.id === pendingPayment.id);
         if (!inv) return;
         inv.amount += amount;
@@ -1674,7 +1702,6 @@
       const name = document.getElementById('invName').value.trim();
       const amount = parseFloat(document.getElementById('invAmount').value);
       
-      // PARSE NEW SIP FIELDS
       const installmentAmount = parseFloat(document.getElementById('invInstallment').value) || 0;
       const dueDay = parseInt(document.getElementById('invDueDay').value) || null;
 
@@ -1983,6 +2010,7 @@
       if (document.getElementById('billDueDay')) document.getElementById('billDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
       if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = dayOptions;
 
+      setDefaultTxDateRange();
       checkCreditCardBills(); 
       refreshAllViews();
 
@@ -1997,6 +2025,8 @@
 
       document.getElementById('txSearchInput')?.addEventListener('input', resetPaginationAndRender);
       document.getElementById('txFilterType')?.addEventListener('change', resetPaginationAndRender);
+      document.getElementById('txDateFrom')?.addEventListener('change', resetPaginationAndRender);
+      document.getElementById('txDateTo')?.addEventListener('change', resetPaginationAndRender);
       document.getElementById('txCategory')?.addEventListener('change', handleCategoryChange);
       document.getElementById('accType')?.addEventListener('change', toggleAccountFields);
       document.getElementById('importJsonFileInput')?.addEventListener('change', importDataJSON);
