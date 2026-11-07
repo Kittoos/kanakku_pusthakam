@@ -14,7 +14,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PocketLedger">
   
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Pinned versions to prevent future breakages -->
+  <script src="https://cdn.tailwindcss.com?version=3.4.1"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -28,8 +29,8 @@
     }
   </script>
 
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@0.292.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
 
   <style>
     body {
@@ -194,7 +195,6 @@
         </button>
       </div>
 
-      <!-- NEW: UNIFIED RANGE PICKER -->
       <div class="flex items-center gap-2 bg-slate-800/80 p-2 rounded-xl border border-slate-700/60">
         <div class="flex-1">
           <label class="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5 ml-1">From Date</label>
@@ -346,7 +346,7 @@
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative"><span class="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" min="0" id="txAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
+          <div class="relative"><span class="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" max="999999999" id="txAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</label>
@@ -383,7 +383,7 @@
         </div>
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
-          <div class="relative"><span class="absolute left-3.5 top-2 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" min="0" id="khataAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-base font-bold text-white focus:outline-none focus:border-amber-500"></div>
+          <div class="relative"><span class="absolute left-3.5 top-2 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" max="999999999" id="khataAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-base font-bold text-white focus:outline-none focus:border-amber-500"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" id="khataDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
@@ -428,12 +428,12 @@
           <input type="text" id="loanName" required placeholder="SBI Home Loan" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Balance (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="loanBalance" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Monthly EMI (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="loanEmi" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Balance (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="loanBalance" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Monthly EMI (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="loanEmi" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="loanDueDay" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" min="0" id="loanInterest" placeholder="8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" max="100" id="loanInterest" placeholder="8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
         </div>
         <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">Save Loan</button>
       </form>
@@ -463,16 +463,16 @@
         
         <div id="accDebitBalanceGroup">
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
-          <input type="number" inputmode="decimal" step="0.01" min="0" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+          <input type="number" inputmode="decimal" step="0.01" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
         </div>
         
         <div id="accCreditCardGroup" class="hidden space-y-2">
           <div class="grid grid-cols-2 gap-2">
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Outstanding (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardDue" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Everything you owe in total right now"></div>
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Generated Bill (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardStatement" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Amount officially billed for this cycle"></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Outstanding (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="cardDue" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Everything you owe in total right now"></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Generated Bill (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="cardStatement" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-rose-400 focus:outline-none" title="Amount officially billed for this cycle"></div>
           </div>
           <div class="grid grid-cols-3 gap-2">
-            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Limit (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-white focus:outline-none"></div>
+            <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Limit (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="cardLimit" placeholder="50000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs font-bold text-white focus:outline-none"></div>
             <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Gen</label><select id="cardBillGenDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
             <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="cardDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></select></div>
           </div>
@@ -498,10 +498,10 @@
           </select>
         </div>
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Name</label><input type="text" id="invName" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Valuation (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Valuation (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="invAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
         
         <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-700/50">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP / RD Amount</label><input type="number" inputmode="decimal" step="0.01" min="0" id="invInstallment" placeholder="Optional" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP / RD Amount</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="invInstallment" placeholder="Optional" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">SIP Due Day</label><select id="invDueDay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"><option value="">N/A</option></select></div>
         </div>
 
@@ -526,7 +526,7 @@
         </div>
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Policy Name</label><input type="text" id="insName" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Premium (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="insPremium" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Premium (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="insPremium" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal Due</label><input type="date" id="insDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
         </div>
         <button type="submit" class="w-full mt-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-indigo-950/40 active:scale-98 transition">Save Insurance</button>
@@ -548,7 +548,6 @@
         <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)</button></div>
         <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)</button></div>
         
-        <!-- NEW SMART SYNC SECTIONS -->
         <div class="pt-4 border-t border-slate-800 space-y-2.5">
           <p class="text-[10px] text-slate-400 uppercase font-semibold mb-2">Restore & Import</p>
           <button id="btn-settings-import-merge" class="w-full flex items-center justify-center gap-2 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-400 font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition" title="Safely combine your current data with a backup file">
@@ -572,7 +571,7 @@
         <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="paymentForm" class="space-y-4 pt-4">
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
+        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label><select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select></div>
         <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirm Payment</button>
       </form>
@@ -589,7 +588,7 @@
         <input type="hidden" id="billEditId" value="">
         <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bill Name</label><input type="text" id="billTitle" required placeholder="e.g. School Fees, Rent" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"></div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="billAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="billAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-white focus:outline-none"></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Due Day</label><select id="billDueDay" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none"></select></div>
         </div>
         <button type="submit" class="w-full mt-2 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-purple-950/40 active:scale-98 transition">Save Bill</button>
@@ -600,43 +599,33 @@
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
 
+    // XSS Sanitizer for all text outputs
+    function escapeHTML(str) {
+      if (typeof str !== 'string') return str;
+      return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag]));
+    }
+
+    // Timezone safe local date getters
+    function getLocalDateStr(d = new Date()) {
+      const tzOffset = d.getTimezoneOffset() * 60000;
+      return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
+    }
+    function getCurrentMonthKey() {
+      return getLocalDateStr().slice(0, 7);
+    }
+
     const defaultSeedData = {
       categories: {
-        expense: ['Fuel & Commute', 'Groceries & Food', 'Utilities & Bills', 'Maintenance & Repairs', 'Shopping & Personal', 'Interest / Return', 'General'],
+        expense: ['Fuel & Commute', 'Groceries & Food', 'Utilities & Bills', 'Maintenance & Repairs', 'Shopping & Personal', 'Credit Card Bill', 'Debt Repayment', 'Investments', 'General'],
         income: ['Salary & Wages', 'Investment Inflow/Return', 'General']
       },
       accounts: [
-        { id: 'acc_1', name: 'Primary Bank (HDFC)', type: 'debit_bank', balance: 48500 },
-        { id: 'acc_2', name: 'Cash in Hand', type: 'debit_cash', balance: 6400 },
-        { id: 'acc_3', name: 'Amazon ICICI Credit Card', type: 'credit_card', limit: 100000, currentDue: 14200, statementBalance: 14200, billGenDay: 1, dueDay: 18, lastBilledMonth: '', lastPaidMonth: '' }
+        { id: 'acc_1', name: 'Primary Bank', type: 'debit_bank', balance: 0 }
       ],
-      transactions: [
-        { id: 'tx_1', type: 'income', amount: 65000, category: 'Salary & Wages', accountId: 'acc_1', date: new Date().toISOString().slice(0, 10), notes: 'Monthly Salary' },
-        { id: 'tx_2', type: 'expense', amount: 3200, category: 'Groceries & Food', accountId: 'acc_1', date: new Date().toISOString().slice(0, 10), notes: 'Supermarket weekly essentials' },
-        { id: 'tx_3', type: 'expense', amount: 800, category: 'Fuel & Commute', accountId: 'acc_2', date: new Date().toISOString().slice(0, 10), notes: 'Scooter petrol fill' }
-      ],
-      khata: [
-        { id: 'k_1', direction: 'lent', personName: 'Rahul Kumar', amount: 5000, date: new Date().toISOString().slice(0, 10), dueDate: getOffsetDate(5), status: 'pending', notes: 'Emergency medical loan' },
-        { id: 'k_2', direction: 'borrowed', personName: 'Amit Sharma', amount: 2000, date: new Date().toISOString().slice(0, 10), dueDate: getOffsetDate(3), status: 'pending', notes: 'Dinner bill split' }
-      ],
-      loans: [
-        { id: 'loan_1', name: 'Car Loan (SBI)', principalBalance: 245000, emiAmount: 8400, dueDay: 10, interestRate: 8.7, lastPaidMonth: '' }
-      ],
-      investments: [
-        { id: 'inv_1', type: 'Mutual Fund', name: 'Parag Parikh Flexi Cap', amount: 125000, installmentAmount: 0, dueDay: null, lastPaidMonth: '' }
-      ],
-      insurances: [
-        { id: 'ins_1', type: 'Health Insurance', name: 'Star Health Family', premium: 14500, dueDate: getOffsetDate(45) }
-      ],
-      bills: [],
-      dismissedAlerts: {}
+      transactions: [], khata: [], loans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {}
     };
-
-    function getOffsetDate(daysAhead) {
-      const d = new Date();
-      d.setDate(d.getDate() + daysAhead);
-      return d.toISOString().slice(0, 10);
-    }
 
     let appData = loadData();
     let currentViewingContact = null;
@@ -648,7 +637,7 @@
 
     function showToast(message) {
       const toast = document.getElementById('toastNotification');
-      document.getElementById('toastMsg').innerText = message;
+      document.getElementById('toastMsg').innerText = escapeHTML(message);
       toast.classList.remove('-translate-y-24', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
       clearTimeout(toastTimeout);
@@ -663,22 +652,25 @@
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
+          // Failsafe for partial backups (Bug 2)
+          if (!parsed.accounts) parsed.accounts = [];
+          if (!parsed.transactions) parsed.transactions = [];
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.bills) parsed.bills = [];
+          if (!parsed.loans) parsed.loans = [];
+          if (!parsed.khata) parsed.khata = [];
           if (!parsed.dismissedAlerts) parsed.dismissedAlerts = {};
           if (!parsed.categories) parsed.categories = defaultSeedData.categories;
           
-          if (parsed.accounts) {
-            parsed.accounts.forEach(acc => {
-              if (acc.type === 'credit_card') {
-                if (acc.lastPaidMonth === undefined) acc.lastPaidMonth = '';
-                if (acc.billGenDay === undefined) acc.billGenDay = 1;
-                if (acc.statementBalance === undefined) acc.statementBalance = acc.currentDue || 0;
-                if (acc.lastBilledMonth === undefined) acc.lastBilledMonth = '';
-              }
-            });
-          }
+          parsed.accounts.forEach(acc => {
+            if (acc.type === 'credit_card') {
+              if (acc.lastPaidMonth === undefined) acc.lastPaidMonth = '';
+              if (acc.billGenDay === undefined) acc.billGenDay = 1;
+              if (acc.statementBalance === undefined) acc.statementBalance = acc.currentDue || 0;
+              if (acc.lastBilledMonth === undefined) acc.lastBilledMonth = '';
+            }
+          });
           return parsed;
         }
       } catch (e) {
@@ -694,13 +686,14 @@
         if(!silent) showToast('Changes saved successfully');
       } catch (e) {
         console.error("Storage error:", e);
+        alert("Error saving data! Your device storage might be full.");
       }
     }
 
     function checkCreditCardBills() {
-      const today = new Date();
-      const currentMonthKey = today.toISOString().slice(0, 7);
-      const currentDay = today.getDate();
+      const todayStr = getLocalDateStr();
+      const currentMonthKey = todayStr.slice(0, 7);
+      const currentDay = parseInt(todayStr.slice(8, 10));
       let changed = false;
       
       appData.accounts.forEach(acc => {
@@ -713,15 +706,15 @@
           }
         }
       });
-      if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+      if (changed) saveData(true);
     }
 
     function setDefaultTxDateRange() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const todayStr = getLocalDateStr();
+      const y = todayStr.slice(0, 4);
+      const m = todayStr.slice(5, 7);
       const firstDay = `${y}-${m}-01`;
-      const lastDayObj = new Date(y, now.getMonth() + 1, 0);
+      const lastDayObj = new Date(y, parseInt(m), 0);
       const lastDay = `${y}-${m}-${String(lastDayObj.getDate()).padStart(2, '0')}`;
       
       const fromEl = document.getElementById('txDateFrom');
@@ -754,106 +747,84 @@
     }
 
     function dismissReminder(id) {
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
-      if (!appData.dismissedAlerts) appData.dismissedAlerts = {};
-      appData.dismissedAlerts[id] = currentMonthKey;
+      appData.dismissedAlerts[id] = getCurrentMonthKey();
       saveData(true);
       showToast('Reminder dismissed');
     }
 
     function computeReminders() {
-      const today = new Date();
-      const currentDay = today.getDate();
-      const currentMonth = today.getMonth();
-      const currentYear = today.getFullYear();
-      const currentMonthKey = today.toISOString().slice(0, 7);
+      const todayStr = getLocalDateStr();
+      const currentDay = parseInt(todayStr.slice(8, 10));
+      const currentMonthKey = todayStr.slice(0, 7);
       const reminders = [];
 
       appData.loans.forEach(loan => {
         if(loan.principalBalance <= 0) return; 
         if(loan.lastPaidMonth === currentMonthKey) return; 
-        if(appData.dismissedAlerts && appData.dismissedAlerts[loan.id] === currentMonthKey) return;
+        if(appData.dismissedAlerts[loan.id] === currentMonthKey) return;
 
         let diffDays = loan.dueDay - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
-        reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, loan.dueDay), raw: loan });
+        reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(loan.dueDay).padStart(2,'0')}` });
       });
 
       appData.investments.forEach(inv => {
-        if(inv.installmentAmount > 0) {
+        if((inv.installmentAmount || 0) > 0) {
           if(inv.lastPaidMonth === currentMonthKey) return;
-          if(appData.dismissedAlerts && appData.dismissedAlerts[inv.id] === currentMonthKey) return;
+          if(appData.dismissedAlerts[inv.id] === currentMonthKey) return;
 
           let diffDays = inv.dueDay - currentDay;
           let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
-          reminders.push({ 
-            id: inv.id, type: 'SIP/RD', title: `${inv.name} SIP`, amount: inv.installmentAmount, 
-            dueDayText: `Due on ${inv.dueDay}th of this month`, status: status, 
-            targetDate: new Date(currentYear, currentMonth, inv.dueDay), raw: inv 
-          });
+          reminders.push({ id: inv.id, type: 'SIP/RD', title: `${inv.name} SIP`, amount: inv.installmentAmount, dueDayText: `Due on ${inv.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(inv.dueDay).padStart(2,'0')}` });
         }
       });
 
       appData.accounts.filter(a => a.type === 'credit_card' && Number(a.statementBalance || 0) > 0).forEach(card => {
         if(card.lastPaidMonth === currentMonthKey) return; 
-        if(appData.dismissedAlerts && appData.dismissedAlerts[card.id] === currentMonthKey) return;
+        if(appData.dismissedAlerts[card.id] === currentMonthKey) return;
 
         let diffDays = (card.dueDay || 15) - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
-        reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, card.dueDay || 15), raw: card });
+        reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(card.dueDay || 15).padStart(2,'0')}` });
       });
 
       appData.bills.forEach(bill => {
         if (bill.lastPaidMonth === currentMonthKey) return;
-        if (appData.dismissedAlerts && appData.dismissedAlerts[bill.id] === currentMonthKey) return;
+        if (appData.dismissedAlerts[bill.id] === currentMonthKey) return;
 
         let diffDays = bill.dueDay - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
-        reminders.push({ id: bill.id, type: 'Monthly Bill', title: bill.title, amount: bill.amount, dueDayText: `Due on ${bill.dueDay}th of this month`, status: status, targetDate: new Date(currentYear, currentMonth, bill.dueDay), raw: bill });
+        reminders.push({ id: bill.id, type: 'Monthly Bill', title: bill.title, amount: bill.amount, dueDayText: `Due on ${bill.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(bill.dueDay).padStart(2,'0')}` });
       });
 
-      const aggregatedContacts = getAggregatedContacts();
-      aggregatedContacts.forEach(contact => {
+      getAggregatedContacts().forEach(contact => {
         if (contact.netBalance === 0) return;
-        
         const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
         if (!entryWithDueDate) return;
         
         const dueDateStr = entryWithDueDate.dueDate;
         const aggId = 'khata_agg_' + contact.name;
+        if (appData.dismissedAlerts[aggId] === currentMonthKey) return;
 
-        if (appData.dismissedAlerts && appData.dismissedAlerts[aggId] === currentMonthKey) return;
-
-        const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - today.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 7 ? 'soon' : 'upcoming'));
         
-        let title, type;
-        if (contact.netBalance < 0) { 
-           title = `${contact.name} (Collect Cash)`;
-           type = 'Cash Collection';
-        } else { 
-           title = `${contact.name} (Return Cash)`;
-           type = 'Cash Return';
-        }
-
         reminders.push({
-          id: aggId,
-          type: type,
-          title: title,
-          amount: Math.abs(contact.netBalance),
-          dueDayText: `Due on ${dueDateStr}`,
-          status: status,
-          targetDate: new Date(dueDateStr),
-          raw: contact
+          id: aggId, type: contact.netBalance < 0 ? 'Cash Collection' : 'Cash Return',
+          title: `${contact.name} (${contact.netBalance < 0 ? 'Collect' : 'Return'})`,
+          amount: Math.abs(contact.netBalance), dueDayText: `Due on ${dueDateStr}`, status: status, targetDateStr: dueDateStr
         });
       });
       
       appData.insurances.forEach(ins => {
-        if(appData.dismissedAlerts && appData.dismissedAlerts[ins.id] === currentMonthKey) return;
+        if(appData.dismissedAlerts[ins.id] === currentMonthKey) return;
+        
+        const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        // If it's already paid/pushed to next year, dayDiff will be > 300
+        if (dayDiff > 30) return;
 
-        const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - today.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
-        reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDate: new Date(ins.dueDate), raw: ins });
+        reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDateStr: ins.dueDate });
       });
 
       const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
@@ -862,9 +833,9 @@
     }
 
     function generateCalendarLink(reminder) {
-      const dateStr = reminder.targetDate.toISOString().replace(/-|:|\.\d\d\d/g, '').slice(0, 8);
-      const title = encodeURIComponent(`PocketLedger Reminder: ₹${reminder.amount} for ${reminder.title}`);
-      const details = encodeURIComponent(`Payment reminder for ${reminder.type}. Amount: ₹${reminder.amount}. Set via PocketLedger.`);
+      const dateStr = reminder.targetDateStr.replace(/-/g, '');
+      const title = encodeURIComponent(`PocketLedger: ₹${reminder.amount} for ${reminder.title}`);
+      const details = encodeURIComponent(`Reminder for ${reminder.type}. Amount: ₹${reminder.amount}.`);
       return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}&sf=true&output=xml`;
     }
 
@@ -896,7 +867,7 @@
             <div class="flex items-center gap-2.5">
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${label}</span>
               <div class="text-xs">
-                <span class="font-bold text-white">${topAlert.title}</span>: ₹${topAlert.amount.toLocaleString('en-IN')}
+                <span class="font-bold text-white">${escapeHTML(topAlert.title)}</span>: ₹${topAlert.amount.toLocaleString('en-IN')}
               </div>
             </div>
             <span class="text-xs font-semibold text-emerald-400 flex items-center">
@@ -922,8 +893,8 @@
             <div class="bg-slate-800/80 border border-slate-700/60 p-3 rounded-xl flex items-start justify-between">
               <div>
                 <div class="flex items-center gap-1.5 mb-1">${badgeHtml}<span class="text-[11px] text-slate-400">${r.type}</span></div>
-                <h4 class="font-bold text-white text-sm">${r.title}</h4>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">${r.dueDayText}</p>
+                <h4 class="font-bold text-white text-sm">${escapeHTML(r.title)}</h4>
+                <p class="text-xs text-slate-400 font-mono mt-0.5">${escapeHTML(r.dueDayText)}</p>
                 <div class="text-emerald-400 font-bold text-sm mt-1">₹${r.amount.toLocaleString('en-IN')}</div>
               </div>
               <div class="flex flex-col items-end gap-2.5 h-full justify-between">
@@ -942,34 +913,40 @@
     function getAggregatedContacts() {
       const map = {};
       appData.khata.forEach(k => {
-        const name = k.personName.trim();
-        if (!map[name]) map[name] = { name: name, netBalance: 0, totalTook: 0, totalGave: 0, lastDate: k.date, entries: [] };
+        const rawName = (k.personName || '').trim();
+        const key = rawName.toLowerCase();
+        if (!key) return; // Skip empty names
+        if (!map[key]) map[key] = { name: rawName, netBalance: 0, totalTook: 0, totalGave: 0, lastDate: k.date, entries: [] };
         const amt = Number(k.amount || 0);
         if (k.status !== 'settled') {
-          if (k.direction === 'borrowed') { map[name].netBalance += amt; map[name].totalTook += amt; }
-          else { map[name].netBalance -= amt; map[name].totalGave += amt; }
+          if (k.direction === 'borrowed') { map[key].netBalance += amt; map[key].totalTook += amt; }
+          else { map[key].netBalance -= amt; map[key].totalGave += amt; }
         }
-        map[name].entries.push(k);
-        if (new Date(k.date) > new Date(map[name].lastDate)) map[name].lastDate = k.date;
+        map[key].entries.push(k);
+        if (new Date(k.date) > new Date(map[key].lastDate)) map[key].lastDate = k.date;
       });
       return Object.values(map);
     }
     
     function renderDashboardObligations() {
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      const currentMonthKey = getCurrentMonthKey();
       
       let emiReq = appData.loans.filter(l => l.principalBalance > 0 && l.lastPaidMonth !== currentMonthKey).reduce((sum, l) => sum + Number(l.emiAmount), 0);
       let ccReq = appData.accounts.filter(a => a.type === 'credit_card' && (a.statementBalance || 0) > 0 && a.lastPaidMonth !== currentMonthKey).reduce((sum, a) => sum + Number(a.statementBalance), 0);
       let billsReq = appData.bills.filter(b => b.lastPaidMonth !== currentMonthKey).reduce((sum, b) => sum + Number(b.amount), 0);
-      let insReq = appData.insurances.filter(i => i.dueDate && i.dueDate.startsWith(currentMonthKey)).reduce((sum, i) => sum + Number(i.premium), 0);
+      
+      let insReq = appData.insurances.filter(i => {
+         if (!i.dueDate) return false;
+         return i.dueDate.slice(0,7) <= currentMonthKey;
+      }).reduce((sum, i) => sum + Number(i.premium), 0);
+      
       let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
 
       let khataReq = 0;
-      const aggregatedContacts = getAggregatedContacts();
-      aggregatedContacts.forEach(contact => {
+      getAggregatedContacts().forEach(contact => {
         if(contact.netBalance > 0) { 
            const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
-           if (entryWithDueDate && entryWithDueDate.dueDate.startsWith(currentMonthKey)) {
+           if (entryWithDueDate && entryWithDueDate.dueDate.slice(0,7) <= currentMonthKey) {
               khataReq += contact.netBalance;
            }
         }
@@ -979,19 +956,16 @@
 
       let totalLiquidCash = 0;
       appData.accounts.forEach(acc => {
-        if (acc.type === 'debit_bank' || acc.type === 'debit_cash') {
-          totalLiquidCash += Number(acc.balance || 0);
-        }
+        if (acc.type === 'debit_bank' || acc.type === 'debit_cash') totalLiquidCash += Number(acc.balance || 0);
       });
 
       const liquidityDiff = totalLiquidCash - totalReq;
       const badgeContainer = document.getElementById('liquidityBadgeContainer');
 
       if (liquidityDiff < 0) {
-        const shortageAmt = Math.abs(liquidityDiff);
         badgeContainer.innerHTML = `
           <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-extrabold animate-pulse flex items-center gap-1">
-            <i data-lucide="alert-triangle" class="w-3 h-3"></i> Shortage: ₹${shortageAmt.toLocaleString('en-IN')}
+            <i data-lucide="alert-triangle" class="w-3 h-3"></i> Shortage: ₹${Math.abs(liquidityDiff).toLocaleString('en-IN')}
           </span>
         `;
       } else {
@@ -1014,26 +988,25 @@
     }
 
     function refreshAllViews() {
-      let liquidCash = 0;
-      let cardDues = 0;
+      let liquidCash = 0, cardDues = 0;
       appData.accounts.forEach(acc => {
         if (acc.type === 'debit_bank' || acc.type === 'debit_cash') liquidCash += Number(acc.balance || 0);
         else if (acc.type === 'credit_card') cardDues += Number(acc.currentDue || 0);
       });
       document.getElementById('netWealthDisplay').innerText = `₹${(liquidCash - cardDues).toLocaleString('en-IN')}`;
 
-      const currentMonthPrefix = new Date().toISOString().slice(0, 7);
+      const currentMonthPrefix = getCurrentMonthKey();
       const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
       let monthInflow = 0, monthSpent = 0;
       currentMonthTx.forEach(t => {
         if (t.type === 'income') monthInflow += Number(t.amount || 0);
-        if (t.type === 'expense') monthSpent += Number(t.amount || 0);
+        if (t.type === 'expense' && !t.isTransfer) monthSpent += Number(t.amount || 0);
       });
       document.getElementById('monthInflowDisplay').innerText = `+₹${monthInflow.toLocaleString('en-IN')}`;
       document.getElementById('monthSpentDisplay').innerText = `-₹${monthSpent.toLocaleString('en-IN')}`;
       
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      const now = new Date();
+      const now = new Date(getLocalDateStr());
       document.getElementById('currentMonthYear').innerText = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 
       let totalLent = 0, totalBorrowed = 0;
@@ -1046,13 +1019,13 @@
 
       let totalPrincipal = 0, totalEmi = 0;
       appData.loans.forEach(l => { totalPrincipal += Number(l.principalBalance || 0); totalEmi += Number(l.emiAmount || 0); });
-      document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
+      document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
       document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
 
       let totalInvested = 0;
       appData.investments.forEach(i => totalInvested += Number(i.amount || 0));
       if (document.getElementById('dashTotalInvestmentsDisplay')) document.getElementById('dashTotalInvestmentsDisplay').innerText = `₹${totalInvested.toLocaleString('en-IN')}`;
-      if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN')}`;
+      if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
 
       renderDashboardObligations();
       renderDashboardFeed(); 
@@ -1065,7 +1038,7 @@
       renderRemindersUI();
 
       const selectAcc = document.getElementById('txAccount');
-      if (selectAcc) selectAcc.innerHTML = appData.accounts.map(a => `<option value="${a.id}">${a.name} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
+      if (selectAcc) selectAcc.innerHTML = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
       lucide.createIcons();
     }
 
@@ -1080,7 +1053,7 @@
       if (appData.loans.length === 0) recentLoansContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500">No active loans added.</div>`;
       else recentLoansContainer.innerHTML = appData.loans.slice(0, 2).map(loan => `
         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/50">
-          <div><h4 class="text-xs font-bold text-white">${loan.name}</h4><p class="text-[10px] text-slate-400">Due on ${loan.dueDay}th • EMI ₹${loan.emiAmount.toLocaleString('en-IN')}</p></div>
+          <div><h4 class="text-xs font-bold text-white">${escapeHTML(loan.name)}</h4><p class="text-[10px] text-slate-400">Due on ${loan.dueDay}th • EMI ₹${loan.emiAmount.toLocaleString('en-IN')}</p></div>
           ${loan.principalBalance > 0 ? `<button class="action-pay-emi px-2.5 py-1 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 text-xs font-semibold transition" data-id="${loan.id}">Pay EMI</button>` : `<span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">Cleared</span>`}
         </div>`).join('');
     }
@@ -1098,11 +1071,8 @@
       let filtered = [...appData.transactions].filter(t => {
         if (filterType !== 'all' && t.type !== filterType) return false;
         if (searchQuery && !((t.notes || '').toLowerCase().includes(searchQuery) || (t.category || '').toLowerCase().includes(searchQuery))) return false;
-        
-        // NEW: Date Range Filter Logic
         if (fromDate && t.date < fromDate) return false;
         if (toDate && t.date > toDate) return false;
-
         return true;
       });
 
@@ -1128,14 +1098,14 @@
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-xl ${isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'} flex items-center justify-center"><i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i></div>
             <div>
-              <div class="text-xs font-bold text-white">${t.category}</div>
-              <div class="text-[11px] text-slate-400">${t.notes || accName} • <span class="font-mono">${t.date}</span></div>
+              <div class="text-xs font-bold text-white">${escapeHTML(t.category)} ${t.isTransfer ? '<span class="ml-1 text-[9px] bg-slate-700 px-1 rounded">Transfer</span>' : ''}</div>
+              <div class="text-[11px] text-slate-400">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date}</span></div>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <div class="text-right">
               <div class="text-xs font-bold ${isExpense ? 'text-rose-400' : 'text-emerald-400'}">${isExpense ? '-' : '+'}₹${Number(t.amount).toLocaleString('en-IN')}</div>
-              <div class="text-[10px] text-slate-500">${accName}</div>
+              <div class="text-[10px] text-slate-500">${escapeHTML(accName)}</div>
             </div>
             ${canDelete ? `
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
@@ -1157,7 +1127,7 @@
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
-      const dataToChart = filtered.filter(t => chartType === 'income' ? t.type === 'income' : t.type === 'expense');
+      const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer);
       const dataMap = {};
       dataToChart.forEach(t => { dataMap[t.category] = (dataMap[t.category] || 0) + Number(t.amount); });
       if (txChartInstance) txChartInstance.destroy();
@@ -1187,12 +1157,13 @@
           let statusText = "Settled (₹0)", statusColor = "text-slate-400";
           if (youOwe) { statusText = `You owe ₹${Math.abs(c.netBalance).toLocaleString('en-IN')}`; statusColor = "text-rose-400"; }
           else if (owesYou) { statusText = `Owes you ₹${Math.abs(c.netBalance).toLocaleString('en-IN')}`; statusColor = "text-emerald-400"; }
+          const displayInitial = escapeHTML(c.name.charAt(0).toUpperCase());
           return `
-            <div class="action-open-contact clickable p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border ${isSettled ? 'border-slate-800 opacity-60' : (owesYou ? 'border-emerald-900/40' : 'border-rose-900/40')} cursor-pointer transition active:scale-98" data-name="${c.name.replace(/'/g, "\\'")}">
+            <div class="action-open-contact clickable p-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border ${isSettled ? 'border-slate-800 opacity-60' : (owesYou ? 'border-emerald-900/40' : 'border-rose-900/40')} cursor-pointer transition active:scale-98" data-name="${escapeHTML(c.name)}">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400">${c.name.charAt(0).toUpperCase()}</div>
-                  <div><h4 class="text-sm font-bold text-white">${c.name}</h4><p class="text-[10px] text-slate-400">${c.entries.length} Transaction(s)</p></div>
+                  <div class="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400">${displayInitial}</div>
+                  <div><h4 class="text-sm font-bold text-white">${escapeHTML(c.name)}</h4><p class="text-[10px] text-slate-400">${c.entries.length} Transaction(s)</p></div>
                 </div>
                 <div class="text-right"><div class="text-sm font-extrabold ${statusColor}">${statusText}</div><span class="text-[10px] text-slate-400">View details &rarr;</span></div>
               </div>
@@ -1204,7 +1175,7 @@
 
     function openContactStatement(personName) {
       currentViewingContact = personName;
-      const contact = getAggregatedContacts().find(c => c.name === personName);
+      const contact = getAggregatedContacts().find(c => c.name.toLowerCase() === personName.toLowerCase());
       if (!contact) return;
       document.getElementById('statementContactName').innerText = contact.name;
       document.getElementById('statementContactAvatar').innerText = contact.name.charAt(0).toUpperCase();
@@ -1217,7 +1188,7 @@
         <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between mb-2">
           <div>
             <div class="flex items-center gap-1.5"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${e.direction === 'borrowed' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}">${e.direction === 'borrowed' ? 'YOU TOOK' : 'YOU GAVE'}</span><span class="text-xs text-slate-400 font-mono">${e.date}</span>${e.status === 'settled' ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-1 rounded">Settled</span>' : ''}</div>
-            ${e.notes ? `<p class="text-xs text-slate-300 mt-1">${e.notes}</p>` : ''}
+            ${e.notes ? `<p class="text-xs text-slate-300 mt-1">${escapeHTML(e.notes)}</p>` : ''}
             ${e.dueDate ? `<p class="text-[10px] text-amber-400/80 mt-0.5">Promised Return: ${e.dueDate}</p>` : ''}
           </div>
           <div class="flex items-center gap-2">
@@ -1239,14 +1210,14 @@
       else container.innerHTML = appData.loans.map(loan => `
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
               <div class="flex items-center justify-between">
-                <div><h4 class="font-bold text-white text-sm">${loan.name}</h4><p class="text-xs text-sky-400 mt-0.5">Due Day: ${loan.dueDay}th of every month</p></div>
+                <div><h4 class="font-bold text-white text-sm">${escapeHTML(loan.name)}</h4><p class="text-xs text-sky-400 mt-0.5">Due Day: ${loan.dueDay}th of every month</p></div>
                 <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2 ml-2">
                   <button class="action-edit-loan p-2.5 text-slate-400 active:text-white" aria-label="Edit loan" data-id="${loan.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
                   <button class="action-delete-loan p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete loan" data-id="${loan.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white">₹${Number(loan.principalBalance).toLocaleString('en-IN')}</div></div>
+                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white">₹${Number(loan.principalBalance).toLocaleString('en-IN', {maximumFractionDigits: 2})}</div></div>
                 <div><span class="text-[10px] text-slate-400 uppercase">Monthly EMI</span><div class="text-sm font-bold text-emerald-400">₹${Number(loan.emiAmount).toLocaleString('en-IN')}</div></div>
               </div>
               <div class="flex items-center justify-between pt-1">
@@ -1260,7 +1231,7 @@
     function renderAssets() {
       const invContainer = document.getElementById('investmentsList');
       const insContainer = document.getElementById('insurancesList');
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      const currentMonthKey = getCurrentMonthKey();
 
       if (appData.investments.length === 0) {
         invContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No investments added yet.</div>`;
@@ -1268,15 +1239,14 @@
         invContainer.innerHTML = appData.investments.map(i => {
           const isSip = (i.installmentAmount || 0) > 0;
           const isPaid = i.lastPaidMonth === currentMonthKey;
-          
           return `
             <div class="flex flex-col p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 mb-2">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                   <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
                   <div>
-                    <h4 class="text-xs font-bold text-white">${i.name}</h4>
-                    <p class="text-[10px] text-slate-400">${i.type} ${isSip ? `• SIP: ₹${Number(i.installmentAmount).toLocaleString('en-IN')} / ${i.dueDay}th` : ''}</p>
+                    <h4 class="text-xs font-bold text-white">${escapeHTML(i.name)}</h4>
+                    <p class="text-[10px] text-slate-400">${escapeHTML(i.type)} ${isSip ? `• SIP: ₹${Number(i.installmentAmount).toLocaleString('en-IN')} / ${i.dueDay}th` : ''}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -1304,7 +1274,7 @@
       else insContainer.innerHTML = appData.insurances.map(i => `
           <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 space-y-1.5">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${i.type}</span><h4 class="text-xs font-bold text-white">${i.name}</h4></div>
+              <div class="flex items-center gap-2"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${escapeHTML(i.type)}</span><h4 class="text-xs font-bold text-white">${escapeHTML(i.name)}</h4></div>
               <div class="flex items-center gap-2 text-right">
                 <div class="mr-1"><div class="text-[10px] text-slate-400 uppercase">Premium</div><div class="text-sm font-bold text-white">₹${Number(i.premium).toLocaleString('en-IN')}</div></div>
                 <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" aria-label="Edit insurance" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete insurance" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>
@@ -1323,7 +1293,7 @@
           <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-800">
             <div class="flex items-center gap-2.5">
               <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="${acc.type === 'debit_cash' ? 'banknote' : 'landmark'}" class="w-4 h-4"></i></div>
-              <div><h4 class="text-xs font-bold text-white">${acc.name}</h4><p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p></div>
+              <div><h4 class="text-xs font-bold text-white">${escapeHTML(acc.name)}</h4><p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p></div>
             </div>
             <div class="flex items-center gap-1">
               <div class="text-sm font-bold text-white mr-2">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
@@ -1340,7 +1310,7 @@
             <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800 space-y-2">
               <div class="flex items-center justify-between">
                 <div>
-                  <h4 class="text-xs font-bold text-white">${card.name}</h4>
+                  <h4 class="text-xs font-bold text-white">${escapeHTML(card.name)}</h4>
                   <p class="text-[10px] text-slate-400">Limit: ₹${Number(card.limit).toLocaleString('en-IN')} • Bill Gen: ${card.billGenDay || 1}st • Due: ${card.dueDay || 15}th</p>
                 </div>
                 <div class="flex items-center gap-1">
@@ -1381,7 +1351,7 @@
     function renderBills() {
       const container = document.getElementById('billsListContainer');
       if (!container) return;
-      const currentMonthKey = new Date().toISOString().slice(0, 7);
+      const currentMonthKey = getCurrentMonthKey();
       if (!appData.bills || appData.bills.length === 0) { container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No recurring bills added.</div>`; return; }
       container.innerHTML = appData.bills.map(bill => {
         const isPaid = bill.lastPaidMonth === currentMonthKey;
@@ -1390,7 +1360,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
                 <div class="p-2 rounded-lg bg-purple-500/10 text-purple-400"><i data-lucide="receipt" class="w-4 h-4"></i></div>
-                <div><h4 class="font-bold text-white text-sm">${bill.title}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • ₹${Number(bill.amount).toLocaleString('en-IN')}</p></div>
+                <div><h4 class="font-bold text-white text-sm">${escapeHTML(bill.title)}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • ₹${Number(bill.amount).toLocaleString('en-IN')}</p></div>
               </div>
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
                 <button class="action-edit-bill p-2.5 text-slate-400 hover:text-white" aria-label="Edit bill" data-id="${bill.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
@@ -1409,7 +1379,7 @@
     function populateCategoryDropdown(type, selectedCategory = null) {
       const select = document.getElementById('txCategory');
       const cats = appData.categories[type] || [];
-      select.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('') + `<option value="__NEW__" class="font-bold text-emerald-400">+ Add New Category...</option>`;
+      select.innerHTML = cats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('') + `<option value="__NEW__" class="font-bold text-emerald-400">+ Add New Category...</option>`;
       if (selectedCategory && cats.includes(selectedCategory)) select.value = selectedCategory;
     }
 
@@ -1429,7 +1399,7 @@
       document.getElementById('txEditId').value = '';
       currentTxType = type; setTxType(type);
       document.getElementById('txModalTitle').innerText = type === 'expense' ? 'Add Expense' : 'Add Income';
-      document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('txDate').value = getLocalDateStr();
       document.getElementById('txAmount').value = '';
       document.getElementById('txNotes').value = '';
       openModal('txModal');
@@ -1497,7 +1467,7 @@
         const acc = appData.accounts.find(a => a.id === tx.accountId);
         if (acc) {
           if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount)); else acc.currentDue += Number(tx.amount); } 
-          else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance = Math.max(0, acc.balance - Number(tx.amount)); }
+          else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance -= Number(tx.amount); }
         }
         appData.transactions = appData.transactions.filter(t => t.id !== id);
         saveData(true);
@@ -1510,23 +1480,29 @@
       const debitAccs = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash');
       if (debitAccs.length === 0) { alert("No debit or cash accounts available to pay from."); return; }
       
-      sourceSelect.innerHTML = debitAccs.map(a => `<option value="${a.id}">${a.name} (Balance: ₹${Number(a.balance).toLocaleString('en-IN')})</option>`).join('');
+      sourceSelect.innerHTML = debitAccs.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (Balance: ₹${Number(a.balance).toLocaleString('en-IN')})</option>`).join('');
+
+      const currentMonthKey = getCurrentMonthKey();
 
       if (type === 'emi') {
         const loan = appData.loans.find(l => l.id === id);
         if (!loan) return;
+        if(loan.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
         title.innerText = `Pay EMI: ${loan.name}`; amountInput.value = loan.emiAmount; amountInput.readOnly = true; pendingPayment = { type: 'emi', id: id };
       } else if (type === 'cc') {
         const card = appData.accounts.find(a => a.id === id);
         if (!card) return;
+        if(card.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
         title.innerText = `Pay Bill: ${card.name}`; amountInput.value = card.statementBalance || 0; amountInput.readOnly = false; pendingPayment = { type: 'cc', id: id };
       } else if (type === 'bill') {
         const bill = appData.bills.find(b => b.id === id);
         if (!bill) return;
+        if(bill.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
         title.innerText = `Pay Bill: ${bill.title}`; amountInput.value = bill.amount; amountInput.readOnly = false; pendingPayment = { type: 'bill', id: id };
       } else if (type === 'sip') {
         const inv = appData.investments.find(i => i.id === id);
         if (!inv) return;
+        if(inv.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
         title.innerText = `Pay SIP: ${inv.name}`; amountInput.value = inv.installmentAmount; amountInput.readOnly = true; pendingPayment = { type: 'sip', id: id };
       }
       openModal('paymentModal');
@@ -1538,39 +1514,42 @@
       const amount = parseFloat(document.getElementById('payAmount').value), sourceAcc = appData.accounts.find(a => a.id === document.getElementById('paySourceAccount').value);
       if (!sourceAcc || isNaN(amount) || amount <= 0) return;
 
+      const dateStr = getLocalDateStr();
+      const currentMonthKey = getCurrentMonthKey();
+
       if (pendingPayment.type === 'emi') {
         const loan = appData.loans.find(l => l.id === pendingPayment.id);
         if (!loan) return;
         let interestPart = 0, principalPart = loan.emiAmount;
         if (loan.interestRate > 0) { interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12); principalPart = Math.max(0, loan.emiAmount - interestPart); }
         loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
-        loan.lastPaidMonth = new Date().toISOString().slice(0, 7);
-        sourceAcc.balance = Math.max(0, sourceAcc.balance - loan.emiAmount);
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
+        loan.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance -= loan.emiAmount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
 
       } else if (pendingPayment.type === 'cc') {
         const card = appData.accounts.find(a => a.id === pendingPayment.id);
         if (!card) return;
         card.currentDue = Math.max(0, card.currentDue - amount);
         card.statementBalance = Math.max(0, (card.statementBalance || 0) - amount);
-        if (card.statementBalance === 0) card.lastPaidMonth = new Date().toISOString().slice(0, 7);
-        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `Card Bill Payment: ${card.name}` });
+        if (card.statementBalance === 0) card.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance -= amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Credit Card Bill', accountId: sourceAcc.id, date: dateStr, notes: `Card Bill Payment: ${card.name}` });
 
       } else if (pendingPayment.type === 'bill') {
         const bill = appData.bills.find(b => b.id === pendingPayment.id);
         if (!bill) return;
-        bill.lastPaidMonth = new Date().toISOString().slice(0, 7);
-        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `Recurring Bill: ${bill.title}` });
+        bill.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance -= amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Recurring Bill: ${bill.title}` });
 
       } else if (pendingPayment.type === 'sip') {
         const inv = appData.investments.find(i => i.id === pendingPayment.id);
         if (!inv) return;
         inv.amount += amount;
-        inv.lastPaidMonth = new Date().toISOString().slice(0, 7);
-        sourceAcc.balance = Math.max(0, sourceAcc.balance - amount);
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'General', accountId: sourceAcc.id, date: new Date().toISOString().slice(0, 10), notes: `SIP Installment: ${inv.name}` });
+        inv.lastPaidMonth = currentMonthKey;
+        sourceAcc.balance -= amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Investments', accountId: sourceAcc.id, date: dateStr, notes: `SIP Installment: ${inv.name}` });
       }
 
       pendingPayment = null; 
@@ -1582,7 +1561,7 @@
     function openKhataModal() {
       document.getElementById('khataEditId').value = ''; 
       document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
-      document.getElementById('khataDate').value = new Date().toISOString().slice(0, 10); 
+      document.getElementById('khataDate').value = getLocalDateStr(); 
       document.getElementById('khataDueDate').value = ''; 
       document.getElementById('khataPersonName').value = ''; 
       document.getElementById('khataAmount').value = ''; 
@@ -1616,6 +1595,8 @@
       e.preventDefault();
       const editId = document.getElementById('khataEditId').value, personName = document.getElementById('khataPersonName').value.trim(), amount = parseFloat(document.getElementById('khataAmount').value), date = document.getElementById('khataDate').value, dueDate = document.getElementById('khataDueDate').value, notes = document.getElementById('khataNotes').value;
       if (!personName || !amount) return;
+      
+      if (dueDate && dueDate < date) { alert('Return due date cannot be before the given date.'); return; }
 
       if (editId) {
         const entry = appData.khata.find(k => k.id === editId);
@@ -1625,7 +1606,7 @@
       saveData(true); 
       closeModal('khataModal');
       showToast('Khata entry saved');
-      if (currentViewingContact === personName) openContactStatement(personName);
+      if (currentViewingContact && currentViewingContact.toLowerCase() === personName.toLowerCase()) openContactStatement(personName);
     }
 
     function deleteKhata(id) {
@@ -1634,8 +1615,8 @@
       appData.khata = appData.khata.filter(k => k.id !== id);
       saveData(true);
       showToast('Entry deleted');
-      if (entry && currentViewingContact === entry.personName) {
-        if (appData.khata.some(k => k.personName === entry.personName)) openContactStatement(entry.personName);
+      if (entry && currentViewingContact && currentViewingContact.toLowerCase() === entry.personName.toLowerCase()) {
+        if (appData.khata.some(k => k.personName.toLowerCase() === entry.personName.toLowerCase())) openContactStatement(entry.personName);
         else closeModal('contactStatementModal');
       }
     }
@@ -1701,7 +1682,6 @@
       const type = document.getElementById('invType').value;
       const name = document.getElementById('invName').value.trim();
       const amount = parseFloat(document.getElementById('invAmount').value);
-      
       const installmentAmount = parseFloat(document.getElementById('invInstallment').value) || 0;
       const dueDay = parseInt(document.getElementById('invDueDay').value) || null;
 
@@ -1904,7 +1884,7 @@
     function exportDataJSON() {
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Backup_${getLocalDateStr()}.json`;
       document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
       showToast('Data exported successfully');
     }
@@ -1913,11 +1893,11 @@
       let csv = "Date,Type,Category,Amount,Account,Notes\n";
       appData.transactions.forEach(t => {
           const acc = appData.accounts.find(a => a.id === t.accountId);
-          csv += `${t.date},${t.type},"${t.category}",${t.amount},"${acc ? acc.name : 'Unknown'}","${t.notes ? t.notes.replace(/"/g, '""') : ''}"\n`;
+          csv += `${t.date},${t.type},"${escapeHTML(t.category)}",${t.amount},"${acc ? escapeHTML(acc.name) : 'Unknown'}","${t.notes ? escapeHTML(t.notes).replace(/"/g, '""') : ''}"\n`;
       });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Transactions_${new Date().toISOString().slice(0, 10)}.csv`;
+      const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Transactions_${getLocalDateStr()}.csv`;
       document.body.appendChild(a); a.click(); setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 60000);
       showToast('CSV downloaded');
     }
@@ -1929,35 +1909,38 @@
       reader.onload = function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
+          
+          if (!parsed.accounts) parsed.accounts = [];
+          if (!parsed.transactions) parsed.transactions = [];
+          if (!parsed.khata) parsed.khata = [];
+          if (!parsed.loans) parsed.loans = [];
+          if (!parsed.investments) parsed.investments = [];
+          if (!parsed.insurances) parsed.insurances = [];
+          if (!parsed.bills) parsed.bills = [];
+
           if (parsed && parsed.accounts && parsed.transactions) {
-            
             if (importMode === 'overwrite') {
               appData = parsed; 
               saveData(true); closeModal('settingsModal'); 
               showToast("Backup restored completely!");
             } else if (importMode === 'merge') {
               
-              const mergeArrays = (baseArr, newArr) => {
+              const mergeArraysKeepLocal = (baseArr, newArr) => {
                 if(!newArr) return baseArr;
-                const map = new Map(baseArr.map(item => [item.id, item]));
-                newArr.forEach(item => map.set(item.id, item)); 
+                const map = new Map(newArr.map(item => [item.id, item])); 
+                baseArr.forEach(item => map.set(item.id, item)); 
                 return Array.from(map.values());
               };
 
-              // 1. Find newly imported transactions
               const existingTxIds = new Set(appData.transactions.map(t => t.id));
-              const newImportedTxs = (parsed.transactions || []).filter(t => !existingTxIds.has(t.id));
+              const newImportedTxs = parsed.transactions.filter(t => !existingTxIds.has(t.id));
 
-              // 2. Protect local account balances, but add any brand new accounts
               const localAccountsMap = new Map(appData.accounts.map(a => [a.id, a]));
-              (parsed.accounts || []).forEach(importAcc => {
-                if (!localAccountsMap.has(importAcc.id)) {
-                  localAccountsMap.set(importAcc.id, importAcc);
-                }
+              parsed.accounts.forEach(importAcc => {
+                if (!localAccountsMap.has(importAcc.id)) localAccountsMap.set(importAcc.id, importAcc);
               });
               appData.accounts = Array.from(localAccountsMap.values());
 
-              // 3. Apply the math of the new transactions to the local accounts
               newImportedTxs.forEach(tx => {
                 const acc = appData.accounts.find(a => a.id === tx.accountId);
                 if (acc) {
@@ -1971,12 +1954,12 @@
                 }
               });
               
-              appData.transactions = mergeArrays(appData.transactions, parsed.transactions);
-              appData.khata = mergeArrays(appData.khata, parsed.khata);
-              appData.loans = mergeArrays(appData.loans, parsed.loans);
-              appData.investments = mergeArrays(appData.investments, parsed.investments);
-              appData.insurances = mergeArrays(appData.insurances, parsed.insurances);
-              appData.bills = mergeArrays(appData.bills || [], parsed.bills || []);
+              appData.transactions = mergeArraysKeepLocal(appData.transactions, parsed.transactions);
+              appData.khata = mergeArraysKeepLocal(appData.khata, parsed.khata);
+              appData.loans = mergeArraysKeepLocal(appData.loans, parsed.loans);
+              appData.investments = mergeArraysKeepLocal(appData.investments, parsed.investments);
+              appData.insurances = mergeArraysKeepLocal(appData.insurances, parsed.insurances);
+              appData.bills = mergeArraysKeepLocal(appData.bills, parsed.bills);
               
               if (parsed.categories) {
                 appData.categories.expense = [...new Set([...appData.categories.expense, ...(parsed.categories.expense || [])])];
