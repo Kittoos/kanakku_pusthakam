@@ -14,8 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PocketLedger">
   
-  <!-- Pinned versions to prevent future breakages -->
-  <script src="https://cdn.tailwindcss.com?version=3.4.1"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -29,8 +28,8 @@
     }
   </script>
 
-  <script src="https://unpkg.com/lucide@0.292.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body {
@@ -608,14 +607,14 @@
     const STORAGE_KEY = 'pocketledger_data_v1';
 
     const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    
+
     function getCurrentMonthName() {
       return monthNamesArr[new Date(getLocalDateStr()).getMonth()];
     }
 
     function escapeHTML(str) {
-      if (typeof str !== 'string') return str;
-      return str.replace(/[&<>'"]/g, tag => ({
+      if (str == null) return '';
+      return String(str).replace(/[&<>'"]/g, tag => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
       }[tag]));
     }
@@ -1336,7 +1335,7 @@
                 <div class="flex items-center justify-between pt-2 mt-2 border-t border-slate-700/40">
                   <span class="text-[10px] text-slate-400 font-medium">Monthly SIP Due: <strong class="text-white">${i.dueDay}th</strong></span>
                   ${isPaid 
-                    ? `<span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i> ${monthName} SIP Complete</span>` 
+                    ? `<span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3 h-3"></i> ${monthName} SIP Complete</span>` 
                     : `<button class="action-pay-sip bg-sky-600 hover:bg-sky-500 text-white px-3 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-md active:scale-95" data-id="${i.id}">Pay SIP</button>`}
                 </div>
               ` : ''}
