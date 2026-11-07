@@ -169,14 +169,6 @@
         </button>
       </div>
 
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2"><i data-lucide="landmark" class="w-4 h-4 text-sky-400"></i><h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Active EMIs & Loans</h3></div>
-          <button id="btn-view-all-loans" class="text-xs text-sky-400 font-semibold hover:underline">View All</button>
-        </div>
-        <div id="dashboardLoansList" class="space-y-2"></div>
-      </div>
-
       <div>
         <div class="flex items-center justify-between mb-2.5 px-0.5">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
@@ -599,7 +591,6 @@
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
 
-    // XSS Sanitizer for all text outputs
     function escapeHTML(str) {
       if (typeof str !== 'string') return str;
       return str.replace(/[&<>'"]/g, tag => ({
@@ -607,7 +598,6 @@
       }[tag]));
     }
 
-    // Timezone safe local date getters
     function getLocalDateStr(d = new Date()) {
       const tzOffset = d.getTimezoneOffset() * 60000;
       return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
@@ -652,7 +642,6 @@
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          // Failsafe for partial backups (Bug 2)
           if (!parsed.accounts) parsed.accounts = [];
           if (!parsed.transactions) parsed.transactions = [];
           if (!parsed.investments) parsed.investments = [];
@@ -820,7 +809,6 @@
         if(appData.dismissedAlerts[ins.id] === currentMonthKey) return;
         
         const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
-        // If it's already paid/pushed to next year, dayDiff will be > 300
         if (dayDiff > 30) return;
 
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
@@ -915,7 +903,7 @@
       appData.khata.forEach(k => {
         const rawName = (k.personName || '').trim();
         const key = rawName.toLowerCase();
-        if (!key) return; // Skip empty names
+        if (!key) return;
         if (!map[key]) map[key] = { name: rawName, netBalance: 0, totalTook: 0, totalGave: 0, lastDate: k.date, entries: [] };
         const amt = Number(k.amount || 0);
         if (k.status !== 'settled') {
@@ -1044,18 +1032,10 @@
 
     function renderDashboardFeed() {
       const recentTxContainer = document.getElementById('dashboardRecentTxList');
-      const recentLoansContainer = document.getElementById('dashboardLoansList');
       const recentTx = [...appData.transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
 
       if (recentTx.length === 0) recentTxContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">No transactions recorded yet.</div>`;
       else recentTxContainer.innerHTML = recentTx.map(t => createTxRowHtml(t)).join('');
-
-      if (appData.loans.length === 0) recentLoansContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500">No active loans added.</div>`;
-      else recentLoansContainer.innerHTML = appData.loans.slice(0, 2).map(loan => `
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/90 border border-slate-700/50">
-          <div><h4 class="text-xs font-bold text-white">${escapeHTML(loan.name)}</h4><p class="text-[10px] text-slate-400">Due on ${loan.dueDay}th • EMI ₹${loan.emiAmount.toLocaleString('en-IN')}</p></div>
-          ${loan.principalBalance > 0 ? `<button class="action-pay-emi px-2.5 py-1 rounded-lg bg-sky-600/20 text-sky-400 hover:bg-sky-600 hover:text-white border border-sky-500/30 text-xs font-semibold transition" data-id="${loan.id}">Pay EMI</button>` : `<span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">Cleared</span>`}
-        </div>`).join('');
     }
 
     function resetPaginationAndRender() { txRenderLimit = 20; renderTransactions(); }
@@ -1437,12 +1417,12 @@
         if (tx) {
           const oldAcc = appData.accounts.find(a => a.id === tx.accountId);
           if (oldAcc) {
-            if (oldAcc.type === 'credit_card') { if (tx.type === 'expense') oldAcc.currentDue = Math.max(0, oldAcc.currentDue - tx.amount); else oldAcc.currentDue += tx.amount; } 
+            if (oldAcc.type === 'credit_card') { if (tx.type === 'expense') oldAcc.currentDue -= tx.amount; else oldAcc.currentDue += tx.amount; } 
             else { if (tx.type === 'expense') oldAcc.balance += tx.amount; else oldAcc.balance -= tx.amount; }
           }
           const newAcc = appData.accounts.find(a => a.id === accountId);
           if (newAcc) {
-            if (newAcc.type === 'credit_card') { if (currentTxType === 'expense') newAcc.currentDue += amount; else newAcc.currentDue = Math.max(0, newAcc.currentDue - amount); } 
+            if (newAcc.type === 'credit_card') { if (currentTxType === 'expense') newAcc.currentDue += amount; else newAcc.currentDue -= amount; } 
             else { if (currentTxType === 'expense') newAcc.balance -= amount; else newAcc.balance += amount; }
           }
           tx.type = currentTxType; tx.amount = amount; tx.category = category; tx.accountId = accountId; tx.date = date; tx.notes = notes;
@@ -1451,7 +1431,7 @@
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: currentTxType, amount, category, accountId, date, notes });
         const acc = appData.accounts.find(a => a.id === accountId);
         if (acc) {
-          if (acc.type === 'credit_card') { if (currentTxType === 'expense') acc.currentDue += amount; else acc.currentDue = Math.max(0, acc.currentDue - amount); } 
+          if (acc.type === 'credit_card') { if (currentTxType === 'expense') acc.currentDue += amount; else acc.currentDue -= amount; } 
           else { if (currentTxType === 'expense') acc.balance -= amount; else acc.balance += amount; }
         }
       }
@@ -1466,7 +1446,7 @@
       if(confirm('Delete this transaction?')) {
         const acc = appData.accounts.find(a => a.id === tx.accountId);
         if (acc) {
-          if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount)); else acc.currentDue += Number(tx.amount); } 
+          if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue -= Number(tx.amount); else acc.currentDue += Number(tx.amount); } 
           else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance -= Number(tx.amount); }
         }
         appData.transactions = appData.transactions.filter(t => t.id !== id);
@@ -1946,7 +1926,7 @@
                 if (acc) {
                   if (acc.type === 'credit_card') {
                     if (tx.type === 'expense') acc.currentDue += Number(tx.amount);
-                    else acc.currentDue = Math.max(0, acc.currentDue - Number(tx.amount));
+                    else acc.currentDue -= Number(tx.amount);
                   } else {
                     if (tx.type === 'expense') acc.balance -= Number(tx.amount);
                     else acc.balance += Number(tx.amount);
