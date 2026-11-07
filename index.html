@@ -14,7 +14,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PocketLedger">
   
-  <!-- Pinned versions to prevent future breakages -->
   <script src="https://cdn.tailwindcss.com?version=3.4.1"></script>
   <script>
     tailwind.config = {
@@ -174,7 +173,6 @@
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
           <button id="btn-view-all-tx" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
         </div>
-        <!-- Compact Data Density List applied here too -->
         <div id="dashboardRecentTxList" class="space-y-1.5"></div>
       </div>
     </section>
@@ -206,7 +204,7 @@
           <input type="text" id="txSearchInput" placeholder="Search notes or category..." class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
         <select id="txFilterType" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-slate-200 focus:outline-none">
-          <option value="all">All</option><option value="expense">Expense</option><option value="income">Income</option>
+          <option value="all">All</option><option value="expense">Expense</option><option value="income">Income</option><option value="transfer">Transfer</option>
         </select>
         <button id="btn-toggle-chart" aria-label="Toggle Chart" class="bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-slate-300 active:text-emerald-400 transition" title="Show Chart">
           <i data-lucide="pie-chart" class="w-4 h-4"></i>
@@ -215,7 +213,6 @@
       <div id="chartContainer" class="hidden p-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-inner">
         <canvas id="txChartCanvas" height="220"></canvas>
       </div>
-      <!-- Compact Data Density applied here (space-y-1.5) -->
       <div id="fullTxList" class="space-y-1.5"></div>
     </section>
 
@@ -337,19 +334,35 @@
         <div class="flex bg-slate-800 p-1 rounded-xl">
           <button type="button" id="btnTxTypeExpense" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition">Expense</button>
           <button type="button" id="btnTxTypeIncome" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Income</button>
+          <button type="button" id="btnTxTypeTransfer" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Transfer</button>
         </div>
+        
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount (₹)</label>
           <div class="relative"><span class="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span><input type="number" inputmode="decimal" step="0.01" max="999999999" id="txAmount" required placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
         </div>
-        <div>
+        
+        <div id="txCategoryGroup">
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Category</label>
           <select id="txCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
         </div>
+        
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account</label><select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label><input type="date" id="txDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+          <div>
+            <label id="lblTxAccount" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account</label>
+            <select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
+          </div>
+          <div id="txToAccountGroup" class="hidden">
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">To Account</label>
+            <select id="txToAccount" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
+          </div>
         </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Date</label>
+          <input type="date" id="txDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+        </div>
+        
         <div>
           <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes / Description</label>
           <input type="text" id="txNotes" placeholder="Petrol, tea, vegetables..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
@@ -1028,7 +1041,11 @@
       renderRemindersUI();
 
       const selectAcc = document.getElementById('txAccount');
-      if (selectAcc) selectAcc.innerHTML = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
+      const selectToAcc = document.getElementById('txToAccount');
+      const opts = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
+      if (selectAcc) selectAcc.innerHTML = opts;
+      if (selectToAcc) selectToAcc.innerHTML = opts;
+      
       lucide.createIcons();
     }
 
@@ -1073,23 +1090,34 @@
 
     function createTxRowHtml(t, canDelete = false) {
       const isExpense = t.type === 'expense';
+      const isTransfer = t.type === 'transfer';
       const account = appData.accounts.find(a => a.id === t.accountId);
-      const accName = account ? account.name : 'Account';
+      const toAccount = t.toAccountId ? appData.accounts.find(a => a.id === t.toAccountId) : null;
       
-      // UI POLISH: Compact padding (p-2.5), smaller gap (gap-2.5), smaller icon (w-7 h-7), tighter leading
+      let accName = account ? account.name : 'Account';
+      if (isTransfer && toAccount) accName = `${account.name} → ${toAccount.name}`;
+      
+      let iconWrapperClass = isTransfer ? 'bg-sky-500/10 text-sky-400' : (isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400');
+      let iconName = isTransfer ? 'arrow-right-left' : (isExpense ? 'arrow-up-right' : 'arrow-down-left');
+      let amtColor = isTransfer ? 'text-sky-400' : (isExpense ? 'text-rose-400' : 'text-emerald-400');
+      let sign = isTransfer ? '' : (isExpense ? '-' : '+');
+
+      let tag = '';
+      if (t.isTransfer && !isTransfer) tag = '<span class="ml-1 text-[8px] font-bold bg-slate-700/80 px-1 py-0.5 rounded uppercase">Transfer</span>';
+
       return `
         <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/50">
           <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-lg ${isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'} flex items-center justify-center"><i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-3.5 h-3.5"></i></div>
+            <div class="w-7 h-7 rounded-lg ${iconWrapperClass} flex items-center justify-center"><i data-lucide="${iconName}" class="w-3.5 h-3.5"></i></div>
             <div>
-              <div class="text-xs font-bold text-white leading-tight">${escapeHTML(t.category)} ${t.isTransfer ? '<span class="ml-1 text-[8px] font-bold bg-slate-700/80 px-1 py-0.5 rounded uppercase">Transfer</span>' : ''}</div>
+              <div class="text-xs font-bold text-white leading-tight">${escapeHTML(t.category)} ${tag}</div>
               <div class="text-[10px] text-slate-400 leading-tight mt-0.5">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date}</span></div>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <div class="text-right">
-              <div class="text-xs font-bold ${isExpense ? 'text-rose-400' : 'text-emerald-400'} leading-tight">${isExpense ? '-' : '+'}₹${Number(t.amount).toLocaleString('en-IN')}</div>
-              <div class="text-[9px] text-slate-500 leading-tight mt-0.5">${escapeHTML(accName)}</div>
+              <div class="text-xs font-bold ${amtColor} leading-tight">${sign}₹${Number(t.amount).toLocaleString('en-IN')}</div>
+              <div class="text-[9px] text-slate-500 leading-tight mt-0.5 truncate max-w-[80px]">${escapeHTML(accName)}</div>
             </div>
             ${canDelete ? `
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
@@ -1111,7 +1139,7 @@
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
-      const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer);
+      const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer && t.type !== 'transfer');
       
       const dataMap = {};
       let totalAmount = 0;
@@ -1121,7 +1149,6 @@
         totalAmount += amt;
       });
 
-      // UI POLISH: Chart Context Label Plugin
       const centerTextPlugin = {
         id: 'centerText',
         beforeDraw: function(chart) {
@@ -1153,7 +1180,7 @@
         type: 'doughnut',
         data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#f43f5e', '#ec4899', '#d946ef', '#a855f7', '#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6'], borderWidth: 0, hoverOffset: 4 }] },
         options: { 
-          cutout: '75%', // Thinner ring to fit text
+          cutout: '75%', 
           responsive: true, 
           maintainAspectRatio: false, 
           plugins: { 
@@ -1375,498 +1402,6 @@
       lucide.createIcons();
     }
 
-    function renderBills() {
-      const container = document.getElementById('billsListContainer');
-      if (!container) return;
-      const currentMonthKey = getCurrentMonthKey();
-      if (!appData.bills || appData.bills.length === 0) { container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No recurring bills added.</div>`; return; }
-      container.innerHTML = appData.bills.map(bill => {
-        const isPaid = bill.lastPaidMonth === currentMonthKey;
-        return `
-          <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2.5">
-                <div class="p-2 rounded-lg bg-purple-500/10 text-purple-400"><i data-lucide="receipt" class="w-4 h-4"></i></div>
-                <div><h4 class="font-bold text-white text-sm">${escapeHTML(bill.title)}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • ₹${Number(bill.amount).toLocaleString('en-IN')}</p></div>
-              </div>
-              <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
-                <button class="action-edit-bill p-2.5 text-slate-400 hover:text-white" aria-label="Edit bill" data-id="${bill.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                <button class="action-delete-bill p-2.5 text-slate-500 hover:text-rose-400" aria-label="Delete bill" data-id="${bill.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-              </div>
-            </div>
-            <div class="flex items-center justify-between pt-1 border-t border-slate-700/40">
-              ${isPaid ? `<span class="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Paid for ${currentMonthKey}</span>` : `<span class="text-[11px] font-semibold text-rose-400 animate-pulse">Payment Pending</span><button class="action-pay-bill bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition" data-id="${bill.id}">Pay Now</button>`}
-            </div>
-          </div>
-        `;
-      }).join('');
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function populateCategoryDropdown(type, selectedCategory = null) {
-      const select = document.getElementById('txCategory');
-      const cats = appData.categories[type] || [];
-      select.innerHTML = cats.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('') + `<option value="__NEW__" class="font-bold text-emerald-400">+ Add New Category...</option>`;
-      if (selectedCategory && cats.includes(selectedCategory)) select.value = selectedCategory;
-    }
-
-    function handleCategoryChange() {
-      const select = document.getElementById('txCategory');
-      if (select.value === '__NEW__') {
-        const newCat = prompt("Enter new category name:");
-        if (newCat && newCat.trim() !== '') {
-          const formattedCat = newCat.trim();
-          if (!appData.categories[currentTxType].includes(formattedCat)) { appData.categories[currentTxType].push(formattedCat); saveData(true); }
-          populateCategoryDropdown(currentTxType, formattedCat);
-        } else select.selectedIndex = 0; 
-      }
-    }
-
-    function openTransactionModal(type = 'expense') {
-      document.getElementById('txEditId').value = '';
-      currentTxType = type; setTxType(type);
-      document.getElementById('txModalTitle').innerText = type === 'expense' ? 'Add Expense' : 'Add Income';
-      document.getElementById('txDate').value = getLocalDateStr();
-      document.getElementById('txAmount').value = '';
-      document.getElementById('txNotes').value = '';
-      openModal('txModal');
-    }
-
-    function editTransaction(id) {
-      const tx = appData.transactions.find(t => t.id === id);
-      if (!tx) return;
-      document.getElementById('txEditId').value = tx.id;
-      setTxType(tx.type);
-      document.getElementById('txModalTitle').innerText = 'Edit Transaction';
-      document.getElementById('txAmount').value = tx.amount;
-      populateCategoryDropdown(tx.type, tx.category);
-      document.getElementById('txAccount').value = tx.accountId;
-      document.getElementById('txDate').value = tx.date;
-      document.getElementById('txNotes').value = tx.notes || '';
-      openModal('txModal');
-    }
-
-    function setTxType(type) {
-      currentTxType = type;
-      const btnExp = document.getElementById('btnTxTypeExpense'), btnInc = document.getElementById('btnTxTypeIncome'), title = document.getElementById('txModalTitle'), isEdit = document.getElementById('txEditId').value !== '';
-      if (type === 'expense') { btnExp.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition"; btnInc.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; if(!isEdit) title.innerText = "Add Expense"; } 
-      else { btnInc.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition"; btnExp.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; if(!isEdit) title.innerText = "Add Income"; }
-      populateCategoryDropdown(type);
-    }
-
-    function handleSaveTransaction(e) {
-      e.preventDefault();
-      const editId = document.getElementById('txEditId').value, amount = parseFloat(document.getElementById('txAmount').value), category = document.getElementById('txCategory').value, accountId = document.getElementById('txAccount').value, date = document.getElementById('txDate').value, notes = document.getElementById('txNotes').value;
-      if (!amount || amount <= 0 || category === '__NEW__') return;
-
-      if (editId) {
-        const tx = appData.transactions.find(t => t.id === editId);
-        if (tx) {
-          const oldAcc = appData.accounts.find(a => a.id === tx.accountId);
-          if (oldAcc) {
-            if (oldAcc.type === 'credit_card') { if (tx.type === 'expense') oldAcc.currentDue -= tx.amount; else oldAcc.currentDue += tx.amount; } 
-            else { if (tx.type === 'expense') oldAcc.balance += tx.amount; else oldAcc.balance -= tx.amount; }
-          }
-          const newAcc = appData.accounts.find(a => a.id === accountId);
-          if (newAcc) {
-            if (newAcc.type === 'credit_card') { if (currentTxType === 'expense') newAcc.currentDue += amount; else newAcc.currentDue -= amount; } 
-            else { if (currentTxType === 'expense') newAcc.balance -= amount; else newAcc.balance += amount; }
-          }
-          tx.type = currentTxType; tx.amount = amount; tx.category = category; tx.accountId = accountId; tx.date = date; tx.notes = notes;
-        }
-      } else {
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: currentTxType, amount, category, accountId, date, notes });
-        const acc = appData.accounts.find(a => a.id === accountId);
-        if (acc) {
-          if (acc.type === 'credit_card') { if (currentTxType === 'expense') acc.currentDue += amount; else acc.currentDue -= amount; } 
-          else { if (currentTxType === 'expense') acc.balance -= amount; else acc.balance += amount; }
-        }
-      }
-      saveData(true); 
-      closeModal('txModal');
-      showToast('Transaction saved successfully');
-    }
-
-    function deleteTransaction(id) {
-      const tx = appData.transactions.find(t => t.id === id);
-      if (!tx) return;
-      if(confirm('Delete this transaction?')) {
-        const acc = appData.accounts.find(a => a.id === tx.accountId);
-        if (acc) {
-          if (acc.type === 'credit_card') { if (tx.type === 'expense') acc.currentDue -= Number(tx.amount); else acc.currentDue += Number(tx.amount); } 
-          else { if (tx.type === 'expense') acc.balance += Number(tx.amount); else acc.balance -= Number(tx.amount); }
-        }
-        appData.transactions = appData.transactions.filter(t => t.id !== id);
-        saveData(true);
-        showToast('Transaction deleted');
-      }
-    }
-
-    function openPaymentModal(type, id) {
-      const sourceSelect = document.getElementById('paySourceAccount'), amountInput = document.getElementById('payAmount'), title = document.getElementById('paymentModalTitle');
-      const debitAccs = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash');
-      if (debitAccs.length === 0) { alert("No debit or cash accounts available to pay from."); return; }
-      
-      sourceSelect.innerHTML = debitAccs.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (Balance: ₹${Number(a.balance).toLocaleString('en-IN')})</option>`).join('');
-
-      const currentMonthKey = getCurrentMonthKey();
-
-      if (type === 'emi') {
-        const loan = appData.loans.find(l => l.id === id);
-        if (!loan) return;
-        if(loan.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
-        title.innerText = `Pay EMI: ${loan.name}`; amountInput.value = loan.emiAmount; amountInput.readOnly = true; pendingPayment = { type: 'emi', id: id };
-      } else if (type === 'cc') {
-        const card = appData.accounts.find(a => a.id === id);
-        if (!card) return;
-        if(card.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
-        title.innerText = `Pay Bill: ${card.name}`; amountInput.value = card.statementBalance || 0; amountInput.readOnly = false; pendingPayment = { type: 'cc', id: id };
-      } else if (type === 'bill') {
-        const bill = appData.bills.find(b => b.id === id);
-        if (!bill) return;
-        if(bill.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
-        title.innerText = `Pay Bill: ${bill.title}`; amountInput.value = bill.amount; amountInput.readOnly = false; pendingPayment = { type: 'bill', id: id };
-      } else if (type === 'sip') {
-        const inv = appData.investments.find(i => i.id === id);
-        if (!inv) return;
-        if(inv.lastPaidMonth === currentMonthKey) { alert('Already paid this month!'); return; }
-        title.innerText = `Pay SIP: ${inv.name}`; amountInput.value = inv.installmentAmount; amountInput.readOnly = true; pendingPayment = { type: 'sip', id: id };
-      }
-      openModal('paymentModal');
-    }
-
-    function processPayment(e) {
-      e.preventDefault();
-      if (!pendingPayment) return;
-      const amount = parseFloat(document.getElementById('payAmount').value), sourceAcc = appData.accounts.find(a => a.id === document.getElementById('paySourceAccount').value);
-      if (!sourceAcc || isNaN(amount) || amount <= 0) return;
-
-      const dateStr = getLocalDateStr();
-      const currentMonthKey = getCurrentMonthKey();
-
-      if (pendingPayment.type === 'emi') {
-        const loan = appData.loans.find(l => l.id === pendingPayment.id);
-        if (!loan) return;
-        let interestPart = 0, principalPart = loan.emiAmount;
-        if (loan.interestRate > 0) { interestPart = loan.principalBalance * ((loan.interestRate / 100) / 12); principalPart = Math.max(0, loan.emiAmount - interestPart); }
-        loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
-        loan.lastPaidMonth = currentMonthKey;
-        sourceAcc.balance -= loan.emiAmount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
-
-      } else if (pendingPayment.type === 'cc') {
-        const card = appData.accounts.find(a => a.id === pendingPayment.id);
-        if (!card) return;
-        card.currentDue -= amount;
-        card.statementBalance = Math.max(0, (card.statementBalance || 0) - amount);
-        if (card.statementBalance === 0) card.lastPaidMonth = currentMonthKey;
-        sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Credit Card Bill', accountId: sourceAcc.id, date: dateStr, notes: `Card Bill Payment: ${card.name}` });
-
-      } else if (pendingPayment.type === 'bill') {
-        const bill = appData.bills.find(b => b.id === pendingPayment.id);
-        if (!bill) return;
-        bill.lastPaidMonth = currentMonthKey;
-        sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Recurring Bill: ${bill.title}` });
-
-      } else if (pendingPayment.type === 'sip') {
-        const inv = appData.investments.find(i => i.id === pendingPayment.id);
-        if (!inv) return;
-        inv.amount += amount;
-        inv.lastPaidMonth = currentMonthKey;
-        sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Investments', accountId: sourceAcc.id, date: dateStr, notes: `SIP Installment: ${inv.name}` });
-      }
-
-      pendingPayment = null; 
-      saveData(true); 
-      closeModal('paymentModal');
-      showToast('Payment recorded successfully');
-    }
-
-    function openKhataModal() {
-      document.getElementById('khataEditId').value = ''; 
-      document.getElementById('khataModalTitle').innerText = 'Person-to-Person Entry';
-      document.getElementById('khataDate').value = getLocalDateStr(); 
-      document.getElementById('khataDueDate').value = ''; 
-      document.getElementById('khataPersonName').value = ''; 
-      document.getElementById('khataAmount').value = ''; 
-      document.getElementById('khataNotes').value = '';
-      setKhataDirection('lent'); 
-      openModal('khataModal');
-    }
-
-    function editKhataEntry(id) {
-      const entry = appData.khata.find(k => k.id === id);
-      if (!entry) return;
-      document.getElementById('khataEditId').value = entry.id; document.getElementById('khataModalTitle').innerText = 'Edit Entry';
-      document.getElementById('khataPersonName').value = entry.personName; document.getElementById('khataAmount').value = entry.amount;
-      document.getElementById('khataDate').value = entry.date; document.getElementById('khataDueDate').value = entry.dueDate || ''; document.getElementById('khataNotes').value = entry.notes || '';
-      setKhataDirection(entry.direction); openModal('khataModal');
-    }
-
-    function setKhataDirection(dir) {
-      currentKhataDirection = dir;
-      const btnLent = document.getElementById('btnKhataLent'), btnBorrow = document.getElementById('btnKhataBorrowed');
-      if (dir === 'lent') { 
-        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white transition"; 
-        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; 
-      } else { 
-        btnBorrow.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition"; 
-        btnLent.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition"; 
-      }
-    }
-
-    function handleSaveKhata(e) {
-      e.preventDefault();
-      const editId = document.getElementById('khataEditId').value, personName = document.getElementById('khataPersonName').value.trim(), amount = parseFloat(document.getElementById('khataAmount').value), date = document.getElementById('khataDate').value, dueDate = document.getElementById('khataDueDate').value, notes = document.getElementById('khataNotes').value;
-      if (!personName || !amount) return;
-      
-      if (dueDate && dueDate < date) { alert('Return due date cannot be before the given date.'); return; }
-
-      if (editId) {
-        const entry = appData.khata.find(k => k.id === editId);
-        if (entry) { entry.personName = personName; entry.amount = amount; entry.date = date; entry.dueDate = dueDate; entry.notes = notes; entry.direction = currentKhataDirection; }
-      } else appData.khata.unshift({ id: 'k_' + Date.now(), direction: currentKhataDirection, personName, amount, date, dueDate, status: 'pending', notes });
-
-      saveData(true); 
-      closeModal('khataModal');
-      showToast('Khata entry saved');
-      if (currentViewingContact && currentViewingContact.toLowerCase() === personName.toLowerCase()) openContactStatement(personName);
-    }
-
-    function deleteKhata(id) {
-      if(!confirm('Delete this entry?')) return;
-      const entry = appData.khata.find(k => k.id === id);
-      appData.khata = appData.khata.filter(k => k.id !== id);
-      saveData(true);
-      showToast('Entry deleted');
-      if (entry && currentViewingContact && currentViewingContact.toLowerCase() === entry.personName.toLowerCase()) {
-        if (appData.khata.some(k => k.personName.toLowerCase() === entry.personName.toLowerCase())) openContactStatement(entry.personName);
-        else closeModal('contactStatementModal');
-      }
-    }
-
-    function openLoanModal() {
-      document.getElementById('loanEditId').value = ''; document.getElementById('loanModalTitle').innerText = 'Add Bank / Institutional Loan';
-      document.getElementById('loanName').value = ''; document.getElementById('loanBalance').value = ''; document.getElementById('loanEmi').value = ''; document.getElementById('loanInterest').value = '';
-      openModal('loanModal');
-    }
-
-    function editLoan(id) {
-      const loan = appData.loans.find(l => l.id === id);
-      if (!loan) return;
-      document.getElementById('loanEditId').value = loan.id; document.getElementById('loanModalTitle').innerText = 'Edit Loan Details';
-      document.getElementById('loanName').value = loan.name; document.getElementById('loanBalance').value = loan.principalBalance; document.getElementById('loanEmi').value = loan.emiAmount;
-      document.getElementById('loanDueDay').value = loan.dueDay; document.getElementById('loanInterest').value = loan.interestRate || '';
-      openModal('loanModal');
-    }
-
-    function handleSaveLoan(e) {
-      e.preventDefault();
-      const editId = document.getElementById('loanEditId').value, name = document.getElementById('loanName').value.trim(), balance = parseFloat(document.getElementById('loanBalance').value), emi = parseFloat(document.getElementById('loanEmi').value), dueDay = parseInt(document.getElementById('loanDueDay').value), interest = parseFloat(document.getElementById('loanInterest').value) || null;
-      if (!name || !balance || !emi) return;
-
-      if (editId) {
-        const loan = appData.loans.find(l => l.id === editId);
-        if (loan) { loan.name = name; loan.principalBalance = balance; loan.emiAmount = emi; loan.dueDay = dueDay; loan.interestRate = interest; }
-      } else appData.loans.push({ id: 'loan_' + Date.now(), name, principalBalance: balance, emiAmount: emi, dueDay, interestRate: interest, lastPaidMonth: '' });
-      
-      saveData(true); 
-      closeModal('loanModal');
-      showToast('Loan details saved');
-    }
-
-    function deleteLoan(id) { 
-      if(confirm('Delete this loan?')) {
-        appData.loans = appData.loans.filter(l => l.id !== id); 
-        saveData(true); 
-        showToast('Loan deleted');
-      }
-    }
-
-    function openInvestmentModal() {
-      document.getElementById('invEditId').value = ''; document.getElementById('invModalTitle').innerText = 'Add Investment';
-      document.getElementById('invName').value = ''; document.getElementById('invAmount').value = '';
-      document.getElementById('invInstallment').value = ''; document.getElementById('invDueDay').value = '';
-      openModal('investmentModal');
-    }
-
-    function editInvestment(id) {
-      const inv = appData.investments.find(i => i.id === id);
-      if (!inv) return;
-      document.getElementById('invEditId').value = inv.id; document.getElementById('invModalTitle').innerText = 'Edit Investment';
-      document.getElementById('invType').value = inv.type; document.getElementById('invName').value = inv.name; document.getElementById('invAmount').value = inv.amount;
-      document.getElementById('invInstallment').value = inv.installmentAmount || '';
-      document.getElementById('invDueDay').value = inv.dueDay || '';
-      openModal('investmentModal');
-    }
-
-    function handleSaveInvestment(e) {
-      e.preventDefault();
-      const editId = document.getElementById('invEditId').value;
-      const type = document.getElementById('invType').value;
-      const name = document.getElementById('invName').value.trim();
-      const amount = parseFloat(document.getElementById('invAmount').value);
-      const installmentAmount = parseFloat(document.getElementById('invInstallment').value) || 0;
-      const dueDay = parseInt(document.getElementById('invDueDay').value) || null;
-
-      if (!name || isNaN(amount)) return;
-      
-      if (editId) {
-        const inv = appData.investments.find(i => i.id === editId);
-        if (inv) { 
-          inv.type = type; inv.name = name; inv.amount = amount;
-          inv.installmentAmount = installmentAmount; inv.dueDay = dueDay;
-        }
-      } else {
-        appData.investments.push({ 
-          id: 'inv_' + Date.now(), type, name, amount, 
-          installmentAmount, dueDay, lastPaidMonth: '' 
-        });
-      }
-      
-      saveData(true); 
-      closeModal('investmentModal');
-      showToast('Investment saved');
-    }
-
-    function deleteInvestment(id) { 
-      if(confirm('Delete this investment?')) {
-        appData.investments = appData.investments.filter(i => i.id !== id); 
-        saveData(true);
-        showToast('Investment deleted');
-      } 
-    }
-
-    function openInsuranceModal() {
-      document.getElementById('insEditId').value = ''; document.getElementById('insModalTitle').innerText = 'Add Insurance';
-      document.getElementById('insName').value = ''; document.getElementById('insPremium').value = ''; document.getElementById('insDueDate').value = getOffsetDate(30);
-      openModal('insuranceModal');
-    }
-
-    function editInsurance(id) {
-      const ins = appData.insurances.find(i => i.id === id);
-      if (!ins) return;
-      document.getElementById('insEditId').value = ins.id; document.getElementById('insModalTitle').innerText = 'Edit Insurance';
-      document.getElementById('insType').value = ins.type; document.getElementById('insName').value = ins.name; document.getElementById('insPremium').value = ins.premium; document.getElementById('insDueDate').value = ins.dueDate;
-      openModal('insuranceModal');
-    }
-
-    function handleSaveInsurance(e) {
-      e.preventDefault();
-      const editId = document.getElementById('insEditId').value, type = document.getElementById('insType').value, name = document.getElementById('insName').value.trim(), premium = parseFloat(document.getElementById('insPremium').value), dueDate = document.getElementById('insDueDate').value;
-      if (!name || isNaN(premium) || !dueDate) return;
-      if (editId) {
-        const ins = appData.insurances.find(i => i.id === editId);
-        if (ins) { ins.type = type; ins.name = name; ins.premium = premium; ins.dueDate = dueDate; }
-      } else appData.insurances.push({ id: 'ins_' + Date.now(), type, name, premium, dueDate });
-      
-      saveData(true); 
-      closeModal('insuranceModal');
-      showToast('Insurance saved');
-    }
-
-    function deleteInsurance(id) { 
-      if(confirm('Delete this insurance?')) {
-        appData.insurances = appData.insurances.filter(i => i.id !== id); 
-        saveData(true);
-        showToast('Insurance deleted');
-      }
-    }
-
-    function toggleAccountFields() {
-      const type = document.getElementById('accType').value, debitGroup = document.getElementById('accDebitBalanceGroup'), creditGroup = document.getElementById('accCreditCardGroup');
-      if (type === 'credit_card') { debitGroup.classList.add('hidden'); creditGroup.classList.remove('hidden'); } 
-      else { debitGroup.classList.remove('hidden'); creditGroup.classList.add('hidden'); }
-    }
-
-    function openAccountModal() {
-      document.getElementById('accEditId').value = ''; 
-      document.getElementById('accName').value = ''; 
-      document.getElementById('accBalance').value = ''; 
-      document.getElementById('cardDue').value = ''; 
-      document.getElementById('cardStatement').value = '';
-      document.getElementById('cardLimit').value = '';
-      toggleAccountFields(); 
-      openModal('accountModal');
-    }
-
-    function editAccount(id) {
-      const acc = appData.accounts.find(a => a.id === id);
-      if (!acc) return;
-      document.getElementById('accEditId').value = acc.id;
-      document.getElementById('accType').value = acc.type;
-      document.getElementById('accName').value = acc.name;
-      
-      if (acc.type === 'credit_card') {
-        document.getElementById('cardLimit').value = acc.limit;
-        document.getElementById('cardDue').value = acc.currentDue;
-        document.getElementById('cardStatement').value = acc.statementBalance !== undefined ? acc.statementBalance : acc.currentDue;
-        document.getElementById('cardDueDay').value = acc.dueDay || 15;
-        document.getElementById('cardBillGenDay').value = acc.billGenDay || 1;
-      } else {
-        document.getElementById('accBalance').value = acc.balance;
-      }
-      toggleAccountFields(); 
-      openModal('accountModal');
-    }
-
-    function handleSaveAccount(e) {
-      e.preventDefault();
-      const editId = document.getElementById('accEditId').value;
-      const type = document.getElementById('accType').value;
-      const name = document.getElementById('accName').value.trim();
-      if (!name) return;
-
-      if (editId) {
-        const acc = appData.accounts.find(a => a.id === editId);
-        if (acc) {
-          acc.name = name;
-          acc.type = type;
-          if (type === 'credit_card') {
-            acc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
-            acc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0; 
-            let stmtVal = document.getElementById('cardStatement').value;
-            acc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : acc.currentDue;
-            acc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
-            acc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
-          } else {
-            acc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
-          }
-        }
-      } else {
-        const newAcc = { id: 'acc_' + Date.now(), name, type };
-        if (type === 'credit_card') {
-          newAcc.limit = parseFloat(document.getElementById('cardLimit').value) || 0;
-          newAcc.currentDue = parseFloat(document.getElementById('cardDue').value) || 0; 
-          let stmtVal = document.getElementById('cardStatement').value;
-          newAcc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : newAcc.currentDue;
-          newAcc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
-          newAcc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
-          newAcc.lastBilledMonth = '';
-          newAcc.lastPaidMonth = '';
-        } else {
-          newAcc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
-        }
-        appData.accounts.push(newAcc); 
-      }
-      saveData(true); 
-      closeModal('accountModal');
-      showToast('Account saved successfully');
-    }
-
-    function deleteAccount(id) {
-      if (appData.accounts.length <= 1) { alert("You must keep at least one account."); return; }
-      if (appData.transactions.some(t => t.accountId === id)) { alert("Cannot delete account. It is linked to existing transactions."); return; }
-      if(confirm('Delete this account?')) {
-        appData.accounts = appData.accounts.filter(a => a.id !== id); 
-        saveData(true);
-        showToast('Account deleted');
-      }
-    }
-
     function openBillModal() {
       document.getElementById('billEditId').value = ''; document.getElementById('billModalTitle').innerText = 'Add Monthly Bill';
       document.getElementById('billTitle').value = ''; document.getElementById('billAmount').value = '';
@@ -1969,15 +1504,43 @@
               appData.accounts = Array.from(localAccountsMap.values());
 
               newImportedTxs.forEach(tx => {
-                const acc = appData.accounts.find(a => a.id === tx.accountId);
-                if (acc) {
-                  if (acc.type === 'credit_card') {
-                    if (tx.type === 'expense') acc.currentDue += Number(tx.amount);
-                    else acc.currentDue -= Number(tx.amount);
-                  } else {
-                    if (tx.type === 'expense') acc.balance -= Number(tx.amount);
-                    else acc.balance += Number(tx.amount);
-                  }
+                // FIXED: Include credit card statement balance logic during transfer import
+                if (tx.type === 'transfer') {
+                   const fromAcc = appData.accounts.find(a => a.id === tx.accountId);
+                   const toAcc = appData.accounts.find(a => a.id === tx.toAccountId);
+                   
+                   if (fromAcc) { 
+                     if (fromAcc.type === 'credit_card') {
+                       fromAcc.currentDue += Number(tx.amount); 
+                     } else {
+                       fromAcc.balance -= Number(tx.amount); 
+                     }
+                   }
+                   if (toAcc) { 
+                     if (toAcc.type === 'credit_card') {
+                       toAcc.currentDue -= Number(tx.amount); 
+                       toAcc.statementBalance = Math.max(0, (toAcc.statementBalance || 0) - Number(tx.amount));
+                       if (toAcc.statementBalance === 0) toAcc.lastPaidMonth = getCurrentMonthKey();
+                     } else {
+                       toAcc.balance += Number(tx.amount); 
+                     }
+                   }
+                } else {
+                   const acc = appData.accounts.find(a => a.id === tx.accountId);
+                   if (acc) {
+                     if (acc.type === 'credit_card') {
+                       if (tx.type === 'expense') {
+                         acc.currentDue += Number(tx.amount);
+                       } else {
+                         acc.currentDue -= Number(tx.amount);
+                         acc.statementBalance = Math.max(0, (acc.statementBalance || 0) - Number(tx.amount));
+                         if (acc.statementBalance === 0) acc.lastPaidMonth = getCurrentMonthKey();
+                       }
+                     } else {
+                       if (tx.type === 'expense') acc.balance -= Number(tx.amount);
+                       else acc.balance += Number(tx.amount);
+                     }
+                   }
                 }
               });
               
@@ -2098,6 +1661,7 @@
         
         if (target.id === 'btnTxTypeExpense') return setTxType('expense');
         if (target.id === 'btnTxTypeIncome') return setTxType('income');
+        if (target.id === 'btnTxTypeTransfer') return setTxType('transfer');
         if (target.id === 'btnKhataLent') return setKhataDirection('lent');
         if (target.id === 'btnKhataBorrowed') return setKhataDirection('borrowed');
         
