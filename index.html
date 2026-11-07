@@ -174,7 +174,8 @@
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
           <button id="btn-view-all-tx" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
         </div>
-        <div id="dashboardRecentTxList" class="space-y-2"></div>
+        <!-- Compact Data Density List applied here too -->
+        <div id="dashboardRecentTxList" class="space-y-1.5"></div>
       </div>
     </section>
 
@@ -214,7 +215,8 @@
       <div id="chartContainer" class="hidden p-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-inner">
         <canvas id="txChartCanvas" height="220"></canvas>
       </div>
-      <div id="fullTxList" class="space-y-2"></div>
+      <!-- Compact Data Density applied here (space-y-1.5) -->
+      <div id="fullTxList" class="space-y-1.5"></div>
     </section>
 
     <!-- VIEW 3: KHATA -->
@@ -1073,24 +1075,26 @@
       const isExpense = t.type === 'expense';
       const account = appData.accounts.find(a => a.id === t.accountId);
       const accName = account ? account.name : 'Account';
+      
+      // UI POLISH: Compact padding (p-2.5), smaller gap (gap-2.5), smaller icon (w-7 h-7), tighter leading
       return `
-        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-800/70 border border-slate-700/50">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl ${isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'} flex items-center justify-center"><i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-4 h-4"></i></div>
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/50">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg ${isExpense ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'} flex items-center justify-center"><i data-lucide="${isExpense ? 'arrow-up-right' : 'arrow-down-left'}" class="w-3.5 h-3.5"></i></div>
             <div>
-              <div class="text-xs font-bold text-white">${escapeHTML(t.category)} ${t.isTransfer ? '<span class="ml-1 text-[9px] bg-slate-700 px-1 rounded">Transfer</span>' : ''}</div>
-              <div class="text-[11px] text-slate-400">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date}</span></div>
+              <div class="text-xs font-bold text-white leading-tight">${escapeHTML(t.category)} ${t.isTransfer ? '<span class="ml-1 text-[8px] font-bold bg-slate-700/80 px-1 py-0.5 rounded uppercase">Transfer</span>' : ''}</div>
+              <div class="text-[10px] text-slate-400 leading-tight mt-0.5">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date}</span></div>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <div class="text-right">
-              <div class="text-xs font-bold ${isExpense ? 'text-rose-400' : 'text-emerald-400'}">${isExpense ? '-' : '+'}₹${Number(t.amount).toLocaleString('en-IN')}</div>
-              <div class="text-[10px] text-slate-500">${escapeHTML(accName)}</div>
+              <div class="text-xs font-bold ${isExpense ? 'text-rose-400' : 'text-emerald-400'} leading-tight">${isExpense ? '-' : '+'}₹${Number(t.amount).toLocaleString('en-IN')}</div>
+              <div class="text-[9px] text-slate-500 leading-tight mt-0.5">${escapeHTML(accName)}</div>
             </div>
             ${canDelete ? `
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
-                <button class="action-edit-tx p-2.5 text-slate-400 active:text-white" aria-label="Edit transaction" data-id="${t.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-                <button class="action-delete-tx p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete transaction" data-id="${t.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                <button class="action-edit-tx p-1.5 text-slate-400 active:text-white transition" aria-label="Edit transaction" data-id="${t.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                <button class="action-delete-tx p-1.5 text-slate-500 active:text-rose-400 transition" aria-label="Delete transaction" data-id="${t.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
               </div>` : ''}
           </div>
         </div>
@@ -1108,13 +1112,56 @@
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
       const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer);
+      
       const dataMap = {};
-      dataToChart.forEach(t => { dataMap[t.category] = (dataMap[t.category] || 0) + Number(t.amount); });
+      let totalAmount = 0;
+      dataToChart.forEach(t => { 
+        const amt = Number(t.amount);
+        dataMap[t.category] = (dataMap[t.category] || 0) + amt; 
+        totalAmount += amt;
+      });
+
+      // UI POLISH: Chart Context Label Plugin
+      const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw: function(chart) {
+          const { ctx, chartArea: { top, right, bottom, left } } = chart;
+          ctx.save();
+          const centerX = (left + right) / 2;
+          const centerY = (top + bottom) / 2;
+          
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          ctx.font = "bold 15px sans-serif";
+          ctx.fillStyle = "#f8fafc"; 
+          ctx.fillText("₹" + totalAmount.toLocaleString('en-IN'), centerX, centerY + 6);
+          
+          ctx.font = "600 9px sans-serif";
+          ctx.fillStyle = "#94a3b8"; 
+          let label = "TOTAL";
+          if (chartType === 'income') label = "TOTAL INFLOW";
+          if (chartType === 'expense') label = "TOTAL SPENT";
+          ctx.fillText(label, centerX, centerY - 10);
+          
+          ctx.restore();
+        }
+      };
+
       if (txChartInstance) txChartInstance.destroy();
       txChartInstance = new Chart(ctx, {
         type: 'doughnut',
         data: { labels: Object.keys(dataMap), datasets: [{ data: Object.values(dataMap), backgroundColor: ['#f43f5e', '#ec4899', '#d946ef', '#a855f7', '#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6'], borderWidth: 0, hoverOffset: 4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 10 } } }, tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } } } }
+        options: { 
+          cutout: '75%', // Thinner ring to fit text
+          responsive: true, 
+          maintainAspectRatio: false, 
+          plugins: { 
+            legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 10 }, padding: 10 } }, 
+            tooltip: { callbacks: { label: function(context) { return ' ₹' + context.raw.toLocaleString('en-IN'); } } } 
+          } 
+        },
+        plugins: [centerTextPlugin]
       });
     }
 
@@ -1510,7 +1557,7 @@
       } else if (pendingPayment.type === 'cc') {
         const card = appData.accounts.find(a => a.id === pendingPayment.id);
         if (!card) return;
-        card.currentDue = Math.max(0, card.currentDue - amount);
+        card.currentDue -= amount;
         card.statementBalance = Math.max(0, (card.statementBalance || 0) - amount);
         if (card.statementBalance === 0) card.lastPaidMonth = currentMonthKey;
         sourceAcc.balance -= amount;
