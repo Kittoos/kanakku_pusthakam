@@ -14,6 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PocketLedger">
   
+  <!-- Pinned versions to prevent future breakages -->
   <script src="https://cdn.tailwindcss.com?version=3.4.1"></script>
   <script>
     tailwind.config = {
@@ -605,7 +606,7 @@
 
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
-    
+
     const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     
     function getCurrentMonthName() {
@@ -623,6 +624,7 @@
       const tzOffset = d.getTimezoneOffset() * 60000;
       return new Date(d.getTime() - tzOffset).toISOString().slice(0, 10);
     }
+    
     function getCurrentMonthKey() {
       return getLocalDateStr().slice(0, 7);
     }
