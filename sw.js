@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pocketledger-cache-v11.23';
+const CACHE_NAME = 'pocketledger-cache-v11.24';
 
 // Includes all external CDNs to fix the offline layout breaking issue
 const CORE_ASSETS = [
