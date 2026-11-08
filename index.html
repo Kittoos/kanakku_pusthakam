@@ -1733,14 +1733,25 @@ if (toAcc.type === 'credit_card') {
         sourceAcc.balance -= loan.emiAmount;
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
 
-      } else if (pendingPayment.type === 'cc') {
+            } else if (pendingPayment.type === 'cc') {
         const card = appData.accounts.find(a => a.id === pendingPayment.id);
         if (!card) return;
-        card.currentDue -= amount;
-        card.statementBalance = Math.max(0, (card.statementBalance || 0) - amount);
-        if (card.statementBalance === 0) card.lastPaidMonth = currentMonthKey;
-        sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Credit Card Bill', accountId: sourceAcc.id, date: dateStr, notes: `Card Bill Payment: ${card.name}` });
+        
+        const newTx = { 
+          id: 'tx_' + Date.now(), 
+          type: 'transfer', 
+          isTransfer: true,
+          amount: amount, 
+          category: 'Transfer', 
+          accountId: sourceAcc.id, 
+          toAccountId: card.id, 
+          date: dateStr, 
+          notes: `Card Bill Payment: ${card.name}` 
+        };
+        
+        applyTxMath(newTx, false); 
+        appData.transactions.unshift(newTx);
+
 
       } else if (pendingPayment.type === 'bill') {
         const bill = appData.bills.find(b => b.id === pendingPayment.id);
