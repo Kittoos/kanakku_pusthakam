@@ -4,17 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <title>PocketLedger - Personal Finance, Loans & EMI Tracker</title>
-
+  
   <link rel="manifest" href="/kanakku_pusthakam/manifest.json">
   <link rel="icon" type="image/png" href="/kanakku_pusthakam/icon.png">
   <link rel="apple-touch-icon" href="/kanakku_pusthakam/icon.png">
-
+  
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PocketLedger">
-
-  <!-- Pinned versions to prevent future breakages -->
+  
   <script src="https://cdn.tailwindcss.com?version=3.4.1"></script>
   <script>
     tailwind.config = {
@@ -174,7 +173,6 @@
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
           <button id="btn-view-all-tx" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
         </div>
-        <!-- Compact Data Density List applied here too -->
         <div id="dashboardRecentTxList" class="space-y-1.5"></div>
       </div>
     </section>
@@ -608,6 +606,68 @@
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
 
+    // UI SAFETY: The listener is attached before ANY rendering code runs
+    // This guarantees buttons will work even if corrupt saved data causes a glitch
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('button, .clickable, .close-modal-btn, .action-toggle-reminders');
+        if (!target) return;
+
+        if (target.classList.contains('close-modal-btn')) return closeModal(target.dataset.target);
+        if (target.classList.contains('action-toggle-reminders')) return toggleRemindersModal();
+        if (target.classList.contains('action-dismiss-reminder')) return dismissReminder(target.dataset.id);
+        if (target.classList.contains('action-pay-emi')) return openPaymentModal('emi', target.dataset.id);
+        if (target.classList.contains('action-pay-cc')) return openPaymentModal('cc', target.dataset.id);
+        if (target.classList.contains('action-pay-bill')) return openPaymentModal('bill', target.dataset.id);
+        if (target.classList.contains('action-pay-sip')) return openPaymentModal('sip', target.dataset.id);
+        if (target.classList.contains('action-pay-ins')) return openPaymentModal('ins', target.dataset.id);
+        if (target.classList.contains('action-edit-tx')) return editTransaction(target.dataset.id);
+        if (target.classList.contains('action-delete-tx')) return deleteTransaction(target.dataset.id);
+        if (target.classList.contains('action-open-contact')) return openContactStatement(target.dataset.name);
+        if (target.classList.contains('action-edit-khata')) return editKhataEntry(target.dataset.id);
+        if (target.classList.contains('action-delete-khata')) return deleteKhata(target.dataset.id);
+        if (target.classList.contains('action-edit-loan')) return editLoan(target.dataset.id);
+        if (target.classList.contains('action-delete-loan')) return deleteLoan(target.dataset.id);
+        if (target.classList.contains('action-edit-inv')) return editInvestment(target.dataset.id);
+        if (target.classList.contains('action-delete-inv')) return deleteInvestment(target.dataset.id);
+        if (target.classList.contains('action-edit-ins')) return editInsurance(target.dataset.id);
+        if (target.classList.contains('action-delete-ins')) return deleteInsurance(target.dataset.id);
+        if (target.classList.contains('action-edit-acc')) return editAccount(target.dataset.id);
+        if (target.classList.contains('action-delete-acc')) return deleteAccount(target.dataset.id);
+        if (target.classList.contains('action-edit-bill')) return editBill(target.dataset.id);
+        if (target.classList.contains('action-delete-bill')) return deleteBill(target.dataset.id);
+        if (target.id === 'btn-load-more-tx') return loadMoreTransactions();
+        if (target.id === 'btn-reminders') return toggleRemindersModal();
+        if (target.id === 'btn-settings') return openSettingsModal();
+        if (target.id === 'btn-dash-assets') return switchTab('assets');
+        if (target.id === 'btn-dash-loans' || target.id === 'btn-view-all-loans') return switchTab('loans');
+        if (target.id === 'btn-dash-khata-lent') { switchTab('khata'); return setKhataFilter('lent'); }
+        if (target.id === 'btn-dash-khata-borrowed') { switchTab('khata'); return setKhataFilter('borrowed'); }
+        if (target.id === 'btn-add-expense' || target.id === 'btn-view-add-tx') return openTransactionModal('expense');
+        if (target.id === 'btn-add-income') return openTransactionModal('income');
+        if (target.id === 'btn-add-khata' || target.id === 'btn-view-add-khata') return openKhataModal();
+        if (target.id === 'btn-view-all-tx') return switchTab('transactions');
+        if (target.id === 'btn-toggle-chart') return toggleTxChart();
+        if (target.id === 'tabKhataAll') return setKhataFilter('all');
+        if (target.id === 'tabKhataLent') return setKhataFilter('lent');
+        if (target.id === 'tabKhataBorrowed') return setKhataFilter('borrowed');
+        if (target.id === 'btn-view-add-loan') return openLoanModal();
+        if (target.id === 'btn-view-add-account') return openAccountModal();
+        if (target.id === 'btn-view-add-investment') return openInvestmentModal();
+        if (target.id === 'btn-view-add-insurance') return openInsuranceModal();
+        if (target.id === 'btn-view-add-bill') return openBillModal();
+        if (target.id === 'btnTxTypeExpense') return setTxType('expense');
+        if (target.id === 'btnTxTypeIncome') return setTxType('income');
+        if (target.id === 'btnTxTypeTransfer') return setTxType('transfer');
+        if (target.id === 'btnKhataLent') return setKhataDirection('lent');
+        if (target.id === 'btnKhataBorrowed') return setKhataDirection('borrowed');
+        if (target.id === 'btn-settings-export-json') return exportDataJSON();
+        if (target.id === 'btn-settings-export-csv') return exportDataCSV();
+        if (target.id === 'btn-settings-import-merge') { importMode = 'merge'; return document.getElementById('importJsonFileInput').click(); }
+        if (target.id === 'btn-settings-import-overwrite') { importMode = 'overwrite'; return document.getElementById('importJsonFileInput').click(); }
+        if (target.id === 'btn-settings-reset') return clearAllData();
+        if (target.id?.startsWith('nav-')) return switchTab(target.id.replace('nav-', ''));
+    });
+
     function escapeHTML(str) {
       if (str == null) return '';
       return String(str).replace(/[&<>'"]/g, tag => ({
@@ -716,7 +776,7 @@
       
       appData.accounts.forEach(acc => {
         if (acc.type === 'credit_card') {
-          if (currentDay >= acc.billGenDay && acc.lastBilledMonth !== currentMonthKey) {
+          if (currentDay >= (acc.billGenDay || 1) && acc.lastBilledMonth !== currentMonthKey) {
              acc.statementBalance = acc.currentDue; 
              acc.lastBilledMonth = currentMonthKey;
              acc.lastPaidMonth = ''; 
@@ -780,8 +840,7 @@
         if(loan.principalBalance <= 0) return; 
         if(loan.lastPaidMonth === currentMonthKey) return; 
         if(appData.dismissedAlerts[loan.id] === currentMonthKey) return;
-
-        let diffDays = loan.dueDay - currentDay;
+        let diffDays = (loan.dueDay || 1) - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
         reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(loan.dueDay).padStart(2,'0')}` });
       });
@@ -790,8 +849,7 @@
         if((inv.installmentAmount || 0) > 0) {
           if(inv.lastPaidMonth === currentMonthKey) return;
           if(appData.dismissedAlerts[inv.id] === currentMonthKey) return;
-
-          let diffDays = inv.dueDay - currentDay;
+          let diffDays = (inv.dueDay || 1) - currentDay;
           let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
           reminders.push({ id: inv.id, type: 'SIP/RD', title: `${inv.name} SIP`, amount: inv.installmentAmount, dueDayText: `Due on ${inv.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(inv.dueDay).padStart(2,'0')}` });
         }
@@ -800,7 +858,6 @@
       appData.accounts.filter(a => a.type === 'credit_card' && Number(a.statementBalance || 0) > 0).forEach(card => {
         if(card.lastPaidMonth === currentMonthKey) return; 
         if(appData.dismissedAlerts[card.id] === currentMonthKey) return;
-
         let diffDays = (card.dueDay || 15) - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
         reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(card.dueDay || 15).padStart(2,'0')}` });
@@ -809,8 +866,7 @@
       appData.bills.forEach(bill => {
         if (bill.lastPaidMonth === currentMonthKey) return;
         if (appData.dismissedAlerts[bill.id] === currentMonthKey) return;
-
-        let diffDays = bill.dueDay - currentDay;
+        let diffDays = (bill.dueDay || 1) - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
         reminders.push({ id: bill.id, type: 'Monthly Bill', title: bill.title, amount: bill.amount, dueDayText: `Due on ${bill.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(bill.dueDay).padStart(2,'0')}` });
       });
@@ -819,14 +875,11 @@
         if (contact.netBalance === 0) return;
         const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
         if (!entryWithDueDate) return;
-        
         const dueDateStr = entryWithDueDate.dueDate;
         const aggId = 'khata_agg_' + contact.name;
         if (appData.dismissedAlerts[aggId] === currentMonthKey) return;
-
         const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 7 ? 'soon' : 'upcoming'));
-        
         reminders.push({
           id: aggId, type: contact.netBalance < 0 ? 'Cash Collection' : 'Cash Return',
           title: `${contact.name} (${contact.netBalance < 0 ? 'Collect' : 'Return'})`,
@@ -836,12 +889,12 @@
       
       appData.insurances.forEach(ins => {
         if(appData.dismissedAlerts[ins.id] === currentMonthKey) return;
-        
-        const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        const dueDate = ins.dueDate || '';
+        if (!dueDate) return;
+        const dayDiff = Math.round((new Date(dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         if (dayDiff > 30) return;
-
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
-        reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDateStr: ins.dueDate });
+        reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${dueDate}`, status: status, targetDateStr: dueDate });
       });
 
       const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
@@ -924,7 +977,6 @@
           `;
         }).join('');
       }
-      lucide.createIcons();
     }
 
     function getAggregatedContacts() {
@@ -953,8 +1005,9 @@
       let billsReq = appData.bills.filter(b => b.lastPaidMonth !== currentMonthKey).reduce((sum, b) => sum + Number(b.amount), 0);
       
       let insReq = appData.insurances.filter(i => {
-         if (!i.dueDate) return false;
-         return i.dueDate.slice(0,7) <= currentMonthKey;
+         const dueDate = i.dueDate || '';
+         if (!dueDate) return false;
+         return dueDate.slice(0,7) <= currentMonthKey;
       }).reduce((sum, i) => sum + Number(i.premium), 0);
       
       let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
@@ -963,7 +1016,7 @@
       getAggregatedContacts().forEach(contact => {
         if(contact.netBalance > 0) { 
            const entryWithDueDate = [...contact.entries].reverse().find(e => e.dueDate);
-           if (entryWithDueDate && entryWithDueDate.dueDate.slice(0,7) <= currentMonthKey) {
+           if (entryWithDueDate && entryWithDueDate.dueDate && entryWithDueDate.dueDate.slice(0,7) <= currentMonthKey) {
               khataReq += contact.netBalance;
            }
         }
@@ -1000,71 +1053,75 @@
       document.getElementById('dashObligIns').innerText = `₹${insReq.toLocaleString('en-IN')}`;
       document.getElementById('dashObligKhata').innerText = `₹${khataReq.toLocaleString('en-IN')}`;
       if(document.getElementById('dashObligSip')) document.getElementById('dashObligSip').innerText = `₹${sipReq.toLocaleString('en-IN')}`;
-      
-      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function refreshAllViews() {
-      let liquidCash = 0, cardDues = 0;
-      appData.accounts.forEach(acc => {
-        if (acc.type === 'debit_bank' || acc.type === 'debit_cash') liquidCash += Number(acc.balance || 0);
-        else if (acc.type === 'credit_card') cardDues += Number(acc.currentDue || 0);
-      });
-      document.getElementById('netWealthDisplay').innerText = `₹${(liquidCash - cardDues).toLocaleString('en-IN')}`;
+      try {
+        let liquidCash = 0, cardDues = 0;
+        appData.accounts.forEach(acc => {
+          if (acc.type === 'debit_bank' || acc.type === 'debit_cash') liquidCash += Number(acc.balance || 0);
+          else if (acc.type === 'credit_card') cardDues += Number(acc.currentDue || 0);
+        });
+        document.getElementById('netWealthDisplay').innerText = `₹${(liquidCash - cardDues).toLocaleString('en-IN')}`;
 
-      const currentMonthPrefix = getCurrentMonthKey();
-      const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
-      let monthInflow = 0, monthSpent = 0;
-      currentMonthTx.forEach(t => {
-        if (t.type === 'income') monthInflow += Number(t.amount || 0);
-        if (t.type === 'expense' && !t.isTransfer) monthSpent += Number(t.amount || 0);
-      });
-      document.getElementById('monthInflowDisplay').innerText = `+₹${monthInflow.toLocaleString('en-IN')}`;
-      document.getElementById('monthSpentDisplay').innerText = `-₹${monthSpent.toLocaleString('en-IN')}`;
+        const currentMonthPrefix = getCurrentMonthKey();
+        const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
+        let monthInflow = 0, monthSpent = 0;
+        currentMonthTx.forEach(t => {
+          if (t.type === 'income') monthInflow += Number(t.amount || 0);
+          if (t.type === 'expense' && !t.isTransfer) monthSpent += Number(t.amount || 0);
+        });
+        document.getElementById('monthInflowDisplay').innerText = `+₹${monthInflow.toLocaleString('en-IN')}`;
+        document.getElementById('monthSpentDisplay').innerText = `-₹${monthSpent.toLocaleString('en-IN')}`;
+        
+        const now = new Date(getLocalDateStr());
+        document.getElementById('currentMonthYear').innerText = `${getCurrentMonthName().substring(0,3)} ${now.getFullYear()}`;
+
+        let totalLent = 0, totalBorrowed = 0;
+        getAggregatedContacts().forEach(c => {
+          if (c.netBalance < 0) totalLent += Math.abs(c.netBalance); 
+          if (c.netBalance > 0) totalBorrowed += c.netBalance;       
+        });
+        document.getElementById('totalToCollectDisplay').innerText = `₹${totalLent.toLocaleString('en-IN')}`;
+        document.getElementById('totalToReturnDisplay').innerText = `₹${totalBorrowed.toLocaleString('en-IN')}`;
+
+        let totalPrincipal = 0, totalEmi = 0;
+        appData.loans.forEach(l => { totalPrincipal += Number(l.principalBalance || 0); totalEmi += Number(l.emiAmount || 0); });
+        document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+        document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
+
+        let totalInvested = 0;
+        appData.investments.forEach(i => totalInvested += Number(i.amount || 0));
+        if (document.getElementById('dashTotalInvestmentsDisplay')) document.getElementById('dashTotalInvestmentsDisplay').innerText = `₹${totalInvested.toLocaleString('en-IN')}`;
+        if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+      } catch(e) { console.error("Error setting balances:", e); }
+
+      try { renderDashboardObligations(); } catch(e) { console.error("Error in obligations:", e); }
+      try { renderDashboardFeed(); } catch(e) { console.error("Error in feed:", e); }
+      try { renderTransactions(); } catch(e) { console.error("Error in transactions:", e); }
+      try { renderKhata(); } catch(e) { console.error("Error in khata:", e); }
+      try { renderLoans(); } catch(e) { console.error("Error in loans:", e); }
+      try { renderAssets(); } catch(e) { console.error("Error in assets:", e); }
+      try { renderAccounts(); } catch(e) { console.error("Error in accounts:", e); }
+      try { renderBills(); } catch(e) { console.error("Error in bills:", e); }
+      try { renderRemindersUI(); } catch(e) { console.error("Error in reminders:", e); }
+
+      try {
+        const selectAcc = document.getElementById('txAccount');
+        const selectToAcc = document.getElementById('txToAccount');
+        const opts = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
+        if (selectAcc) selectAcc.innerHTML = opts;
+        if (selectToAcc) selectToAcc.innerHTML = opts;
+      } catch(e) { console.error("Error setting dropdowns:", e); }
       
-      const now = new Date(getLocalDateStr());
-      document.getElementById('currentMonthYear').innerText = `${getCurrentMonthName().substring(0,3)} ${now.getFullYear()}`;
-
-      let totalLent = 0, totalBorrowed = 0;
-      getAggregatedContacts().forEach(c => {
-        if (c.netBalance < 0) totalLent += Math.abs(c.netBalance); 
-        if (c.netBalance > 0) totalBorrowed += c.netBalance;       
-      });
-      document.getElementById('totalToCollectDisplay').innerText = `₹${totalLent.toLocaleString('en-IN')}`;
-      document.getElementById('totalToReturnDisplay').innerText = `₹${totalBorrowed.toLocaleString('en-IN')}`;
-
-      let totalPrincipal = 0, totalEmi = 0;
-      appData.loans.forEach(l => { totalPrincipal += Number(l.principalBalance || 0); totalEmi += Number(l.emiAmount || 0); });
-      document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
-      document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
-
-      let totalInvested = 0;
-      appData.investments.forEach(i => totalInvested += Number(i.amount || 0));
-      if (document.getElementById('dashTotalInvestmentsDisplay')) document.getElementById('dashTotalInvestmentsDisplay').innerText = `₹${totalInvested.toLocaleString('en-IN')}`;
-      if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
-
-      renderDashboardObligations();
-      renderDashboardFeed(); 
-      renderTransactions(); 
-      renderKhata(); 
-      renderLoans(); 
-      renderAssets(); 
-      renderAccounts(); 
-      renderBills(); 
-      renderRemindersUI();
-
-      const selectAcc = document.getElementById('txAccount');
-      const selectToAcc = document.getElementById('txToAccount');
-      const opts = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
-      if (selectAcc) selectAcc.innerHTML = opts;
-      if (selectToAcc) selectToAcc.innerHTML = opts;
-      
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') {
+        try { lucide.createIcons(); } catch(e) {}
+      }
     }
 
     function renderDashboardFeed() {
       const recentTxContainer = document.getElementById('dashboardRecentTxList');
-      const recentTx = [...appData.transactions].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+      const recentTx = [...appData.transactions].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 4);
 
       if (recentTx.length === 0) recentTxContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">No transactions recorded yet.</div>`;
       else recentTxContainer.innerHTML = recentTx.map(t => createTxRowHtml(t)).join('');
@@ -1083,13 +1140,17 @@
       let filtered = [...appData.transactions].filter(t => {
         if (filterType !== 'all' && t.type !== filterType) return false;
         if (searchQuery && !((t.notes || '').toLowerCase().includes(searchQuery) || (t.category || '').toLowerCase().includes(searchQuery))) return false;
-        if (fromDate && t.date < fromDate) return false;
-        if (toDate && t.date > toDate) return false;
+        if (fromDate && t.date && t.date < fromDate) return false;
+        if (toDate && t.date && t.date > toDate) return false;
         return true;
       });
 
-      filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
-      if (!document.getElementById('chartContainer').classList.contains('hidden')) updateTxChart(filtered);
+      filtered.sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+      
+      const chartContainer = document.getElementById('chartContainer');
+      if (chartContainer && !chartContainer.classList.contains('hidden')) {
+          updateTxChart(filtered);
+      }
 
       if (filtered.length === 0) container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No transactions found in this range.</div>`;
       else {
@@ -1098,7 +1159,6 @@
         if (filtered.length > txRenderLimit) html += `<button id="btn-load-more-tx" class="w-full py-2.5 mt-2 text-xs font-bold text-slate-400 bg-slate-800/50 hover:bg-slate-800 rounded-xl border border-slate-700 transition">Load More (${filtered.length - txRenderLimit} remaining)</button>`;
         container.innerHTML = html;
       }
-      lucide.createIcons();
     }
 
     function createTxRowHtml(t, canDelete = false) {
@@ -1114,7 +1174,6 @@
       let iconName = isTransfer ? 'arrow-right-left' : (isExpense ? 'arrow-up-right' : 'arrow-down-left');
       let amtColor = isTransfer ? 'text-sky-400' : (isExpense ? 'text-rose-400' : 'text-emerald-400');
       let sign = isTransfer ? '' : (isExpense ? '-' : '+');
-
       let tag = '';
       if (t.isTransfer && !isTransfer) tag = '<span class="ml-1 text-[8px] font-bold bg-slate-700/80 px-1 py-0.5 rounded uppercase">Transfer</span>';
 
@@ -1124,7 +1183,7 @@
             <div class="w-7 h-7 rounded-lg ${iconWrapperClass} flex items-center justify-center"><i data-lucide="${iconName}" class="w-3.5 h-3.5"></i></div>
             <div>
               <div class="text-xs font-bold text-white leading-tight">${escapeHTML(t.category)} ${tag}</div>
-              <div class="text-[10px] text-slate-400 leading-tight mt-0.5">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date}</span></div>
+              <div class="text-[10px] text-slate-400 leading-tight mt-0.5">${escapeHTML(t.notes || accName)} • <span class="font-mono">${t.date || ''}</span></div>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -1149,8 +1208,10 @@
     }
 
     function updateTxChart(filtered) {
+      if (typeof Chart === 'undefined') return;
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
+      
       const chartType = document.getElementById('txFilterType').value;
       const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer && t.type !== 'transfer');
       
@@ -1158,7 +1219,8 @@
       let totalAmount = 0;
       dataToChart.forEach(t => { 
         const amt = Number(t.amount);
-        dataMap[t.category] = (dataMap[t.category] || 0) + amt; 
+        const cat = t.category || 'Uncategorized';
+        dataMap[cat] = (dataMap[cat] || 0) + amt; 
         totalAmount += amt;
       });
 
@@ -1183,7 +1245,6 @@
           if (chartType === 'income') label = "TOTAL INFLOW";
           if (chartType === 'expense') label = "TOTAL SPENT";
           ctx.fillText(label, centerX, centerY - 10);
-          
           ctx.restore();
         }
       };
@@ -1237,7 +1298,6 @@
             </div>`;
         }).join('');
       }
-      lucide.createIcons();
     }
 
     function openContactStatement(personName) {
@@ -1254,7 +1314,7 @@
       document.getElementById('statementTxHistoryList').innerHTML = contact.entries.slice().reverse().map(e => `
         <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between mb-2">
           <div>
-            <div class="flex items-center gap-1.5"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${e.direction === 'borrowed' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}">${e.direction === 'borrowed' ? 'YOU TOOK' : 'YOU GAVE'}</span><span class="text-xs text-slate-400 font-mono">${e.date}</span>${e.status === 'settled' ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-1 rounded">Settled</span>' : ''}</div>
+            <div class="flex items-center gap-1.5"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${e.direction === 'borrowed' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}">${e.direction === 'borrowed' ? 'YOU TOOK' : 'YOU GAVE'}</span><span class="text-xs text-slate-400 font-mono">${e.date || ''}</span>${e.status === 'settled' ? '<span class="text-[10px] bg-slate-800 text-slate-400 px-1 rounded">Settled</span>' : ''}</div>
             ${e.notes ? `<p class="text-xs text-slate-300 mt-1">${escapeHTML(e.notes)}</p>` : ''}
             ${e.dueDate ? `<p class="text-[10px] text-amber-400/80 mt-0.5">Promised Return: ${e.dueDate}</p>` : ''}
           </div>
@@ -1268,7 +1328,7 @@
         </div>
       `).join('');
       openModal('contactStatementModal');
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') { try { lucide.createIcons(); } catch(e){} }
     }
 
     function renderLoans() {
@@ -1304,7 +1364,6 @@
               </div>
             </div>`;
       }).join('');
-      lucide.createIcons();
     }
 
     function renderAssets() {
@@ -1353,9 +1412,15 @@
 
       if (appData.insurances.length === 0) insContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No insurances tracked.</div>`;
       else insContainer.innerHTML = appData.insurances.map(i => {
-        const dayDiff = Math.round((new Date(i.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
-        const isSafe = dayDiff > 30; 
-        const safeYear = i.dueDate.substring(0, 4);
+        const dueDate = i.dueDate || '';
+        let isSafe = false;
+        let safeYear = 'N/A';
+        
+        if (dueDate) {
+          const dayDiff = Math.round((new Date(dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+          isSafe = dayDiff > 30; 
+          if (dueDate.length >= 4) { safeYear = dueDate.substring(0, 4); }
+        }
 
         return `
           <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 space-y-1.5">
@@ -1369,12 +1434,11 @@
             <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1.5 border-t border-slate-700/40">
                ${isSafe 
                  ? `<span class="text-emerald-400 font-bold flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Premium Paid (Safe until ${safeYear})</span>` 
-                 : `<span>Renew by: <strong class="text-white font-mono">${i.dueDate}</strong></span><button class="action-pay-ins bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-md active:scale-95" data-id="${i.id}">Pay Premium</button>`
+                 : `<span>Renew by: <strong class="text-white font-mono">${dueDate}</strong></span><button class="action-pay-ins bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-md active:scale-95" data-id="${i.id}">Pay Premium</button>`
                }
             </div>
           </div>`;
       }).join('');
-      lucide.createIcons();
     }
 
     function renderAccounts() {
@@ -1438,7 +1502,6 @@
           `;
         }).join('');
       }
-      lucide.createIcons();
     }
 
     function openBillModal() {
@@ -1613,17 +1676,20 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      
-      const dayOptions = `<option value="">N/A</option>` + Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      if (document.getElementById('loanDueDay')) document.getElementById('loanDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      if (document.getElementById('cardDueDay')) document.getElementById('cardDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      if (document.getElementById('cardBillGenDay')) document.getElementById('cardBillGenDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      if (document.getElementById('billDueDay')) document.getElementById('billDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
-      if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = dayOptions;
+      try {
+        const dayOptions = `<option value="">N/A</option>` + Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
+        if (document.getElementById('loanDueDay')) document.getElementById('loanDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
+        if (document.getElementById('cardDueDay')) document.getElementById('cardDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
+        if (document.getElementById('cardBillGenDay')) document.getElementById('cardBillGenDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
+        if (document.getElementById('billDueDay')) document.getElementById('billDueDay').innerHTML = Array.from({ length: 31 }, (_, i) => `<option value="${i+1}">${i+1}th of month</option>`).join('');
+        if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = dayOptions;
 
-      setDefaultTxDateRange();
-      checkCreditCardBills(); 
-      refreshAllViews();
+        setDefaultTxDateRange();
+        checkCreditCardBills(); 
+        refreshAllViews();
+      } catch (err) {
+        console.error("Boot rendering error:", err);
+      }
 
       document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
       document.getElementById('khataForm')?.addEventListener('submit', handleSaveKhata);
@@ -1642,77 +1708,6 @@
       document.getElementById('accType')?.addEventListener('change', toggleAccountFields);
       document.getElementById('importJsonFileInput')?.addEventListener('change', importDataJSON);
 
-      document.addEventListener('click', (e) => {
-        const target = e.target.closest('button, .clickable, .close-modal-btn, .action-toggle-reminders');
-        if (!target) return;
-
-        if (target.classList.contains('close-modal-btn')) return closeModal(target.dataset.target);
-
-        if (target.classList.contains('action-toggle-reminders')) return toggleRemindersModal();
-        if (target.classList.contains('action-dismiss-reminder')) return dismissReminder(target.dataset.id);
-        if (target.classList.contains('action-pay-emi')) return openPaymentModal('emi', target.dataset.id);
-        if (target.classList.contains('action-pay-cc')) return openPaymentModal('cc', target.dataset.id);
-        if (target.classList.contains('action-pay-bill')) return openPaymentModal('bill', target.dataset.id);
-        if (target.classList.contains('action-pay-sip')) return openPaymentModal('sip', target.dataset.id);
-        if (target.classList.contains('action-pay-ins')) return openPaymentModal('ins', target.dataset.id);
-        
-        if (target.classList.contains('action-edit-tx')) return editTransaction(target.dataset.id);
-        if (target.classList.contains('action-delete-tx')) return deleteTransaction(target.dataset.id);
-        if (target.classList.contains('action-open-contact')) return openContactStatement(target.dataset.name);
-        if (target.classList.contains('action-edit-khata')) return editKhataEntry(target.dataset.id);
-        if (target.classList.contains('action-delete-khata')) return deleteKhata(target.dataset.id);
-        if (target.classList.contains('action-edit-loan')) return editLoan(target.dataset.id);
-        if (target.classList.contains('action-delete-loan')) return deleteLoan(target.dataset.id);
-        if (target.classList.contains('action-edit-inv')) return editInvestment(target.dataset.id);
-        if (target.classList.contains('action-delete-inv')) return deleteInvestment(target.dataset.id);
-        if (target.classList.contains('action-edit-ins')) return editInsurance(target.dataset.id);
-        if (target.classList.contains('action-delete-ins')) return deleteInsurance(target.dataset.id);
-        
-        if (target.classList.contains('action-edit-acc')) return editAccount(target.dataset.id);
-        if (target.classList.contains('action-delete-acc')) return deleteAccount(target.dataset.id);
-        
-        if (target.classList.contains('action-edit-bill')) return editBill(target.dataset.id);
-        if (target.classList.contains('action-delete-bill')) return deleteBill(target.dataset.id);
-        
-        if (target.id === 'btn-load-more-tx') return loadMoreTransactions();
-        if (target.id === 'btn-reminders') return toggleRemindersModal();
-        if (target.id === 'btn-settings') return openSettingsModal();
-        
-        if (target.id === 'btn-dash-assets') return switchTab('assets');
-        if (target.id === 'btn-dash-loans' || target.id === 'btn-view-all-loans') return switchTab('loans');
-        if (target.id === 'btn-dash-khata-lent') { switchTab('khata'); return setKhataFilter('lent'); }
-        if (target.id === 'btn-dash-khata-borrowed') { switchTab('khata'); return setKhataFilter('borrowed'); }
-        if (target.id === 'btn-add-expense' || target.id === 'btn-view-add-tx') return openTransactionModal('expense');
-        if (target.id === 'btn-add-income') return openTransactionModal('income');
-        if (target.id === 'btn-add-khata' || target.id === 'btn-view-add-khata') return openKhataModal();
-        if (target.id === 'btn-view-all-tx') return switchTab('transactions');
-        if (target.id === 'btn-toggle-chart') return toggleTxChart();
-        
-        if (target.id === 'tabKhataAll') return setKhataFilter('all');
-        if (target.id === 'tabKhataLent') return setKhataFilter('lent');
-        if (target.id === 'tabKhataBorrowed') return setKhataFilter('borrowed');
-        
-        if (target.id === 'btn-view-add-loan') return openLoanModal();
-        if (target.id === 'btn-view-add-account') return openAccountModal();
-        if (target.id === 'btn-view-add-investment') return openInvestmentModal();
-        if (target.id === 'btn-view-add-insurance') return openInsuranceModal();
-        if (target.id === 'btn-view-add-bill') return openBillModal();
-        
-        if (target.id === 'btnTxTypeExpense') return setTxType('expense');
-        if (target.id === 'btnTxTypeIncome') return setTxType('income');
-        if (target.id === 'btnTxTypeTransfer') return setTxType('transfer');
-        if (target.id === 'btnKhataLent') return setKhataDirection('lent');
-        if (target.id === 'btnKhataBorrowed') return setKhataDirection('borrowed');
-        
-        if (target.id === 'btn-settings-export-json') return exportDataJSON();
-        if (target.id === 'btn-settings-export-csv') return exportDataCSV();
-        if (target.id === 'btn-settings-import-merge') { importMode = 'merge'; return document.getElementById('importJsonFileInput').click(); }
-        if (target.id === 'btn-settings-import-overwrite') { importMode = 'overwrite'; return document.getElementById('importJsonFileInput').click(); }
-        if (target.id === 'btn-settings-reset') return clearAllData();
-        
-        if (target.id?.startsWith('nav-')) return switchTab(target.id.replace('nav-', ''));
-      });
-
       if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
         navigator.serviceWorker.register('/kanakku_pusthakam/sw.js').catch(() => console.log('SW skipped.'));
       }
@@ -1720,4 +1715,3 @@
   </script>
 </body>
 </html>
-
