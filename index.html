@@ -717,15 +717,21 @@
           else fromAcc.balance -= Number(tx.amount) * sign;
         }
         if (toAcc) {
-          if (toAcc.type === 'credit_card') {
-            toAcc.currentDue -= Number(tx.amount) * sign;
-            // Update CC statement bounds when receiving a transfer (payment)
-            if (!reverse) {
-              toAcc.statementBalance = Math.max(0, (toAcc.statementBalance || 0) - Number(tx.amount));
-              if (toAcc.statementBalance === 0) toAcc.lastPaidMonth = getCurrentMonthKey();
-            } else {
-              toAcc.statementBalance = (toAcc.statementBalance || 0) + Number(tx.amount);
+                     if (toAcc.type === 'credit_card') {
+              toAcc.currentDue -= Number(tx.amount) * sign;
+              // Update CC statement bounds when receiving a transfer (payment)
+              if (!reverse) {
+                toAcc.statementBalance = Math.max(0, (toAcc.statementBalance || 0) - Number(tx.amount));
+                if (toAcc.statementBalance === 0) toAcc.lastPaidMonth = getCurrentMonthKey();
+              } else {
+                toAcc.statementBalance = (toAcc.statementBalance || 0) + Number(tx.amount);
+                // CRITICAL FIX: If reversing a payment that cleared the bill, un-clear the badge
+                if (toAcc.statementBalance > 0 && toAcc.lastPaidMonth === getCurrentMonthKey()) {
+                  toAcc.lastPaidMonth = '';
+                }
+              }
             }
+
           }
           else toAcc.balance += Number(tx.amount) * sign;
         }
