@@ -174,6 +174,7 @@
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Transactions</h3>
           <button id="btn-view-all-tx" class="text-xs text-emerald-400 font-semibold hover:underline">See all</button>
         </div>
+        <!-- Compact Data Density List applied here too -->
         <div id="dashboardRecentTxList" class="space-y-1.5"></div>
       </div>
     </section>
@@ -214,6 +215,7 @@
       <div id="chartContainer" class="hidden p-3 bg-slate-800/50 border border-slate-700/50 rounded-2xl shadow-inner">
         <canvas id="txChartCanvas" height="220"></canvas>
       </div>
+      <!-- Compact Data Density applied here (space-y-1.5) -->
       <div id="fullTxList" class="space-y-1.5"></div>
     </section>
 
@@ -607,17 +609,16 @@
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
 
-    const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    function getCurrentMonthName() {
-      return monthNamesArr[new Date(getLocalDateStr()).getMonth()];
-    }
-
     function escapeHTML(str) {
       if (str == null) return '';
       return String(str).replace(/[&<>'"]/g, tag => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
       }[tag]));
+    }
+
+    const monthNamesArr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    function getCurrentMonthName() {
+      return monthNamesArr[new Date(getLocalDateStr()).getMonth()];
     }
 
     function getLocalDateStr(d = new Date()) {
@@ -627,6 +628,12 @@
     
     function getCurrentMonthKey() {
       return getLocalDateStr().slice(0, 7);
+    }
+    
+    function getOffsetDate(days) {
+      const d = new Date();
+      d.setDate(d.getDate() + days);
+      return getLocalDateStr(d);
     }
 
     const defaultSeedData = {
@@ -1146,7 +1153,7 @@
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
-      const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer && t.type !== 'transfer');
+      const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && !t.isTransfer);
       
       const dataMap = {};
       let totalAmount = 0;
