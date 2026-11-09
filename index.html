@@ -237,14 +237,26 @@
       <div class="flex items-center justify-between">
         <div><h2 class="text-lg font-bold text-white">Bank & Vehicle Loans</h2><p class="text-xs text-slate-400">Manage monthly EMIs and principal dues</p></div>
         <button id="btn-view-add-loan" class="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
-          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Loan
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add EMI Loan
         </button>
       </div>
       <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
         <div><span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span><div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div></div>
         <div class="text-right"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span><div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div></div>
       </div>
+      
+      <!-- EMI LOANS -->
       <div id="allLoansList" class="space-y-3"></div>
+
+      <!-- NEW: GOLD LOANS SECTION -->
+      <div class="mt-6 flex items-center justify-between border-t border-slate-800/80 pt-5 mb-3">
+        <div><h3 class="text-base font-bold text-white">Gold Loans</h3><p class="text-[10px] text-slate-400">Pledged gold & flexible payments</p></div>
+        <button id="btn-view-add-gold-loan" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Gold Loan
+        </button>
+      </div>
+      <div id="goldLoansList" class="space-y-3"></div>
+
     </section>
 
     <!-- VIEW 5: ACCOUNTS -->
@@ -334,7 +346,6 @@
         <div class="flex bg-slate-800 p-1 rounded-xl">
           <button type="button" id="btnTxTypeExpense" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-rose-600 text-white transition">Expense</button>
           <button type="button" id="btnTxTypeIncome" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Income</button>
-          <!-- NEW: Transfer Tab -->
           <button type="button" id="btnTxTypeTransfer" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition">Transfer</button>
         </div>
         <div>
@@ -350,7 +361,6 @@
             <label id="lblTxAccount" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Account</label>
             <select id="txAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
           </div>
-          <!-- NEW: To Account Dropdown -->
           <div id="txToAccountGroup" class="hidden">
             <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">To Account</label>
             <select id="txToAccount" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></select>
@@ -440,6 +450,32 @@
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" max="100" id="loanInterest" placeholder="8.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
         </div>
         <button type="submit" class="w-full mt-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-sky-950/40 active:scale-98 transition">Save Loan</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- NEW: GOLD LOAN MODAL -->
+  <div id="goldLoanModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 id="glModalTitle" class="font-bold text-base text-white">Add Gold Loan</h3>
+        <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close modal" data-target="goldLoanModal"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="goldLoanForm" class="space-y-3 pt-3">
+        <input type="hidden" id="glEditId" value="">
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bank / Finance Name</label>
+          <input type="text" id="glName" required placeholder="e.g., SBI Agri Gold" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Principal (₹)</label><input type="number" inputmode="decimal" step="0.01" id="glPrincipal" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Gold Weight (g)</label><input type="number" inputmode="decimal" step="0.01" id="glWeight" required placeholder="e.g. 24.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-amber-400 focus:outline-none"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" id="glInterest" placeholder="Yearly (e.g. 7.5)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal Date</label><input type="date" id="glDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+        </div>
+        <button type="submit" class="w-full mt-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-amber-950/40 active:scale-98 transition">Save Gold Loan</button>
       </form>
     </div>
   </div>
@@ -639,7 +675,7 @@
       accounts: [
         { id: 'acc_1', name: 'Primary Bank', type: 'debit_bank', balance: 0 }
       ],
-      transactions: [], khata: [], loans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {}
+      transactions: [], khata: [], loans: [], goldLoans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {}
     };
 
     let appData = loadData();
@@ -673,6 +709,7 @@
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.bills) parsed.bills = [];
           if (!parsed.loans) parsed.loans = [];
+          if (!parsed.goldLoans) parsed.goldLoans = [];
           if (!parsed.khata) parsed.khata = [];
           if (!parsed.dismissedAlerts) parsed.dismissedAlerts = {};
           if (!parsed.categories) parsed.categories = defaultSeedData.categories;
@@ -704,8 +741,6 @@
       }
     }
 
-    // NEW: Centralized Double-Entry Math Handler
-    // Guarantees exact calculations and clean reversals for both standard tx and transfers
     function applyTxMath(tx, reverse = false) {
       const sign = reverse ? -1 : 1;
       const fromAcc = appData.accounts.find(a => a.id === tx.accountId);
@@ -717,20 +752,17 @@
           else fromAcc.balance -= Number(tx.amount) * sign;
         }
         if (toAcc) {
-if (toAcc.type === 'credit_card') {
-              toAcc.currentDue -= Number(tx.amount) * sign;
-              // Update CC statement bounds when receiving a transfer (payment)
-              if (!reverse) {
-                toAcc.statementBalance = Math.max(0, (toAcc.statementBalance || 0) - Number(tx.amount));
-                if (toAcc.statementBalance === 0) toAcc.lastPaidMonth = getCurrentMonthKey();
-              } else {
-                toAcc.statementBalance = (toAcc.statementBalance || 0) + Number(tx.amount);
-                // CRITICAL FIX: Un-clear the badge on reversal
-                if (toAcc.statementBalance > 0 && toAcc.lastPaidMonth === getCurrentMonthKey()) {
-                  toAcc.lastPaidMonth = '';
-                }
+          if (toAcc.type === 'credit_card') {
+            toAcc.currentDue -= Number(tx.amount) * sign;
+            if (!reverse) {
+              toAcc.statementBalance = Math.max(0, (toAcc.statementBalance || 0) - Number(tx.amount));
+              if (toAcc.statementBalance === 0) toAcc.lastPaidMonth = getCurrentMonthKey();
+            } else {
+              toAcc.statementBalance = (toAcc.statementBalance || 0) + Number(tx.amount);
+              if (toAcc.statementBalance > 0 && toAcc.lastPaidMonth === getCurrentMonthKey()) {
+                toAcc.lastPaidMonth = '';
               }
-                     
+            }
           }
           else toAcc.balance += Number(tx.amount) * sign;
         }
@@ -823,6 +855,16 @@ if (toAcc.type === 'credit_card') {
         let diffDays = loan.dueDay - currentDay;
         let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
         reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(loan.dueDay).padStart(2,'0')}` });
+      });
+
+      // Gold Loan Reminders
+      appData.goldLoans.forEach(gl => {
+        if (gl.principal <= 0) return;
+        if (appData.dismissedAlerts[gl.id] === currentMonthKey) return;
+        const dayDiff = Math.round((new Date(gl.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        if (dayDiff > 30) return;
+        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
+        reminders.push({ id: gl.id, type: 'Gold Loan Renewal', title: gl.name, amount: gl.principal, dueDayText: `Due on ${gl.dueDate}`, status: status, targetDateStr: gl.dueDate });
       });
 
       appData.investments.forEach(inv => {
@@ -1074,6 +1116,7 @@ if (toAcc.type === 'credit_card') {
 
       let totalPrincipal = 0, totalEmi = 0;
       appData.loans.forEach(l => { totalPrincipal += Number(l.principalBalance || 0); totalEmi += Number(l.emiAmount || 0); });
+      appData.goldLoans.forEach(gl => { totalPrincipal += Number(gl.principal || 0); });
       document.getElementById('totalLoanOutstandingDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
       document.getElementById('totalMonthlyEmiDisplay').innerText = `₹${totalEmi.toLocaleString('en-IN')}/mo`;
 
@@ -1088,6 +1131,7 @@ if (toAcc.type === 'credit_card') {
         renderTransactions,
         renderKhata,
         renderLoans,
+        renderGoldLoans, // NEW
         renderAssets,
         renderAccounts,
         renderBills,
@@ -1102,7 +1146,6 @@ if (toAcc.type === 'credit_card') {
         }
       });
 
-      // Populate both dropdowns for Account and To Account
       const accOptions = appData.accounts.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (${a.type === 'credit_card' ? 'Credit Card' : 'Debit'})</option>`).join('');
       const selectAcc = document.getElementById('txAccount');
       const selectToAcc = document.getElementById('txToAccount');
@@ -1215,7 +1258,6 @@ if (toAcc.type === 'credit_card') {
       const ctx = document.getElementById('txChartCanvas');
       if (!ctx) return;
       const chartType = document.getElementById('txFilterType').value;
-      // Exclude transfers from expense/income charts
       const dataToChart = filtered.filter(t => (chartType === 'income' ? t.type === 'income' : t.type === 'expense') && t.type !== 'transfer' && !t.isTransfer);
       
       const dataMap = {};
@@ -1365,6 +1407,46 @@ if (toAcc.type === 'credit_card') {
                     : `<button class="action-pay-emi bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition flex items-center gap-1" data-id="${loan.id}"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Record EMI Payment</button>`)}
               </div>
             </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // NEW: Render Gold Loans UI
+    function renderGoldLoans() {
+      const container = document.getElementById('goldLoansList');
+      if (!appData.goldLoans || appData.goldLoans.length === 0) {
+        container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No gold loans tracked.</div>`;
+        return;
+      }
+      container.innerHTML = appData.goldLoans.map(gl => {
+        const isClosed = gl.principal <= 0;
+        return `
+        <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="p-2 rounded-lg bg-amber-500/10 text-amber-400"><i data-lucide="coins" class="w-4 h-4"></i></div>
+              <div><h4 class="font-bold text-white text-sm">${escapeHTML(gl.name)}</h4><p class="text-[10px] text-amber-400">${gl.weight}g Pledged</p></div>
+            </div>
+            <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2 ml-2">
+              <button class="action-edit-gl p-2 text-slate-400 active:text-white" aria-label="Edit gold loan" data-id="${gl.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+              <button class="action-delete-gl p-2 text-slate-500 active:text-rose-400" aria-label="Delete gold loan" data-id="${gl.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+            <div><span class="text-[10px] text-slate-400 uppercase">Principal Owed</span><div class="text-sm font-bold text-white">₹${Number(gl.principal).toLocaleString('en-IN')}</div></div>
+            <div><span class="text-[10px] text-slate-400 uppercase">Renewal Date</span><div class="text-sm font-bold text-slate-300 font-mono">${gl.dueDate}</div></div>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-[11px] text-slate-400">${gl.interestRate ? `${gl.interestRate}% Interest` : ''}</span>
+            ${isClosed
+              ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Closed</span>`
+              : `<div class="flex gap-2">
+                  <button class="action-pay-gl-int bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition" data-id="${gl.id}">Pay Interest</button>
+                  <button class="action-pay-gl-prin bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-md active:scale-95 transition" data-id="${gl.id}">Repay Principal</button>
+                </div>`
+            }
+          </div>
+        </div>`;
       }).join('');
       lucide.createIcons();
     }
@@ -1576,7 +1658,6 @@ if (toAcc.type === 'credit_card') {
       openModal('txModal');
     }
 
-    // UPDATED: UI toggle for the new Transfer tab
     function setTxType(type) {
       currentTxType = type;
       const btnExp = document.getElementById('btnTxTypeExpense');
@@ -1589,7 +1670,6 @@ if (toAcc.type === 'credit_card') {
       const toAccGroup = document.getElementById('txToAccountGroup');
       const lblAcc = document.getElementById('lblTxAccount');
 
-      // Reset all buttons
       btnExp.className = btnInc.className = btnTrf.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 transition";
       
       if (type === 'expense') { 
@@ -1615,7 +1695,6 @@ if (toAcc.type === 'credit_card') {
       if (type !== 'transfer') populateCategoryDropdown(type);
     }
 
-    // UPDATED: Centralized Double-Entry Math implementation for saves
     function handleSaveTransaction(e) {
       e.preventDefault();
       const editId = document.getElementById('txEditId').value;
@@ -1632,7 +1711,6 @@ if (toAcc.type === 'credit_card') {
         return;
       }
 
-      // Reverse existing transaction math before applying new properties
       if (editId) {
         const existingTx = appData.transactions.find(t => t.id === editId);
         if (existingTx) applyTxMath(existingTx, true);
@@ -1641,7 +1719,7 @@ if (toAcc.type === 'credit_card') {
       const newTx = {
         id: editId || ('tx_' + Date.now()),
         type: currentTxType,
-        isTransfer: currentTxType === 'transfer', // legacy compatibility flag 
+        isTransfer: currentTxType === 'transfer', 
         amount: amount,
         category: category,
         accountId: accountId,
@@ -1650,7 +1728,6 @@ if (toAcc.type === 'credit_card') {
         notes: notes
       };
 
-      // Apply new math
       applyTxMath(newTx, false);
 
       if (editId) {
@@ -1665,12 +1742,11 @@ if (toAcc.type === 'credit_card') {
       showToast(currentTxType === 'transfer' ? 'Transfer recorded successfully' : 'Transaction saved successfully');
     }
 
-    // UPDATED: deleteTransaction delegates inverse math cleanly
     function deleteTransaction(id) {
       const tx = appData.transactions.find(t => t.id === id);
       if (!tx) return;
       if(confirm('Delete this transaction?')) {
-        applyTxMath(tx, true); // Safely reverse math
+        applyTxMath(tx, true); 
         appData.transactions = appData.transactions.filter(t => t.id !== id);
         saveData(true);
         showToast('Transaction deleted');
@@ -1710,6 +1786,16 @@ if (toAcc.type === 'credit_card') {
         const ins = appData.insurances.find(i => i.id === id);
         if (!ins) return;
         title.innerText = `Pay Premium: ${ins.name}`; amountInput.value = ins.premium; amountInput.readOnly = false; pendingPayment = { type: 'ins', id: id };
+      } 
+      // NEW: Gold Loan Payment Handlers
+      else if (type === 'gl_int') {
+        const gl = appData.goldLoans.find(l => l.id === id);
+        if (!gl) return;
+        title.innerText = `Pay Interest: ${gl.name}`; amountInput.value = ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_int', id: id };
+      } else if (type === 'gl_prin') {
+        const gl = appData.goldLoans.find(l => l.id === id);
+        if (!gl) return;
+        title.innerText = `Repay Principal: ${gl.name}`; amountInput.value = gl.principal; amountInput.readOnly = false; pendingPayment = { type: 'gl_prin', id: id };
       }
       openModal('paymentModal');
     }
@@ -1733,7 +1819,7 @@ if (toAcc.type === 'credit_card') {
         sourceAcc.balance -= loan.emiAmount;
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
 
-            } else if (pendingPayment.type === 'cc') {
+      } else if (pendingPayment.type === 'cc') {
         const card = appData.accounts.find(a => a.id === pendingPayment.id);
         if (!card) return;
         
@@ -1751,7 +1837,6 @@ if (toAcc.type === 'credit_card') {
         
         applyTxMath(newTx, false); 
         appData.transactions.unshift(newTx);
-
 
       } else if (pendingPayment.type === 'bill') {
         const bill = appData.bills.find(b => b.id === pendingPayment.id);
@@ -1776,6 +1861,19 @@ if (toAcc.type === 'credit_card') {
         ins.dueDate = nextYearDate.toISOString().slice(0, 10);
         sourceAcc.balance -= amount;
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Insurance Premium: ${ins.name}` });
+      
+      // NEW: Gold Loan Payment Processing
+      } else if (pendingPayment.type === 'gl_int') {
+        const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
+        if (!gl) return;
+        sourceAcc.balance -= amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Interest: ${gl.name}` });
+      } else if (pendingPayment.type === 'gl_prin') {
+        const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
+        if (!gl) return;
+        gl.principal = Math.max(0, gl.principal - amount);
+        sourceAcc.balance -= amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Repayment: ${gl.name}` });
       }
 
       pendingPayment = null; 
@@ -1884,6 +1982,69 @@ if (toAcc.type === 'credit_card') {
         showToast('Loan deleted');
       }
     }
+
+    // NEW: Gold Loan Handlers
+    function openGoldLoanModal() {
+      document.getElementById('glEditId').value = ''; 
+      document.getElementById('glModalTitle').innerText = 'Add Gold Loan';
+      document.getElementById('glName').value = ''; 
+      document.getElementById('glPrincipal').value = ''; 
+      document.getElementById('glWeight').value = ''; 
+      document.getElementById('glInterest').value = '';
+      document.getElementById('glDueDate').value = getOffsetDate(180);
+      openModal('goldLoanModal');
+    }
+
+    function editGoldLoan(id) {
+      const gl = appData.goldLoans.find(l => l.id === id);
+      if (!gl) return;
+      document.getElementById('glEditId').value = gl.id; 
+      document.getElementById('glModalTitle').innerText = 'Edit Gold Loan';
+      document.getElementById('glName').value = gl.name; 
+      document.getElementById('glPrincipal').value = gl.principal; 
+      document.getElementById('glWeight').value = gl.weight; 
+      document.getElementById('glInterest').value = gl.interestRate || '';
+      document.getElementById('glDueDate').value = gl.dueDate;
+      openModal('goldLoanModal');
+    }
+
+    function handleSaveGoldLoan(e) {
+      e.preventDefault();
+      const editId = document.getElementById('glEditId').value;
+      const name = document.getElementById('glName').value.trim();
+      const principal = parseFloat(document.getElementById('glPrincipal').value);
+      const weight = parseFloat(document.getElementById('glWeight').value);
+      const interestRate = parseFloat(document.getElementById('glInterest').value) || null;
+      const dueDate = document.getElementById('glDueDate').value;
+
+      if (!name || isNaN(principal) || isNaN(weight) || !dueDate) return;
+
+      if (editId) {
+        const gl = appData.goldLoans.find(l => l.id === editId);
+        if (gl) {
+          gl.name = name; gl.principal = principal; gl.weight = weight;
+          gl.interestRate = interestRate; gl.dueDate = dueDate;
+        }
+      } else {
+        appData.goldLoans.push({ 
+          id: 'gl_' + Date.now(), 
+          name, principal, weight, interestRate, dueDate 
+        });
+      }
+      
+      saveData(true); 
+      closeModal('goldLoanModal');
+      showToast('Gold loan saved');
+    }
+
+    function deleteGoldLoan(id) { 
+      if(confirm('Delete this gold loan?')) {
+        appData.goldLoans = appData.goldLoans.filter(l => l.id !== id); 
+        saveData(true); 
+        showToast('Gold loan deleted');
+      }
+    }
+
 
     function openInvestmentModal() {
       document.getElementById('invEditId').value = ''; document.getElementById('invModalTitle').innerText = 'Add Investment';
@@ -2141,6 +2302,7 @@ if (toAcc.type === 'credit_card') {
           if (!parsed.transactions) parsed.transactions = [];
           if (!parsed.khata) parsed.khata = [];
           if (!parsed.loans) parsed.loans = [];
+          if (!parsed.goldLoans) parsed.goldLoans = [];
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.bills) parsed.bills = [];
@@ -2173,6 +2335,7 @@ if (toAcc.type === 'credit_card') {
               appData.transactions = mergeArraysKeepLocal(appData.transactions, parsed.transactions);
               appData.khata = mergeArraysKeepLocal(appData.khata, parsed.khata);
               appData.loans = mergeArraysKeepLocal(appData.loans, parsed.loans);
+              appData.goldLoans = mergeArraysKeepLocal(appData.goldLoans, parsed.goldLoans);
               appData.investments = mergeArraysKeepLocal(appData.investments, parsed.investments);
               appData.insurances = mergeArraysKeepLocal(appData.insurances, parsed.insurances);
               appData.bills = mergeArraysKeepLocal(appData.bills, parsed.bills);
@@ -2216,6 +2379,7 @@ if (toAcc.type === 'credit_card') {
       document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
       document.getElementById('khataForm')?.addEventListener('submit', handleSaveKhata);
       document.getElementById('loanForm')?.addEventListener('submit', handleSaveLoan);
+      document.getElementById('goldLoanForm')?.addEventListener('submit', handleSaveGoldLoan); // NEW
       document.getElementById('investmentForm')?.addEventListener('submit', handleSaveInvestment);
       document.getElementById('insuranceForm')?.addEventListener('submit', handleSaveInsurance);
       document.getElementById('accountForm')?.addEventListener('submit', handleSaveAccount);
@@ -2244,6 +2408,10 @@ if (toAcc.type === 'credit_card') {
         if (target.classList.contains('action-pay-sip')) return openPaymentModal('sip', target.dataset.id);
         if (target.classList.contains('action-pay-ins')) return openPaymentModal('ins', target.dataset.id);
         
+        // NEW: Gold Loan Payment Triggers
+        if (target.classList.contains('action-pay-gl-int')) return openPaymentModal('gl_int', target.dataset.id);
+        if (target.classList.contains('action-pay-gl-prin')) return openPaymentModal('gl_prin', target.dataset.id);
+        
         if (target.classList.contains('action-edit-tx')) return editTransaction(target.dataset.id);
         if (target.classList.contains('action-delete-tx')) return deleteTransaction(target.dataset.id);
         if (target.classList.contains('action-open-contact')) return openContactStatement(target.dataset.name);
@@ -2251,6 +2419,11 @@ if (toAcc.type === 'credit_card') {
         if (target.classList.contains('action-delete-khata')) return deleteKhata(target.dataset.id);
         if (target.classList.contains('action-edit-loan')) return editLoan(target.dataset.id);
         if (target.classList.contains('action-delete-loan')) return deleteLoan(target.dataset.id);
+        
+        // NEW: Gold Loan Edit/Delete Triggers
+        if (target.classList.contains('action-edit-gl')) return editGoldLoan(target.dataset.id);
+        if (target.classList.contains('action-delete-gl')) return deleteGoldLoan(target.dataset.id);
+        
         if (target.classList.contains('action-edit-inv')) return editInvestment(target.dataset.id);
         if (target.classList.contains('action-delete-inv')) return deleteInvestment(target.dataset.id);
         if (target.classList.contains('action-edit-ins')) return editInsurance(target.dataset.id);
@@ -2281,6 +2454,7 @@ if (toAcc.type === 'credit_card') {
         if (target.id === 'tabKhataBorrowed') return setKhataFilter('borrowed');
         
         if (target.id === 'btn-view-add-loan') return openLoanModal();
+        if (target.id === 'btn-view-add-gold-loan') return openGoldLoanModal(); // NEW
         if (target.id === 'btn-view-add-account') return openAccountModal();
         if (target.id === 'btn-view-add-investment') return openInvestmentModal();
         if (target.id === 'btn-view-add-insurance') return openInsuranceModal();
@@ -2288,7 +2462,7 @@ if (toAcc.type === 'credit_card') {
         
         if (target.id === 'btnTxTypeExpense') return setTxType('expense');
         if (target.id === 'btnTxTypeIncome') return setTxType('income');
-        if (target.id === 'btnTxTypeTransfer') return setTxType('transfer'); // Added
+        if (target.id === 'btnTxTypeTransfer') return setTxType('transfer');
         
         if (target.id === 'btnKhataLent') return setKhataDirection('lent');
         if (target.id === 'btnKhataBorrowed') return setKhataDirection('borrowed');
