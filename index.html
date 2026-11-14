@@ -66,7 +66,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.1</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.0</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -853,7 +853,7 @@
         if(appData.dismissedAlerts[loan.id] === currentMonthKey) return;
 
         let diffDays = loan.dueDay - currentDay;
-        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
+        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
         reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(loan.dueDay).padStart(2,'0')}` });
       });
 
@@ -863,7 +863,7 @@
         if (appData.dismissedAlerts[gl.id] === currentMonthKey) return;
         const dayDiff = Math.round((new Date(gl.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         if (dayDiff > 30) return;
-        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
+        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 14 ? 'soon' : 'upcoming')));
         reminders.push({ id: gl.id, type: 'Gold Loan Renewal', title: gl.name, amount: gl.principal, dueDayText: `Due on ${gl.dueDate}`, status: status, targetDateStr: gl.dueDate });
       });
 
@@ -873,7 +873,7 @@
           if(appData.dismissedAlerts[inv.id] === currentMonthKey) return;
 
           let diffDays = inv.dueDay - currentDay;
-          let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
+          let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
           reminders.push({ id: inv.id, type: 'SIP/RD', title: `${inv.name} SIP`, amount: inv.installmentAmount, dueDayText: `Due on ${inv.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(inv.dueDay).padStart(2,'0')}` });
         }
       });
@@ -883,7 +883,7 @@
         if(appData.dismissedAlerts[card.id] === currentMonthKey) return;
 
         let diffDays = (card.dueDay || 15) - currentDay;
-        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
+        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
         reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(card.dueDay || 15).padStart(2,'0')}` });
       });
 
@@ -892,7 +892,7 @@
         if (appData.dismissedAlerts[bill.id] === currentMonthKey) return;
 
         let diffDays = bill.dueDay - currentDay;
-        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays <= 7 ? 'soon' : 'upcoming'));
+        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
         reminders.push({ id: bill.id, type: 'Monthly Bill', title: bill.title, amount: bill.amount, dueDayText: `Due on ${bill.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(bill.dueDay).padStart(2,'0')}` });
       });
 
@@ -906,7 +906,7 @@
         if (appData.dismissedAlerts[aggId] === currentMonthKey) return;
 
         const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
-        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 7 ? 'soon' : 'upcoming'));
+        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 7 ? 'soon' : 'upcoming')));
         
         reminders.push({
           id: aggId, type: contact.netBalance < 0 ? 'Cash Collection' : 'Cash Return',
@@ -921,7 +921,7 @@
         const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
         if (dayDiff > 30) return;
 
-        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff <= 14 ? 'soon' : 'upcoming'));
+        let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 14 ? 'soon' : 'upcoming')));
         reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDateStr: ins.dueDate });
       });
 
@@ -942,24 +942,31 @@
       const badge = document.getElementById('headerReminderBadge');
       const urgentContainer = document.getElementById('urgentAlertContainer');
       const modalList = document.getElementById('remindersListContent');
-      const urgentDues = reminders.filter(r => r.status === 'overdue' || r.status === 'today' || r.status === 'soon');
+      const urgentDues = reminders.filter(r => r.status === 'overdue' || r.status === 'today' || r.status === 'tomorrow' || r.status === 'soon');
 
       if (urgentDues.length > 0) {
         badge.classList.remove('hidden');
         urgentContainer.classList.remove('hidden');
         const topAlert = urgentDues[0];
+        
         let alertColor = 'from-rose-950/70 border-rose-800/60 text-rose-200';
         let badgeColor = 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
         let label = 'OVERDUE';
+        
         if (topAlert.status === 'today') {
+          alertColor = 'from-rose-900/70 border-rose-700/60 text-rose-100';
+          badgeColor = 'bg-rose-500/30 text-rose-300 border border-rose-500/50';
+          label = 'DUE TODAY';
+        } else if (topAlert.status === 'tomorrow') {
           alertColor = 'from-amber-950/70 border-amber-800/60 text-amber-200';
           badgeColor = 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
-          label = 'DUE TODAY';
+          label = 'DUE TOMORROW';
         } else if (topAlert.status === 'soon') {
           alertColor = 'from-sky-950/70 border-sky-800/60 text-sky-200';
           badgeColor = 'bg-sky-500/20 text-sky-400 border border-sky-500/30';
           label = 'DUE SOON';
         }
+        
         urgentContainer.innerHTML = `
           <div class="action-toggle-reminders clickable cursor-pointer bg-gradient-to-r ${alertColor} bg-slate-900 border p-3 rounded-2xl flex items-center justify-between shadow-lg">
             <div class="flex items-center gap-2.5">
@@ -984,9 +991,11 @@
         modalList.innerHTML = reminders.map(r => {
           let badgeHtml = '';
           if (r.status === 'overdue') badgeHtml = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">OVERDUE</span>`;
-          else if (r.status === 'today') badgeHtml = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">TODAY</span>`;
+          else if (r.status === 'today') badgeHtml = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">TODAY</span>`;
+          else if (r.status === 'tomorrow') badgeHtml = `<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">TOMORROW</span>`;
           else if (r.status === 'soon') badgeHtml = `<span class="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[10px] px-2 py-0.5 rounded-full font-bold">SOON</span>`;
           else badgeHtml = `<span class="bg-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-medium">UPCOMING</span>`;
+          
           return `
             <div class="bg-slate-800/80 border border-slate-700/60 p-3 rounded-xl flex items-start justify-between">
               <div>
@@ -1131,7 +1140,7 @@
         renderTransactions,
         renderKhata,
         renderLoans,
-        renderGoldLoans, // NEW
+        renderGoldLoans,
         renderAssets,
         renderAccounts,
         renderBills,
