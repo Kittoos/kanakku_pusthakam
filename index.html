@@ -66,7 +66,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.2</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.3</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -117,13 +117,16 @@
           <div id="liquidityBadgeContainer"></div>
         </div>
         <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
-        <div class="grid grid-cols-6 gap-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
+        
+        <!-- NEW 4-COLUMN DASHBOARD OBLIGATIONS LAYOUT -->
+        <div class="grid grid-cols-4 gap-y-3 gap-x-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">SIPs</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligSip">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Gold</div><div class="text-[10px] font-bold text-amber-400 mt-0.5" id="dashObligGl">₹0</div></div>
         </div>
       </div>
 
@@ -248,7 +251,7 @@
       <!-- EMI LOANS -->
       <div id="allLoansList" class="space-y-3"></div>
 
-      <!-- NEW: GOLD LOANS SECTION -->
+      <!-- GOLD LOANS SECTION -->
       <div class="mt-6 flex items-center justify-between border-t border-slate-800/80 pt-5 mb-3">
         <div><h3 class="text-base font-bold text-white">Gold Loans</h3><p class="text-[10px] text-slate-400">Pledged gold & flexible payments</p></div>
         <button id="btn-view-add-gold-loan" class="flex items-center gap-1 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md active:scale-95 transition">
@@ -454,7 +457,7 @@
     </div>
   </div>
 
-  <!-- NEW: GOLD LOAN MODAL -->
+  <!-- GOLD LOAN MODAL -->
   <div id="goldLoanModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden p-5">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -1049,6 +1052,9 @@
       
       let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
 
+      // Gold Loan Requirements
+      let glReq = appData.goldLoans.filter(gl => gl.principal > 0 && gl.dueDate && gl.dueDate.slice(0,7) <= currentMonthKey).reduce((sum, gl) => sum + Number(gl.principal), 0);
+
       let khataReq = 0;
       getAggregatedContacts().forEach(contact => {
         if(contact.netBalance > 0) { 
@@ -1059,7 +1065,7 @@
         }
       });
       
-      const totalReq = emiReq + ccReq + billsReq + insReq + khataReq + sipReq;
+      const totalReq = emiReq + ccReq + billsReq + insReq + khataReq + sipReq + glReq;
 
       let totalLiquidCash = 0;
       appData.accounts.forEach(acc => {
@@ -1090,6 +1096,7 @@
       document.getElementById('dashObligIns').innerText = `₹${insReq.toLocaleString('en-IN')}`;
       document.getElementById('dashObligKhata').innerText = `₹${khataReq.toLocaleString('en-IN')}`;
       if(document.getElementById('dashObligSip')) document.getElementById('dashObligSip').innerText = `₹${sipReq.toLocaleString('en-IN')}`;
+      if(document.getElementById('dashObligGl')) document.getElementById('dashObligGl').innerText = `₹${glReq.toLocaleString('en-IN')}`;
       
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -1815,7 +1822,6 @@
         if (!ins) return;
         title.innerText = `Pay Premium: ${ins.name}`; amountInput.value = ins.premium; amountInput.readOnly = false; pendingPayment = { type: 'ins', id: id };
       } 
-      // NEW: Gold Loan Payment Handlers
       else if (type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === id);
         if (!gl) return;
@@ -1891,7 +1897,6 @@
         sourceAcc.balance -= amount;
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Insurance Premium: ${ins.name}`, linkedModule: 'ins', linkedId: ins.id, linkedValue: oldDate });
       
-      // NEW: Gold Loan Payment Processing
       } else if (pendingPayment.type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
         if (!gl) return;
@@ -2012,7 +2017,6 @@
       }
     }
 
-    // NEW: Gold Loan Handlers
     function openGoldLoanModal() {
       document.getElementById('glEditId').value = ''; 
       document.getElementById('glModalTitle').innerText = 'Add Gold Loan';
@@ -2408,7 +2412,7 @@
       document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
       document.getElementById('khataForm')?.addEventListener('submit', handleSaveKhata);
       document.getElementById('loanForm')?.addEventListener('submit', handleSaveLoan);
-      document.getElementById('goldLoanForm')?.addEventListener('submit', handleSaveGoldLoan); // NEW
+      document.getElementById('goldLoanForm')?.addEventListener('submit', handleSaveGoldLoan); 
       document.getElementById('investmentForm')?.addEventListener('submit', handleSaveInvestment);
       document.getElementById('insuranceForm')?.addEventListener('submit', handleSaveInsurance);
       document.getElementById('accountForm')?.addEventListener('submit', handleSaveAccount);
@@ -2437,7 +2441,6 @@
         if (target.classList.contains('action-pay-sip')) return openPaymentModal('sip', target.dataset.id);
         if (target.classList.contains('action-pay-ins')) return openPaymentModal('ins', target.dataset.id);
         
-        // NEW: Gold Loan Payment Triggers
         if (target.classList.contains('action-pay-gl-int')) return openPaymentModal('gl_int', target.dataset.id);
         if (target.classList.contains('action-pay-gl-prin')) return openPaymentModal('gl_prin', target.dataset.id);
         
@@ -2449,7 +2452,6 @@
         if (target.classList.contains('action-edit-loan')) return editLoan(target.dataset.id);
         if (target.classList.contains('action-delete-loan')) return deleteLoan(target.dataset.id);
         
-        // NEW: Gold Loan Edit/Delete Triggers
         if (target.classList.contains('action-edit-gl')) return editGoldLoan(target.dataset.id);
         if (target.classList.contains('action-delete-gl')) return deleteGoldLoan(target.dataset.id);
         
@@ -2483,7 +2485,7 @@
         if (target.id === 'tabKhataBorrowed') return setKhataFilter('borrowed');
         
         if (target.id === 'btn-view-add-loan') return openLoanModal();
-        if (target.id === 'btn-view-add-gold-loan') return openGoldLoanModal(); // NEW
+        if (target.id === 'btn-view-add-gold-loan') return openGoldLoanModal();
         if (target.id === 'btn-view-add-account') return openAccountModal();
         if (target.id === 'btn-view-add-investment') return openInvestmentModal();
         if (target.id === 'btn-view-add-insurance') return openInsuranceModal();
