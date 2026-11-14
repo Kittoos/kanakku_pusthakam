@@ -66,7 +66,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.0</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.1</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -925,8 +925,8 @@
         reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDateStr: ins.dueDate });
       });
 
-      const priority = { 'overdue': 1, 'today': 2, 'soon': 3, 'upcoming': 4 };
-      reminders.sort((a, b) => (priority[a.status] || 99) - (priority[b.status] || 99));
+      // Chronological sort by exact date
+      reminders.sort((a, b) => new Date(a.targetDateStr) - new Date(b.targetDateStr));
       return reminders;
     }
 
@@ -1747,6 +1747,25 @@
       if (!tx) return;
       if(confirm('Delete this transaction?')) {
         applyTxMath(tx, true); 
+        
+        // UNIVERSAL RESTORE LOGIC
+        if (tx.linkedModule === 'emi') {
+          const loan = appData.loans.find(l => l.id === tx.linkedId);
+          if (loan) { loan.principalBalance += Number(tx.linkedValue || 0); loan.lastPaidMonth = ''; }
+        } else if (tx.linkedModule === 'bill') {
+          const bill = appData.bills.find(b => b.id === tx.linkedId);
+          if (bill) bill.lastPaidMonth = '';
+        } else if (tx.linkedModule === 'sip') {
+          const inv = appData.investments.find(i => i.id === tx.linkedId);
+          if (inv) { inv.amount -= Number(tx.linkedValue || 0); inv.lastPaidMonth = ''; }
+        } else if (tx.linkedModule === 'ins') {
+          const ins = appData.insurances.find(i => i.id === tx.linkedId);
+          if (ins) ins.dueDate = tx.linkedValue; 
+        } else if (tx.linkedModule === 'gl_prin') {
+          const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
+          if (gl) gl.principal += Number(tx.linkedValue || 0);
+        }
+
         appData.transactions = appData.transactions.filter(t => t.id !== id);
         saveData(true);
         showToast('Transaction deleted');
@@ -1817,7 +1836,7 @@
         loan.principalBalance = Math.max(0, loan.principalBalance - principalPart);
         loan.lastPaidMonth = currentMonthKey;
         sourceAcc.balance -= loan.emiAmount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: loan.emiAmount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `EMI: ${loan.name} (Prin: ₹${principalPart.toFixed(0)}, Int: ₹${interestPart.toFixed(0)})`, linkedModule: 'emi', linkedId: loan.id, linkedValue: principalPart });
 
       } else if (pendingPayment.type === 'cc') {
         const card = appData.accounts.find(a => a.id === pendingPayment.id);
@@ -1843,7 +1862,7 @@
         if (!bill) return;
         bill.lastPaidMonth = currentMonthKey;
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Recurring Bill: ${bill.title}` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Recurring Bill: ${bill.title}`, linkedModule: 'bill', linkedId: bill.id });
 
       } else if (pendingPayment.type === 'sip') {
         const inv = appData.investments.find(i => i.id === pendingPayment.id);
@@ -1851,16 +1870,17 @@
         inv.amount += amount;
         inv.lastPaidMonth = currentMonthKey;
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Investments', accountId: sourceAcc.id, date: dateStr, notes: `SIP Installment: ${inv.name}` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', isTransfer: true, amount: amount, category: 'Investments', accountId: sourceAcc.id, date: dateStr, notes: `SIP Installment: ${inv.name}`, linkedModule: 'sip', linkedId: inv.id, linkedValue: amount });
       
       } else if (pendingPayment.type === 'ins') {
         const ins = appData.insurances.find(i => i.id === pendingPayment.id);
         if (!ins) return;
+        const oldDate = ins.dueDate;
         const nextYearDate = new Date(ins.dueDate);
         nextYearDate.setFullYear(nextYearDate.getFullYear() + 1);
         ins.dueDate = nextYearDate.toISOString().slice(0, 10);
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Insurance Premium: ${ins.name}` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Insurance Premium: ${ins.name}`, linkedModule: 'ins', linkedId: ins.id, linkedValue: oldDate });
       
       // NEW: Gold Loan Payment Processing
       } else if (pendingPayment.type === 'gl_int') {
@@ -1873,7 +1893,7 @@
         if (!gl) return;
         gl.principal = Math.max(0, gl.principal - amount);
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Repayment: ${gl.name}` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Repayment: ${gl.name}`, linkedModule: 'gl_prin', linkedId: gl.id, linkedValue: amount });
       }
 
       pendingPayment = null; 
