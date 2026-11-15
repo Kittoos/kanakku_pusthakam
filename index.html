@@ -66,7 +66,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.4</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.5</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -89,6 +89,8 @@
 
     <!-- VIEW 1: DASHBOARD -->
     <section id="view-dashboard" class="space-y-4">
+      
+      <!-- NET LIQUID WEALTH -->
       <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-850 to-slate-900 border border-slate-700/60 p-4 shadow-xl">
         <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
@@ -107,6 +109,50 @@
         </div>
       </div>
 
+      <!-- TRUE NET WORTH HERO CARD -->
+      <div class="relative overflow-hidden bg-slate-800/80 border border-slate-700/60 p-4 rounded-2xl shadow-xl">
+        <div class="absolute -right-4 -top-4 w-28 h-28 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="scale" class="w-3.5 h-3.5 text-sky-400"></i> True Net Worth
+          </span>
+          <div id="nwHealthBadge"></div>
+        </div>
+        
+        <div class="text-3xl font-black text-white tracking-tight" id="nwTotalDisplay">₹0</div>
+        
+        <!-- Financial Health Bar (Asset vs Debt Split) -->
+        <div class="mt-3">
+          <div class="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden flex border border-slate-700/50">
+            <div id="nwHealthAssetBar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 50%"></div>
+            <div id="nwHealthDebtBar" class="h-full bg-rose-500 transition-all duration-500" style="width: 50%"></div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center gap-2">
+          <div class="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-xl p-2.5 flex items-center gap-2.5">
+            <div class="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="trending-up" class="w-3 h-3"></i>
+            </div>
+            <div>
+              <div class="text-[9px] text-slate-500 uppercase font-bold">Total Assets</div>
+              <div class="text-xs font-bold text-emerald-400" id="nwAssetsDisplay">₹0</div>
+            </div>
+          </div>
+          
+          <div class="flex-1 bg-slate-900/50 border border-slate-700/50 rounded-xl p-2.5 flex items-center gap-2.5">
+            <div class="w-6 h-6 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center">
+              <i data-lucide="trending-down" class="w-3 h-3"></i>
+            </div>
+            <div>
+              <div class="text-[9px] text-slate-500 uppercase font-bold">Total Debt</div>
+              <div class="text-xs font-bold text-rose-400" id="nwDebtDisplay">₹0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- REQUIRED CASH OBLIGATIONS PLANNER -->
       <div class="bg-slate-800/80 border border-slate-700/60 p-3.5 rounded-2xl shadow-lg">
         <div class="flex items-center justify-between mb-1.5">
@@ -118,7 +164,7 @@
         </div>
         <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
         
-        <!-- NEW 4-COLUMN DASHBOARD OBLIGATIONS LAYOUT -->
+        <!-- 4-COLUMN DASHBOARD OBLIGATIONS LAYOUT -->
         <div class="grid grid-cols-4 gap-y-3 gap-x-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
           <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
@@ -1101,6 +1147,70 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
+    function renderNetWorth() {
+      let totalAssets = 0;
+      let totalDebt = 0;
+
+      // 1. Liquid Accounts & Credit Cards
+      appData.accounts.forEach(acc => {
+        if (acc.type === 'debit_bank' || acc.type === 'debit_cash') totalAssets += Number(acc.balance || 0);
+        else if (acc.type === 'credit_card') totalDebt += Number(acc.currentDue || 0);
+      });
+
+      // 2. Investments (Assets)
+      appData.investments.forEach(inv => totalAssets += Number(inv.amount || 0));
+
+      // 3. Loans (Debt)
+      appData.loans.forEach(loan => totalDebt += Number(loan.principalBalance || 0));
+      appData.goldLoans.forEach(gl => totalDebt += Number(gl.principal || 0));
+
+      // 4. Khata Ledger (Assets & Debt)
+      getAggregatedContacts().forEach(c => {
+        if (c.netBalance < 0) totalAssets += Math.abs(c.netBalance); // They owe you (Asset)
+        if (c.netBalance > 0) totalDebt += c.netBalance;             // You owe them (Debt)
+      });
+
+      const netWorth = totalAssets - totalDebt;
+
+      // Update Main Number & Pills
+      const nwDisplay = document.getElementById('nwTotalDisplay');
+      if (nwDisplay) {
+        const formattedNW = `₹${Math.abs(netWorth).toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+        nwDisplay.innerText = (netWorth < 0 ? '-' : '') + formattedNW;
+        nwDisplay.className = `text-3xl font-black tracking-tight ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
+      }
+      if (document.getElementById('nwAssetsDisplay')) document.getElementById('nwAssetsDisplay').innerText = `₹${totalAssets.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+      if (document.getElementById('nwDebtDisplay')) document.getElementById('nwDebtDisplay').innerText = `₹${totalDebt.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
+
+      // Update Financial Health Bar (Debt-to-Asset Ratio)
+      const totalVolume = totalAssets + totalDebt;
+      const assetBar = document.getElementById('nwHealthAssetBar');
+      const debtBar = document.getElementById('nwHealthDebtBar');
+      const ratioBadge = document.getElementById('nwHealthBadge');
+
+      if (assetBar && debtBar && ratioBadge) {
+        if (totalVolume === 0) {
+          assetBar.style.width = '50%';
+          debtBar.style.width = '50%';
+          ratioBadge.innerHTML = `<span class="text-[10px] font-semibold text-slate-400">No Data</span>`;
+        } else {
+          const assetPct = Math.round((totalAssets / totalVolume) * 100);
+          const debtPct = 100 - assetPct;
+          assetBar.style.width = `${assetPct}%`;
+          debtBar.style.width = `${debtPct}%`;
+
+          const debtToAssetRatio = totalAssets > 0 ? Math.round((totalDebt / totalAssets) * 100) : 100;
+          if (totalDebt === 0) {
+            ratioBadge.innerHTML = `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold">100% Debt-Free</span>`;
+          } else if (debtToAssetRatio > 50) {
+            ratioBadge.innerHTML = `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold">Debt Load: ${debtToAssetRatio}%</span>`;
+          } else {
+            ratioBadge.innerHTML = `<span class="bg-sky-500/20 text-sky-400 border border-sky-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold">Healthy (${debtToAssetRatio}% Debt)</span>`;
+          }
+        }
+      }
+    }
+
     function refreshAllViews() {
       let liquidCash = 0, cardDues = 0;
       appData.accounts.forEach(acc => {
@@ -1142,6 +1252,7 @@
       if (document.getElementById('dashTotalLoansDisplay')) document.getElementById('dashTotalLoansDisplay').innerText = `₹${totalPrincipal.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
 
       const renderQueue = [
+        renderNetWorth,
         renderDashboardObligations,
         renderDashboardFeed,
         renderTransactions,
@@ -1401,6 +1512,21 @@
       if (appData.loans.length === 0) container.innerHTML = `<div class="p-8 text-center text-xs text-slate-500">No bank or EMI loans added.</div>`;
       else container.innerHTML = appData.loans.map(loan => {
             const isPaid = loan.lastPaidMonth === currentMonthKey;
+            const prinBal = Number(loan.principalBalance || 0);
+            const emiAmt = Number(loan.emiAmount || 0);
+            const rate = Number(loan.interestRate || 0);
+
+            // Calculate Monthly Principal vs Interest Split
+            let splitHtml = '';
+            if (prinBal > 0 && rate > 0 && emiAmt > 0) {
+              const monthlyInterest = prinBal * ((rate / 100) / 12);
+              const monthlyPrincipal = Math.max(0, emiAmt - monthlyInterest);
+              splitHtml = `<div class="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
+                <span class="text-emerald-400/90">₹${Math.round(monthlyPrincipal).toLocaleString('en-IN')} Prin</span> + 
+                <span class="text-rose-400/90">₹${Math.round(monthlyInterest).toLocaleString('en-IN')} Int</span>
+              </div>`;
+            }
+
             return `
             <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
               <div class="flex items-center justify-between">
@@ -1411,12 +1537,16 @@
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white">₹${Number(loan.principalBalance).toLocaleString('en-IN', {maximumFractionDigits: 2})}</div></div>
-                <div><span class="text-[10px] text-slate-400 uppercase">Monthly EMI</span><div class="text-sm font-bold text-emerald-400">₹${Number(loan.emiAmount).toLocaleString('en-IN')}</div></div>
+                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white">₹${prinBal.toLocaleString('en-IN', {maximumFractionDigits: 2})}</div></div>
+                <div>
+                  <span class="text-[10px] text-slate-400 uppercase">Monthly EMI</span>
+                  <div class="text-sm font-bold text-emerald-400">₹${emiAmt.toLocaleString('en-IN')}</div>
+                  ${splitHtml}
+                </div>
               </div>
               <div class="flex items-center justify-between pt-1">
-                <span class="text-xs text-slate-400">${loan.interestRate ? `${loan.interestRate}% Interest` : ''}</span>
-                ${loan.principalBalance <= 0 
+                <span class="text-xs text-slate-400">${loan.interestRate ? `${loan.interestRate}% p.a.` : ''}</span>
+                ${prinBal <= 0 
                   ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Cleared</span>` 
                   : (isPaid 
                     ? `<span class="bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> ${monthName} EMI Complete</span>` 
@@ -1427,7 +1557,6 @@
       lucide.createIcons();
     }
 
-    // NEW: Render Gold Loans UI
     function renderGoldLoans() {
       const container = document.getElementById('goldLoansList');
       if (!appData.goldLoans || appData.goldLoans.length === 0) {
@@ -1435,7 +1564,21 @@
         return;
       }
       container.innerHTML = appData.goldLoans.map(gl => {
-        const isClosed = gl.principal <= 0;
+        const prin = Number(gl.principal || 0);
+        const rate = Number(gl.interestRate || 0);
+        const isClosed = prin <= 0;
+
+        // Calculate Daily Accruing Interest
+        let dailyBleedHtml = '';
+        if (!isClosed && rate > 0) {
+          const dailyInt = (prin * (rate / 100)) / 365;
+          const monthlyEst = dailyInt * 30;
+          dailyBleedHtml = `
+            <div class="mt-1.5 inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md" title="Approx ₹${Math.round(monthlyEst).toLocaleString('en-IN')} / 30 days">
+              <i data-lucide="flame" class="w-3 h-3 text-rose-400"></i> Accruing: ₹${dailyInt.toFixed(2)} / day
+            </div>`;
+        }
+
         return `
         <div class="bg-slate-800/80 border border-slate-700/60 rounded-2xl p-4 space-y-3">
           <div class="flex items-center justify-between">
@@ -1449,11 +1592,15 @@
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-            <div><span class="text-[10px] text-slate-400 uppercase">Principal Owed</span><div class="text-sm font-bold text-white">₹${Number(gl.principal).toLocaleString('en-IN')}</div></div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase">Principal Owed</span>
+              <div class="text-sm font-bold text-white">₹${prin.toLocaleString('en-IN')}</div>
+              ${dailyBleedHtml}
+            </div>
             <div><span class="text-[10px] text-slate-400 uppercase">Renewal Date</span><div class="text-sm font-bold text-slate-300 font-mono">${gl.dueDate}</div></div>
           </div>
           <div class="flex items-center justify-between pt-1">
-            <span class="text-[11px] text-slate-400">${gl.interestRate ? `${gl.interestRate}% Interest` : ''}</span>
+            <span class="text-[11px] text-slate-400">${gl.interestRate ? `${gl.interestRate}% p.a.` : ''}</span>
             ${isClosed
               ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Closed</span>`
               : `<div class="flex gap-2">
@@ -2077,7 +2224,6 @@
         showToast('Gold loan deleted');
       }
     }
-
 
     function openInvestmentModal() {
       document.getElementById('invEditId').value = ''; document.getElementById('invModalTitle').innerText = 'Add Investment';
