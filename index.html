@@ -66,7 +66,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.5</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.6</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -520,9 +520,10 @@
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Principal (₹)</label><input type="number" inputmode="decimal" step="0.01" id="glPrincipal" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none"></div>
           <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Gold Weight (g)</label><input type="number" inputmode="decimal" step="0.01" id="glWeight" required placeholder="e.g. 24.5" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-amber-400 focus:outline-none"></div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Interest Rate %</label><input type="number" inputmode="decimal" step="0.1" id="glInterest" placeholder="Yearly (e.g. 7.5)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
-          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal Date</label><input type="date" id="glDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></div>
+        <div class="grid grid-cols-3 gap-2">
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Rate %</label><input type="number" inputmode="decimal" step="0.1" id="glInterest" placeholder="e.g. 9.0" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Int. From</label><input type="date" id="glStartDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></div>
+          <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Renewal</label><input type="date" id="glDueDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-xs text-white focus:outline-none"></div>
         </div>
         <button type="submit" class="w-full mt-2 bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-amber-950/40 active:scale-98 transition">Save Gold Loan</button>
       </form>
@@ -1563,19 +1564,34 @@
         container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No gold loans tracked.</div>`;
         return;
       }
+      const todayMs = new Date(getLocalDateStr()).setHours(0,0,0,0);
+
       container.innerHTML = appData.goldLoans.map(gl => {
         const prin = Number(gl.principal || 0);
         const rate = Number(gl.interestRate || 0);
         const isClosed = prin <= 0;
 
-        // Calculate Daily Accruing Interest
         let dailyBleedHtml = '';
+        let accruedTotalHtml = '';
+
         if (!isClosed && rate > 0) {
           const dailyInt = (prin * (rate / 100)) / 365;
-          const monthlyEst = dailyInt * 30;
+          
+          // Calculate days since loan start or last interest payment
+          const startStr = gl.startDate || getLocalDateStr();
+          const startMs = new Date(startStr).setHours(0,0,0,0);
+          const daysElapsed = Math.max(0, Math.round((todayMs - startMs) / (1000 * 60 * 60 * 24)));
+          const totalAccrued = Math.round(dailyInt * daysElapsed);
+
           dailyBleedHtml = `
-            <div class="mt-1.5 inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md" title="Approx ₹${Math.round(monthlyEst).toLocaleString('en-IN')} / 30 days">
-              <i data-lucide="flame" class="w-3 h-3 text-rose-400"></i> Accruing: ₹${dailyInt.toFixed(2)} / day
+            <div class="mt-1.5 inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+              <i data-lucide="flame" class="w-3 h-3 text-rose-400"></i> ₹${dailyInt.toFixed(2)} / day
+            </div>`;
+
+          accruedTotalHtml = `
+            <div class="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Interest Till Today (${daysElapsed}d)</span>
+              <span class="font-extrabold text-amber-400">₹${totalAccrued.toLocaleString('en-IN')}</span>
             </div>`;
         }
 
@@ -1591,13 +1607,20 @@
               <button class="action-delete-gl p-2 text-slate-500 active:text-rose-400" aria-label="Delete gold loan" data-id="${gl.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-            <div>
-              <span class="text-[10px] text-slate-400 uppercase">Principal Owed</span>
-              <div class="text-sm font-bold text-white">₹${prin.toLocaleString('en-IN')}</div>
-              ${dailyBleedHtml}
+          <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase">Principal Owed</span>
+                <div class="text-sm font-bold text-white">₹${prin.toLocaleString('en-IN')}</div>
+                ${dailyBleedHtml}
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase">Renewal Date</span>
+                <div class="text-sm font-bold text-slate-300 font-mono">${gl.dueDate}</div>
+                <div class="text-[9px] text-slate-500 mt-1 font-mono">Since: ${gl.startDate || getLocalDateStr()}</div>
+              </div>
             </div>
-            <div><span class="text-[10px] text-slate-400 uppercase">Renewal Date</span><div class="text-sm font-bold text-slate-300 font-mono">${gl.dueDate}</div></div>
+            ${accruedTotalHtml}
           </div>
           <div class="flex items-center justify-between pt-1">
             <span class="text-[11px] text-slate-400">${gl.interestRate ? `${gl.interestRate}% p.a.` : ''}</span>
@@ -1927,6 +1950,9 @@
         } else if (tx.linkedModule === 'gl_prin') {
           const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
           if (gl) gl.principal += Number(tx.linkedValue || 0);
+        } else if (tx.linkedModule === 'gl_int') {
+          const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
+          if (gl && tx.linkedValue) gl.startDate = tx.linkedValue;
         }
 
         appData.transactions = appData.transactions.filter(t => t.id !== id);
@@ -1972,7 +1998,10 @@
       else if (type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === id);
         if (!gl) return;
-        title.innerText = `Pay Interest: ${gl.name}`; amountInput.value = ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_int', id: id };
+        const dailyInt = (Number(gl.principal || 0) * (Number(gl.interestRate || 0) / 100)) / 365;
+        const days = Math.max(0, Math.round((new Date(getLocalDateStr()).setHours(0,0,0,0) - new Date(gl.startDate || getLocalDateStr()).setHours(0,0,0,0)) / 86400000));
+        const accrued = Math.round(dailyInt * days);
+        title.innerText = `Pay Interest: ${gl.name}`; amountInput.value = accrued > 0 ? accrued : ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_int', id: id };
       } else if (type === 'gl_prin') {
         const gl = appData.goldLoans.find(l => l.id === id);
         if (!gl) return;
@@ -2047,8 +2076,10 @@
       } else if (pendingPayment.type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
         if (!gl) return;
+        const prevStartDate = gl.startDate || dateStr;
+        gl.startDate = dateStr; // Reset the running interest meter to today
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Interest: ${gl.name}` });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Interest: ${gl.name}`, linkedModule: 'gl_int', linkedId: gl.id, linkedValue: prevStartDate });
       } else if (pendingPayment.type === 'gl_prin') {
         const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
         if (!gl) return;
@@ -2171,6 +2202,7 @@
       document.getElementById('glPrincipal').value = ''; 
       document.getElementById('glWeight').value = ''; 
       document.getElementById('glInterest').value = '';
+      document.getElementById('glStartDate').value = getLocalDateStr();
       document.getElementById('glDueDate').value = getOffsetDate(180);
       openModal('goldLoanModal');
     }
@@ -2184,6 +2216,7 @@
       document.getElementById('glPrincipal').value = gl.principal; 
       document.getElementById('glWeight').value = gl.weight; 
       document.getElementById('glInterest').value = gl.interestRate || '';
+      document.getElementById('glStartDate').value = gl.startDate || getLocalDateStr();
       document.getElementById('glDueDate').value = gl.dueDate;
       openModal('goldLoanModal');
     }
@@ -2195,6 +2228,7 @@
       const principal = parseFloat(document.getElementById('glPrincipal').value);
       const weight = parseFloat(document.getElementById('glWeight').value);
       const interestRate = parseFloat(document.getElementById('glInterest').value) || null;
+      const startDate = document.getElementById('glStartDate').value || getLocalDateStr();
       const dueDate = document.getElementById('glDueDate').value;
 
       if (!name || isNaN(principal) || isNaN(weight) || !dueDate) return;
@@ -2203,12 +2237,12 @@
         const gl = appData.goldLoans.find(l => l.id === editId);
         if (gl) {
           gl.name = name; gl.principal = principal; gl.weight = weight;
-          gl.interestRate = interestRate; gl.dueDate = dueDate;
+          gl.interestRate = interestRate; gl.startDate = startDate; gl.dueDate = dueDate;
         }
       } else {
         appData.goldLoans.push({ 
           id: 'gl_' + Date.now(), 
-          name, principal, weight, interestRate, dueDate 
+          name, principal, weight, interestRate, startDate, dueDate 
         });
       }
       
