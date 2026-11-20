@@ -47,6 +47,11 @@
       transform: translateY(0);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    body.privacy-active .privacy-blur {
+      filter: blur(6px);
+      user-select: none;
+      transition: filter 0.2s ease;
+    }
     @media screen and (max-height: 500px) {
       nav.fixed.bottom-0 { display: none !important; }
     }
@@ -66,18 +71,22 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.6</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.7</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
     </div>
-    <div class="flex items-center space-x-1.5">
+    <div class="flex items-center space-x-1">
+      <button id="btn-privacy" aria-label="Toggle privacy mode" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Hide/Show Balances">
+        <i id="privacyIcon" data-lucide="eye" class="w-5 h-5"></i>
+      </button>
       <button id="btn-reminders" aria-label="Open reminders" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Reminders">
         <i data-lucide="bell" class="w-5 h-5"></i>
         <span id="headerReminderBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-slate-900 animate-pulse"></span>
       </button>
-      <button id="btn-settings" aria-label="Open settings" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
+      <button id="btn-settings" aria-label="Open settings" class="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition" title="Settings & Backup">
         <i data-lucide="settings" class="w-5 h-5"></i>
+        <span id="settingsBackupBadge" class="hidden absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-amber-400 rounded-full ring-2 ring-slate-900"></span>
       </button>
     </div>
   </header>
@@ -96,15 +105,15 @@
         <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
           <span>Net Liquid Wealth</span><span id="currentMonthYear" class="text-slate-400 font-medium font-mono text-[11px]"></span>
         </div>
-        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1"><span id="netWealthDisplay">₹0</span></div>
+        <div class="text-2xl font-black text-white tracking-tight flex items-baseline gap-1"><span id="netWealthDisplay" class="privacy-blur">₹0</span></div>
         <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-700/50">
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
             <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-down-left" class="w-3 h-3 text-emerald-400"></i> Month Inflow</span>
-            <div id="monthInflowDisplay" class="text-sm font-bold text-emerald-400 mt-0.5">₹0</div>
+            <div id="monthInflowDisplay" class="text-sm font-bold text-emerald-400 mt-0.5 privacy-blur">₹0</div>
           </div>
           <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
             <span class="text-[11px] text-slate-400 flex items-center gap-1"><i data-lucide="arrow-up-right" class="w-3 h-3 text-rose-400"></i> Month Spent</span>
-            <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5">₹0</div>
+            <div id="monthSpentDisplay" class="text-sm font-bold text-rose-400 mt-0.5 privacy-blur">₹0</div>
           </div>
         </div>
       </div>
@@ -120,7 +129,7 @@
           <div id="nwHealthBadge"></div>
         </div>
         
-        <div class="text-3xl font-black text-white tracking-tight" id="nwTotalDisplay">₹0</div>
+        <div class="text-3xl font-black text-white tracking-tight privacy-blur" id="nwTotalDisplay">₹0</div>
         
         <!-- Financial Health Bar (Asset vs Debt Split) -->
         <div class="mt-3">
@@ -137,7 +146,7 @@
             </div>
             <div>
               <div class="text-[9px] text-slate-500 uppercase font-bold">Total Assets</div>
-              <div class="text-xs font-bold text-emerald-400" id="nwAssetsDisplay">₹0</div>
+              <div class="text-xs font-bold text-emerald-400 privacy-blur" id="nwAssetsDisplay">₹0</div>
             </div>
           </div>
           
@@ -147,7 +156,7 @@
             </div>
             <div>
               <div class="text-[9px] text-slate-500 uppercase font-bold">Total Debt</div>
-              <div class="text-xs font-bold text-rose-400" id="nwDebtDisplay">₹0</div>
+              <div class="text-xs font-bold text-rose-400 privacy-blur" id="nwDebtDisplay">₹0</div>
             </div>
           </div>
         </div>
@@ -162,29 +171,29 @@
           </div>
           <div id="liquidityBadgeContainer"></div>
         </div>
-        <div class="text-xl font-black text-amber-400" id="dashTotalObligations">₹0</div>
+        <div class="text-xl font-black text-amber-400 privacy-blur" id="dashTotalObligations">₹0</div>
         
         <!-- 4-COLUMN DASHBOARD OBLIGATIONS LAYOUT -->
         <div class="grid grid-cols-4 gap-y-3 gap-x-1 mt-3 pt-2.5 border-t border-slate-700/50 text-center">
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligEmi">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligCc">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligBills">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligIns">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligKhata">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">SIPs</div><div class="text-[10px] font-bold text-white mt-0.5" id="dashObligSip">₹0</div></div>
-          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Gold</div><div class="text-[10px] font-bold text-amber-400 mt-0.5" id="dashObligGl">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">EMI</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligEmi">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Cards</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligCc">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Bills</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligBills">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Insure</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligIns">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Khata</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligKhata">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">SIPs</div><div class="text-[10px] font-bold text-white mt-0.5 privacy-blur" id="dashObligSip">₹0</div></div>
+          <div><div class="text-[9px] text-slate-400 uppercase font-semibold">Gold</div><div class="text-[10px] font-bold text-amber-400 mt-0.5 privacy-blur" id="dashObligGl">₹0</div></div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-assets" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-sky-900/40 p-3 rounded-2xl transition active:scale-98">
           <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-sky-400 uppercase tracking-wider">Total Invested</span><div class="p-1 rounded-md bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div></div>
-          <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white">₹0</div>
+          <div id="dashTotalInvestmentsDisplay" class="text-lg font-bold text-white privacy-blur">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Current portfolio</p>
         </div>
         <div id="btn-dash-loans" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-indigo-900/40 p-3 rounded-2xl transition active:scale-98">
           <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Remaining Loan</span><div class="p-1 rounded-md bg-indigo-500/10 text-indigo-400"><i data-lucide="landmark" class="w-3.5 h-3.5"></i></div></div>
-          <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white">₹0</div>
+          <div id="dashTotalLoansDisplay" class="text-lg font-bold text-white privacy-blur">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Total principal due</p>
         </div>
       </div>
@@ -192,12 +201,12 @@
       <div class="grid grid-cols-2 gap-3">
         <div id="btn-dash-khata-lent" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-emerald-900/40 p-3 rounded-2xl transition active:scale-98">
           <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">They Owe Me</span><div class="p-1 rounded-md bg-emerald-500/10 text-emerald-400"><i data-lucide="hand-coins" class="w-3.5 h-3.5"></i></div></div>
-          <div id="totalToCollectDisplay" class="text-lg font-bold text-white">₹0</div>
+          <div id="totalToCollectDisplay" class="text-lg font-bold text-white privacy-blur">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to collect</p>
         </div>
         <div id="btn-dash-khata-borrowed" class="clickable cursor-pointer bg-slate-800/80 hover:bg-slate-800 border border-rose-900/40 p-3 rounded-2xl transition active:scale-98">
           <div class="flex items-center justify-between mb-1"><span class="text-[11px] font-semibold text-rose-400 uppercase tracking-wider">I Owe Them</span><div class="p-1 rounded-md bg-rose-500/10 text-rose-400"><i data-lucide="receipt-text" class="w-3.5 h-3.5"></i></div></div>
-          <div id="totalToReturnDisplay" class="text-lg font-bold text-white">₹0</div>
+          <div id="totalToReturnDisplay" class="text-lg font-bold text-white privacy-blur">₹0</div>
           <p class="text-[10px] text-slate-400 mt-0.5">Net cash to pay back</p>
         </div>
       </div>
@@ -290,8 +299,8 @@
         </button>
       </div>
       <div class="bg-gradient-to-r from-sky-950/60 to-slate-800 border border-sky-800/40 p-3.5 rounded-2xl flex items-center justify-between">
-        <div><span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span><div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5">₹0</div></div>
-        <div class="text-right"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span><div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5">₹0</div></div>
+        <div><span class="text-[11px] font-medium text-sky-400 uppercase tracking-wide">Total Principal Remaining</span><div id="totalLoanOutstandingDisplay" class="text-xl font-black text-white mt-0.5 privacy-blur">₹0</div></div>
+        <div class="text-right"><span class="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Monthly EMI Load</span><div id="totalMonthlyEmiDisplay" class="text-base font-bold text-sky-300 mt-0.5 privacy-blur">₹0</div></div>
       </div>
       
       <!-- EMI LOANS -->
@@ -472,7 +481,7 @@
       </div>
       <div class="px-4 py-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between">
         <span class="text-xs text-slate-400 uppercase font-semibold">Net Balance:</span>
-        <span class="text-base font-extrabold" id="statementNetBadge">₹0</span>
+        <span class="text-base font-extrabold privacy-blur" id="statementNetBadge">₹0</span>
       </div>
       <div class="p-4 overflow-y-auto space-y-2.5 flex-1 no-scrollbar" id="statementTxHistoryList"></div>
     </div>
@@ -631,9 +640,14 @@
         <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close settings" data-target="settingsModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="space-y-4 pt-4">
+        <div id="backupNudgeBanner" class="hidden p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-xs text-amber-200">
+          <p class="font-bold text-amber-400 mb-0.5 flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-4 h-4"></i> Backup Recommended</p>
+          <span id="backupNudgeText">Export a JSON backup to protect your local data from browser clears.</span>
+        </div>
         <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700 text-xs text-slate-300">
           <p class="font-semibold text-white mb-1 flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> 100% Private</p>
           All your personal finances are stored directly inside your device's browser database. No cloud tracking.
+          <p id="lastBackupInfo" class="text-[10px] text-slate-400 mt-1.5 font-mono"></p>
         </div>
         <div><button id="btn-settings-export-json" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Export & Backup Data (JSON)</button></div>
         <div><button id="btn-settings-export-csv" class="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs active:scale-98 transition"><i data-lucide="sheet" class="w-4 h-4 text-emerald-400"></i> Download as Spreadsheet (CSV)</button></div>
@@ -661,9 +675,9 @@
         <button class="close-modal-btn text-slate-400 hover:text-white" aria-label="Close payment modal" data-target="paymentModal"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="paymentForm" class="space-y-4 pt-4">
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
-        <div><label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label><select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select></div>
-        <button type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> Confirm Payment</button>
+        <div><label id="payAmountLabel" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Amount to Pay (₹)</label><input type="number" inputmode="decimal" step="0.01" max="999999999" id="payAmount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-lg font-bold text-white focus:outline-none focus:border-emerald-500"></div>
+        <div><label id="payAccountLabel" class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pay From Account</label><select id="paySourceAccount" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"></select></div>
+        <button id="paySubmitBtn" type="submit" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-emerald-950/40 active:scale-98 transition flex items-center justify-center gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> <span id="paySubmitBtnText">Confirm Payment</span></button>
       </form>
     </div>
   </div>
@@ -688,6 +702,7 @@
 
   <script>
     const STORAGE_KEY = 'pocketledger_data_v1';
+    const PRIVACY_KEY = 'pocketledger_privacy_v1';
 
     function escapeHTML(str) {
       if (str == null) return ''; 
@@ -725,7 +740,8 @@
       accounts: [
         { id: 'acc_1', name: 'Primary Bank', type: 'debit_bank', balance: 0 }
       ],
-      transactions: [], khata: [], loans: [], goldLoans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {}
+      transactions: [], khata: [], loans: [], goldLoans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {},
+      lastBackupDate: null
     };
 
     let appData = loadData();
@@ -735,6 +751,81 @@
     let pendingPayment = null;
     let toastTimeout = null;
     let importMode = 'merge'; 
+    let privacyMode = localStorage.getItem(PRIVACY_KEY) === 'true';
+
+    function applyPrivacyMode() {
+      document.body.classList.toggle('privacy-active', privacyMode);
+      const iconEl = document.getElementById('privacyIcon');
+      if (iconEl) {
+        iconEl.setAttribute('data-lucide', privacyMode ? 'eye-off' : 'eye');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      }
+    }
+
+    function togglePrivacyMode() {
+      privacyMode = !privacyMode;
+      localStorage.setItem(PRIVACY_KEY, String(privacyMode));
+      applyPrivacyMode();
+      showToast(privacyMode ? 'Privacy mode ON' : 'Privacy mode OFF');
+    }
+
+    function checkBackupNudge() {
+      const badge = document.getElementById('settingsBackupBadge');
+      const banner = document.getElementById('backupNudgeBanner');
+      const nudgeText = document.getElementById('backupNudgeText');
+      const lastBackupInfo = document.getElementById('lastBackupInfo');
+
+      if (lastBackupInfo) {
+        lastBackupInfo.innerText = appData.lastBackupDate
+          ? `Last JSON Backup: ${appData.lastBackupDate}`
+          : 'Last JSON Backup: Never';
+      }
+
+      if (!appData.transactions || appData.transactions.length === 0) {
+        if (badge) badge.classList.add('hidden');
+        if (banner) banner.classList.add('hidden');
+        return;
+      }
+
+      let needsBackup = false;
+      let daysSince = 0;
+
+      if (!appData.lastBackupDate) {
+        needsBackup = true;
+      } else {
+        const todayMs = new Date(getLocalDateStr()).setHours(0, 0, 0, 0);
+        const backupMs = new Date(appData.lastBackupDate).setHours(0, 0, 0, 0);
+        daysSince = Math.round((todayMs - backupMs) / 86400000);
+        if (daysSince >= 14) needsBackup = true;
+      }
+
+      if (needsBackup) {
+        if (badge) badge.classList.remove('hidden');
+        if (banner) banner.classList.remove('hidden');
+        if (nudgeText) {
+          nudgeText.innerText = appData.lastBackupDate
+            ? `It has been ${daysSince} days since your last JSON export. Back up your ledger to stay safe.`
+            : 'You have not exported a JSON backup yet. Export a copy to protect your local data.';
+        }
+      } else {
+        if (badge) badge.classList.add('hidden');
+        if (banner) banner.classList.add('hidden');
+      }
+    }
+
+    function calcGoldLoanInterest(gl) {
+      const prin = Number(gl.principal || 0);
+      const rate = Number(gl.interestRate || 0);
+      const frozen = Number(gl.accruedInterest || 0);
+      const startStr = gl.startDate || getLocalDateStr();
+      const todayMs = new Date(getLocalDateStr()).setHours(0, 0, 0, 0);
+      const startMs = new Date(startStr).setHours(0, 0, 0, 0);
+      const daysElapsed = Math.max(0, Math.round((todayMs - startMs) / 86400000));
+      const dailyInt = (prin > 0 && rate > 0) ? (prin * (rate / 100)) / 365 : 0;
+      const liveInt = dailyInt * daysElapsed;
+      const totalAccrued = Math.round(frozen + liveInt);
+      return { dailyInt, daysElapsed, liveInt, frozen, totalAccrued };
+    }
 
     function showToast(message) {
       const toast = document.getElementById('toastNotification');
@@ -763,6 +854,7 @@
           if (!parsed.khata) parsed.khata = [];
           if (!parsed.dismissedAlerts) parsed.dismissedAlerts = {};
           if (!parsed.categories) parsed.categories = defaultSeedData.categories;
+          if (parsed.lastBackupDate === undefined) parsed.lastBackupDate = null;
           
           parsed.accounts.forEach(acc => {
             if (acc.type === 'credit_card') {
@@ -771,6 +863,9 @@
               if (acc.statementBalance === undefined) acc.statementBalance = acc.currentDue || 0;
               if (acc.lastBilledMonth === undefined) acc.lastBilledMonth = '';
             }
+          });
+          parsed.goldLoans.forEach(gl => {
+            if (gl.accruedInterest === undefined) gl.accruedInterest = 0;
           });
           return parsed;
         }
@@ -907,7 +1002,6 @@
         reminders.push({ id: loan.id, type: 'EMI', title: `${loan.name} EMI`, amount: loan.emiAmount, dueDayText: `Due on ${loan.dueDay}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(loan.dueDay).padStart(2,'0')}` });
       });
 
-      // Gold Loan Reminders
       appData.goldLoans.forEach(gl => {
         if (gl.principal <= 0) return;
         if (appData.dismissedAlerts[gl.id] === currentMonthKey) return;
@@ -975,7 +1069,6 @@
         reminders.push({ id: ins.id, type: 'Insurance Renewal', title: `${ins.name} Premium`, amount: ins.premium, dueDayText: `Due on ${ins.dueDate}`, status: status, targetDateStr: ins.dueDate });
       });
 
-      // Chronological sort by exact date
       reminders.sort((a, b) => new Date(a.targetDateStr) - new Date(b.targetDateStr));
       return reminders;
     }
@@ -1022,7 +1115,7 @@
             <div class="flex items-center gap-2.5">
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${label}</span>
               <div class="text-xs">
-                <span class="font-bold text-white">${escapeHTML(topAlert.title)}</span>: ₹${topAlert.amount.toLocaleString('en-IN')}
+                <span class="font-bold text-white">${escapeHTML(topAlert.title)}</span>: <span class="privacy-blur">₹${topAlert.amount.toLocaleString('en-IN')}</span>
               </div>
             </div>
             <span class="text-xs font-semibold text-emerald-400 flex items-center">
@@ -1052,7 +1145,7 @@
                 <div class="flex items-center gap-1.5 mb-1">${badgeHtml}<span class="text-[11px] text-slate-400">${r.type}</span></div>
                 <h4 class="font-bold text-white text-sm">${escapeHTML(r.title)}</h4>
                 <p class="text-xs text-slate-400 font-mono mt-0.5">${escapeHTML(r.dueDayText)}</p>
-                <div class="text-emerald-400 font-bold text-sm mt-1">₹${r.amount.toLocaleString('en-IN')}</div>
+                <div class="text-emerald-400 font-bold text-sm mt-1 privacy-blur">₹${r.amount.toLocaleString('en-IN')}</div>
               </div>
               <div class="flex flex-col items-end gap-2.5 h-full justify-between">
                 <button class="action-dismiss-reminder text-slate-500 hover:text-white p-1 rounded transition" aria-label="Dismiss reminder" data-id="${r.id}" title="Dismiss this alert"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1099,7 +1192,6 @@
       
       let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
 
-      // Gold Loan Requirements
       let glReq = appData.goldLoans.filter(gl => gl.principal > 0 && gl.dueDate && gl.dueDate.slice(0,7) <= currentMonthKey).reduce((sum, gl) => sum + Number(gl.principal), 0);
 
       let khataReq = 0;
@@ -1125,13 +1217,13 @@
       if (liquidityDiff < 0) {
         badgeContainer.innerHTML = `
           <span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-2 py-0.5 rounded-full font-extrabold animate-pulse flex items-center gap-1">
-            <i data-lucide="alert-triangle" class="w-3 h-3"></i> Shortage: ₹${Math.abs(liquidityDiff).toLocaleString('en-IN')}
+            <i data-lucide="alert-triangle" class="w-3 h-3"></i> Shortage: <span class="privacy-blur">₹${Math.abs(liquidityDiff).toLocaleString('en-IN')}</span>
           </span>
         `;
       } else {
         badgeContainer.innerHTML = `
           <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1">
-            <i data-lucide="check-circle-2" class="w-3 h-3"></i> Free Left: ₹${liquidityDiff.toLocaleString('en-IN')}
+            <i data-lucide="check-circle-2" class="w-3 h-3"></i> Free Left: <span class="privacy-blur">₹${liquidityDiff.toLocaleString('en-IN')}</span>
           </span>
         `;
       }
@@ -1152,38 +1244,32 @@
       let totalAssets = 0;
       let totalDebt = 0;
 
-      // 1. Liquid Accounts & Credit Cards
       appData.accounts.forEach(acc => {
         if (acc.type === 'debit_bank' || acc.type === 'debit_cash') totalAssets += Number(acc.balance || 0);
         else if (acc.type === 'credit_card') totalDebt += Number(acc.currentDue || 0);
       });
 
-      // 2. Investments (Assets)
       appData.investments.forEach(inv => totalAssets += Number(inv.amount || 0));
 
-      // 3. Loans (Debt)
       appData.loans.forEach(loan => totalDebt += Number(loan.principalBalance || 0));
       appData.goldLoans.forEach(gl => totalDebt += Number(gl.principal || 0));
 
-      // 4. Khata Ledger (Assets & Debt)
       getAggregatedContacts().forEach(c => {
-        if (c.netBalance < 0) totalAssets += Math.abs(c.netBalance); // They owe you (Asset)
-        if (c.netBalance > 0) totalDebt += c.netBalance;             // You owe them (Debt)
+        if (c.netBalance < 0) totalAssets += Math.abs(c.netBalance);
+        if (c.netBalance > 0) totalDebt += c.netBalance;
       });
 
       const netWorth = totalAssets - totalDebt;
 
-      // Update Main Number & Pills
       const nwDisplay = document.getElementById('nwTotalDisplay');
       if (nwDisplay) {
         const formattedNW = `₹${Math.abs(netWorth).toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
         nwDisplay.innerText = (netWorth < 0 ? '-' : '') + formattedNW;
-        nwDisplay.className = `text-3xl font-black tracking-tight ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
+        nwDisplay.className = `text-3xl font-black tracking-tight privacy-blur ${netWorth >= 0 ? 'text-white' : 'text-rose-400'}`;
       }
       if (document.getElementById('nwAssetsDisplay')) document.getElementById('nwAssetsDisplay').innerText = `₹${totalAssets.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
       if (document.getElementById('nwDebtDisplay')) document.getElementById('nwDebtDisplay').innerText = `₹${totalDebt.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
 
-      // Update Financial Health Bar (Debt-to-Asset Ratio)
       const totalVolume = totalAssets + totalDebt;
       const assetBar = document.getElementById('nwHealthAssetBar');
       const debtBar = document.getElementById('nwHealthDebtBar');
@@ -1224,7 +1310,7 @@
       const currentMonthTx = appData.transactions.filter(t => t.date && t.date.startsWith(currentMonthPrefix));
       let monthInflow = 0, monthSpent = 0;
       currentMonthTx.forEach(t => {
-        if (t.type === 'income') monthInflow += Number(t.amount || 0);
+        if (t.type === 'income' && !t.isTransfer) monthInflow += Number(t.amount || 0);
         if (t.type === 'expense' && t.type !== 'transfer' && !t.isTransfer) monthSpent += Number(t.amount || 0);
       });
       document.getElementById('monthInflowDisplay').innerText = `+₹${monthInflow.toLocaleString('en-IN')}`;
@@ -1263,7 +1349,8 @@
         renderAssets,
         renderAccounts,
         renderBills,
-        renderRemindersUI
+        renderRemindersUI,
+        checkBackupNudge
       ];
 
       renderQueue.forEach(renderFunc => {
@@ -1336,7 +1423,12 @@
       let amountColor = 'text-emerald-400';
       let prefix = '+';
       
-      if (isTransfer) {
+      if (t.linkedModule === 'gl_withdraw') {
+        iconBg = 'bg-amber-500/10 text-amber-400';
+        iconName = 'arrow-down-left';
+        amountColor = 'text-amber-400';
+        prefix = '+';
+      } else if (isTransfer) {
         iconBg = 'bg-blue-500/10 text-blue-400';
         iconName = 'arrow-left-right';
         amountColor = 'text-blue-400';
@@ -1349,7 +1441,7 @@
       }
 
       const subtext = isTransfer && toAccount ? `${escapeHTML(accName)} → ${escapeHTML(toAccName)}` : escapeHTML(accName);
-      const catText = isTransfer ? 'Transfer' : escapeHTML(t.category);
+      const catText = t.linkedModule === 'gl_withdraw' ? 'OD Withdrawal' : (isTransfer ? 'Transfer' : escapeHTML(t.category));
       const notesText = t.notes ? `${escapeHTML(t.notes)} • ` : '';
       
       return `
@@ -1363,7 +1455,7 @@
           </div>
           <div class="flex items-center gap-2">
             <div class="text-right">
-              <div class="text-xs font-bold ${amountColor} leading-tight">${prefix}₹${Number(t.amount).toLocaleString('en-IN')}</div>
+              <div class="text-xs font-bold ${amountColor} leading-tight privacy-blur">${prefix}₹${Number(t.amount).toLocaleString('en-IN')}</div>
               <div class="text-[9px] text-slate-500 leading-tight mt-0.5">${subtext}</div>
             </div>
             ${canDelete ? `
@@ -1466,7 +1558,7 @@
                   <div class="w-10 h-10 rounded-2xl bg-slate-800 flex items-center justify-center font-bold text-sm text-emerald-400">${displayInitial}</div>
                   <div><h4 class="text-sm font-bold text-white">${escapeHTML(c.name)}</h4><p class="text-[10px] text-slate-400">${c.entries.length} Transaction(s)</p></div>
                 </div>
-                <div class="text-right"><div class="text-sm font-extrabold ${statusColor}">${statusText}</div><span class="text-[10px] text-slate-400">View details &rarr;</span></div>
+                <div class="text-right"><div class="text-sm font-extrabold ${statusColor} privacy-blur">${statusText}</div><span class="text-[10px] text-slate-400">View details &rarr;</span></div>
               </div>
             </div>`;
         }).join('');
@@ -1482,9 +1574,9 @@
       document.getElementById('statementContactAvatar').innerText = contact.name.charAt(0).toUpperCase();
       document.getElementById('statementLastUpdated').innerText = `Last entry: ${contact.lastDate}`;
       const netBadge = document.getElementById('statementNetBadge');
-      if (contact.netBalance > 0) { netBadge.innerText = `YOU OWE ₹${contact.netBalance.toLocaleString('en-IN')}`; netBadge.className = "text-base font-extrabold text-rose-400"; }
-      else if (contact.netBalance < 0) { netBadge.innerText = `THEY OWE YOU ₹${Math.abs(contact.netBalance).toLocaleString('en-IN')}`; netBadge.className = "text-base font-extrabold text-emerald-400"; }
-      else { netBadge.innerText = "SETTLED (₹0)"; netBadge.className = "text-base font-extrabold text-slate-400"; }
+      if (contact.netBalance > 0) { netBadge.innerText = `YOU OWE ₹${contact.netBalance.toLocaleString('en-IN')}`; netBadge.className = "text-base font-extrabold text-rose-400 privacy-blur"; }
+      else if (contact.netBalance < 0) { netBadge.innerText = `THEY OWE YOU ₹${Math.abs(contact.netBalance).toLocaleString('en-IN')}`; netBadge.className = "text-base font-extrabold text-emerald-400 privacy-blur"; }
+      else { netBadge.innerText = "SETTLED (₹0)"; netBadge.className = "text-base font-extrabold text-slate-400 privacy-blur"; }
       document.getElementById('statementTxHistoryList').innerHTML = contact.entries.slice().reverse().map(e => `
         <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between mb-2">
           <div>
@@ -1493,7 +1585,7 @@
             ${e.dueDate ? `<p class="text-[10px] text-amber-400/80 mt-0.5">Promised Return: ${e.dueDate}</p>` : ''}
           </div>
           <div class="flex items-center gap-2">
-            <span class="font-extrabold text-sm ${e.direction === 'borrowed' ? 'text-rose-400' : 'text-emerald-400'}">₹${Number(e.amount).toLocaleString('en-IN')}</span>
+            <span class="font-extrabold text-sm ${e.direction === 'borrowed' ? 'text-rose-400' : 'text-emerald-400'} privacy-blur">₹${Number(e.amount).toLocaleString('en-IN')}</span>
             <div class="flex flex-col gap-1 border-l border-slate-800 pl-2 ml-1">
               <button class="action-edit-khata p-2.5 text-slate-400 active:text-white" aria-label="Edit khata entry" data-id="${e.id}"><i data-lucide="edit" class="w-3.5 h-3.5"></i></button>
               <button class="action-delete-khata p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete khata entry" data-id="${e.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -1517,12 +1609,11 @@
             const emiAmt = Number(loan.emiAmount || 0);
             const rate = Number(loan.interestRate || 0);
 
-            // Calculate Monthly Principal vs Interest Split
             let splitHtml = '';
             if (prinBal > 0 && rate > 0 && emiAmt > 0) {
               const monthlyInterest = prinBal * ((rate / 100) / 12);
               const monthlyPrincipal = Math.max(0, emiAmt - monthlyInterest);
-              splitHtml = `<div class="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1">
+              splitHtml = `<div class="text-[10px] text-slate-400 mt-1 font-medium flex items-center gap-1 privacy-blur">
                 <span class="text-emerald-400/90">₹${Math.round(monthlyPrincipal).toLocaleString('en-IN')} Prin</span> + 
                 <span class="text-rose-400/90">₹${Math.round(monthlyInterest).toLocaleString('en-IN')} Int</span>
               </div>`;
@@ -1538,10 +1629,10 @@
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white">₹${prinBal.toLocaleString('en-IN', {maximumFractionDigits: 2})}</div></div>
+                <div><span class="text-[10px] text-slate-400 uppercase">Principal Balance</span><div class="text-sm font-bold text-white privacy-blur">₹${prinBal.toLocaleString('en-IN', {maximumFractionDigits: 2})}</div></div>
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase">Monthly EMI</span>
-                  <div class="text-sm font-bold text-emerald-400">₹${emiAmt.toLocaleString('en-IN')}</div>
+                  <div class="text-sm font-bold text-emerald-400 privacy-blur">₹${emiAmt.toLocaleString('en-IN')}</div>
                   ${splitHtml}
                 </div>
               </div>
@@ -1564,34 +1655,29 @@
         container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No gold loans tracked.</div>`;
         return;
       }
-      const todayMs = new Date(getLocalDateStr()).setHours(0,0,0,0);
 
       container.innerHTML = appData.goldLoans.map(gl => {
         const prin = Number(gl.principal || 0);
         const rate = Number(gl.interestRate || 0);
         const isClosed = prin <= 0;
+        const { dailyInt, daysElapsed, frozen, totalAccrued } = calcGoldLoanInterest(gl);
 
         let dailyBleedHtml = '';
         let accruedTotalHtml = '';
 
         if (!isClosed && rate > 0) {
-          const dailyInt = (prin * (rate / 100)) / 365;
-          
-          // Calculate days since loan start or last interest payment
-          const startStr = gl.startDate || getLocalDateStr();
-          const startMs = new Date(startStr).setHours(0,0,0,0);
-          const daysElapsed = Math.max(0, Math.round((todayMs - startMs) / (1000 * 60 * 60 * 24)));
-          const totalAccrued = Math.round(dailyInt * daysElapsed);
-
           dailyBleedHtml = `
-            <div class="mt-1.5 inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+            <div class="mt-1.5 inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold px-2 py-0.5 rounded-md privacy-blur">
               <i data-lucide="flame" class="w-3 h-3 text-rose-400"></i> ₹${dailyInt.toFixed(2)} / day
             </div>`;
+        }
 
+        if (totalAccrued > 0 || (!isClosed && rate > 0)) {
+          const frozenTag = frozen > 0 ? ` + ₹${Math.round(frozen).toLocaleString('en-IN')} frozen` : '';
           accruedTotalHtml = `
             <div class="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <span class="text-slate-400 text-[10px] uppercase font-semibold">Interest Till Today (${daysElapsed}d)</span>
-              <span class="font-extrabold text-amber-400">₹${totalAccrued.toLocaleString('en-IN')}</span>
+              <span class="text-slate-400 text-[10px] uppercase font-semibold">Interest Till Today (${daysElapsed}d${frozenTag})</span>
+              <span class="font-extrabold text-amber-400 privacy-blur">₹${totalAccrued.toLocaleString('en-IN')}</span>
             </div>`;
         }
 
@@ -1611,7 +1697,7 @@
             <div class="grid grid-cols-2 gap-2">
               <div>
                 <span class="text-[10px] text-slate-400 uppercase">Principal Owed</span>
-                <div class="text-sm font-bold text-white">₹${prin.toLocaleString('en-IN')}</div>
+                <div class="text-sm font-bold text-white privacy-blur">₹${prin.toLocaleString('en-IN')}</div>
                 ${dailyBleedHtml}
               </div>
               <div>
@@ -1622,15 +1708,13 @@
             </div>
             ${accruedTotalHtml}
           </div>
-          <div class="flex items-center justify-between pt-1">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
             <span class="text-[11px] text-slate-400">${gl.interestRate ? `${gl.interestRate}% p.a.` : ''}</span>
-            ${isClosed
-              ? `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3.5 h-3.5"></i> Loan Closed</span>`
-              : `<div class="flex gap-2">
-                  <button class="action-pay-gl-int bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition" data-id="${gl.id}">Pay Interest</button>
-                  <button class="action-pay-gl-prin bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-md active:scale-95 transition" data-id="${gl.id}">Repay Principal</button>
-                </div>`
-            }
+            <div class="flex flex-wrap gap-1.5">
+              <button class="action-withdraw-gl bg-sky-600/20 hover:bg-sky-600/30 text-sky-400 border border-sky-500/30 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition" data-id="${gl.id}">Withdraw OD</button>
+              ${!isClosed || totalAccrued > 0 ? `<button class="action-pay-gl-int bg-slate-700 hover:bg-slate-600 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition" data-id="${gl.id}">Pay Interest</button>` : ''}
+              ${!isClosed ? `<button class="action-pay-gl-prin bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold shadow-md active:scale-95 transition" data-id="${gl.id}">Repay Principal</button>` : `<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1"><i data-lucide="check-check" class="w-3 h-3"></i> ₹0 Balance</span>`}
+            </div>
           </div>
         </div>`;
       }).join('');
@@ -1657,11 +1741,11 @@
                   <div class="p-2 rounded-lg bg-sky-500/10 text-sky-400"><i data-lucide="trending-up" class="w-4 h-4"></i></div>
                   <div>
                     <h4 class="text-xs font-bold text-white">${escapeHTML(i.name)}</h4>
-                    <p class="text-[10px] text-slate-400">${escapeHTML(i.type)} ${isSip ? `• SIP: ₹${Number(i.installmentAmount).toLocaleString('en-IN')} / ${i.dueDay}th` : ''}</p>
+                    <p class="text-[10px] text-slate-400">${escapeHTML(i.type)} ${isSip ? `• SIP: <span class="privacy-blur">₹${Number(i.installmentAmount).toLocaleString('en-IN')}</span> / ${i.dueDay}th` : ''}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="text-sm font-bold text-white mr-1">₹${Number(i.amount).toLocaleString('en-IN')}</span>
+                  <span class="text-sm font-bold text-white mr-1 privacy-blur">₹${Number(i.amount).toLocaleString('en-IN')}</span>
                   <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
                     <button class="action-edit-inv p-2 text-slate-400 active:text-white" aria-label="Edit investment" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
                     <button class="action-delete-inv p-2 text-slate-500 active:text-rose-400" aria-label="Delete investment" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
@@ -1692,7 +1776,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2"><span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${escapeHTML(i.type)}</span><h4 class="text-xs font-bold text-white">${escapeHTML(i.name)}</h4></div>
               <div class="flex items-center gap-2 text-right">
-                <div class="mr-1"><div class="text-[10px] text-slate-400 uppercase">Premium</div><div class="text-sm font-bold text-white">₹${Number(i.premium).toLocaleString('en-IN')}</div></div>
+                <div class="mr-1"><div class="text-[10px] text-slate-400 uppercase">Premium</div><div class="text-sm font-bold text-white privacy-blur">₹${Number(i.premium).toLocaleString('en-IN')}</div></div>
                 <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2"><button class="action-edit-ins p-2.5 text-slate-400 active:text-white" aria-label="Edit insurance" data-id="${i.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button><button class="action-delete-ins p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete insurance" data-id="${i.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></div>
               </div>
             </div>
@@ -1719,7 +1803,7 @@
               <div><h4 class="text-xs font-bold text-white">${escapeHTML(acc.name)}</h4><p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p></div>
             </div>
             <div class="flex items-center gap-1">
-              <div class="text-sm font-bold text-white mr-2">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
+              <div class="text-sm font-bold text-white mr-2 privacy-blur">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
               <button class="action-edit-acc p-2.5 text-slate-400 active:text-white" aria-label="Edit account" data-id="${acc.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
               <button class="action-delete-acc p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete account" data-id="${acc.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
@@ -1734,7 +1818,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <h4 class="text-xs font-bold text-white">${escapeHTML(card.name)}</h4>
-                  <p class="text-[10px] text-slate-400">Limit: ₹${Number(card.limit).toLocaleString('en-IN')} • Bill Gen: ${card.billGenDay || 1}st • Due: ${card.dueDay || 15}th</p>
+                  <p class="text-[10px] text-slate-400">Limit: <span class="privacy-blur">₹${Number(card.limit).toLocaleString('en-IN')}</span> • Bill Gen: ${card.billGenDay || 1}st • Due: ${card.dueDay || 15}th</p>
                 </div>
                 <div class="flex items-center gap-1">
                   <button class="action-edit-acc p-2 text-slate-400 active:text-white" aria-label="Edit card" data-id="${card.id}" title="Edit"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
@@ -1745,11 +1829,11 @@
               <div class="flex items-center justify-between pt-2 border-t border-slate-800/80">
                 <div>
                   <span class="text-[10px] text-slate-400 uppercase font-semibold">Total Outstanding</span>
-                  <div class="text-sm font-bold text-white">₹${Number(card.currentDue).toLocaleString('en-IN')}</div>
+                  <div class="text-sm font-bold text-white privacy-blur">₹${Number(card.currentDue).toLocaleString('en-IN')}</div>
                 </div>
                 <div class="text-right">
                   <span class="text-[10px] text-rose-400 uppercase font-semibold">Statement Bill Due</span>
-                  <div class="text-sm font-bold text-rose-400">₹${Number(card.statementBalance || 0).toLocaleString('en-IN')}</div>
+                  <div class="text-sm font-bold text-rose-400 privacy-blur">₹${Number(card.statementBalance || 0).toLocaleString('en-IN')}</div>
                 </div>
               </div>
 
@@ -1785,7 +1869,7 @@
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
                 <div class="p-2 rounded-lg bg-purple-500/10 text-purple-400"><i data-lucide="receipt" class="w-4 h-4"></i></div>
-                <div><h4 class="font-bold text-white text-sm">${escapeHTML(bill.title)}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • ₹${Number(bill.amount).toLocaleString('en-IN')}</p></div>
+                <div><h4 class="font-bold text-white text-sm">${escapeHTML(bill.title)}</h4><p class="text-[10px] text-slate-400">Due: ${bill.dueDay}th • <span class="privacy-blur">₹${Number(bill.amount).toLocaleString('en-IN')}</span></p></div>
               </div>
               <div class="flex items-center gap-1 border-l border-slate-700/50 pl-2">
                 <button class="action-edit-bill p-2.5 text-slate-400 hover:text-white" aria-label="Edit bill" data-id="${bill.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
@@ -1949,10 +2033,32 @@
           if (ins) ins.dueDate = tx.linkedValue; 
         } else if (tx.linkedModule === 'gl_prin') {
           const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
-          if (gl) gl.principal += Number(tx.linkedValue || 0);
+          if (gl) {
+            if (typeof tx.linkedValue === 'object' && tx.linkedValue !== null) {
+              gl.principal = tx.linkedValue.principal;
+              gl.accruedInterest = tx.linkedValue.accruedInterest;
+              gl.startDate = tx.linkedValue.startDate;
+            } else {
+              gl.principal += Number(tx.linkedValue || 0);
+            }
+          }
         } else if (tx.linkedModule === 'gl_int') {
           const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
-          if (gl && tx.linkedValue) gl.startDate = tx.linkedValue;
+          if (gl) {
+            if (typeof tx.linkedValue === 'object' && tx.linkedValue !== null) {
+              gl.accruedInterest = tx.linkedValue.accruedInterest;
+              gl.startDate = tx.linkedValue.startDate;
+            } else if (tx.linkedValue) {
+              gl.startDate = tx.linkedValue;
+            }
+          }
+        } else if (tx.linkedModule === 'gl_withdraw') {
+          const gl = appData.goldLoans.find(l => l.id === tx.linkedId);
+          if (gl && typeof tx.linkedValue === 'object' && tx.linkedValue !== null) {
+            gl.principal = tx.linkedValue.principal;
+            gl.accruedInterest = tx.linkedValue.accruedInterest;
+            gl.startDate = tx.linkedValue.startDate;
+          }
         }
 
         appData.transactions = appData.transactions.filter(t => t.id !== id);
@@ -1962,11 +2068,21 @@
     }
 
     function openPaymentModal(type, id) {
-      const sourceSelect = document.getElementById('paySourceAccount'), amountInput = document.getElementById('payAmount'), title = document.getElementById('paymentModalTitle');
+      const sourceSelect = document.getElementById('paySourceAccount');
+      const amountInput = document.getElementById('payAmount');
+      const title = document.getElementById('paymentModalTitle');
+      const amountLabel = document.getElementById('payAmountLabel');
+      const accLabel = document.getElementById('payAccountLabel');
+      const submitBtnText = document.getElementById('paySubmitBtnText');
+
       const debitAccs = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash');
-      if (debitAccs.length === 0) { alert("No debit or cash accounts available to pay from."); return; }
+      if (debitAccs.length === 0) { alert("No debit or cash accounts available."); return; }
       
       sourceSelect.innerHTML = debitAccs.map(a => `<option value="${escapeHTML(a.id)}">${escapeHTML(a.name)} (Balance: ₹${Number(a.balance).toLocaleString('en-IN')})</option>`).join('');
+
+      if (amountLabel) amountLabel.innerText = 'Amount to Pay (₹)';
+      if (accLabel) accLabel.innerText = 'Pay From Account';
+      if (submitBtnText) submitBtnText.innerText = 'Confirm Payment';
 
       const currentMonthKey = getCurrentMonthKey();
 
@@ -1994,18 +2110,23 @@
         const ins = appData.insurances.find(i => i.id === id);
         if (!ins) return;
         title.innerText = `Pay Premium: ${ins.name}`; amountInput.value = ins.premium; amountInput.readOnly = false; pendingPayment = { type: 'ins', id: id };
-      } 
-      else if (type === 'gl_int') {
+      } else if (type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === id);
         if (!gl) return;
-        const dailyInt = (Number(gl.principal || 0) * (Number(gl.interestRate || 0) / 100)) / 365;
-        const days = Math.max(0, Math.round((new Date(getLocalDateStr()).setHours(0,0,0,0) - new Date(gl.startDate || getLocalDateStr()).setHours(0,0,0,0)) / 86400000));
-        const accrued = Math.round(dailyInt * days);
-        title.innerText = `Pay Interest: ${gl.name}`; amountInput.value = accrued > 0 ? accrued : ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_int', id: id };
+        const { totalAccrued } = calcGoldLoanInterest(gl);
+        title.innerText = `Pay Interest: ${gl.name}`; amountInput.value = totalAccrued > 0 ? totalAccrued : ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_int', id: id };
       } else if (type === 'gl_prin') {
         const gl = appData.goldLoans.find(l => l.id === id);
         if (!gl) return;
         title.innerText = `Repay Principal: ${gl.name}`; amountInput.value = gl.principal; amountInput.readOnly = false; pendingPayment = { type: 'gl_prin', id: id };
+      } else if (type === 'gl_withdraw') {
+        const gl = appData.goldLoans.find(l => l.id === id);
+        if (!gl) return;
+        title.innerText = `Withdraw OD: ${gl.name}`;
+        if (amountLabel) amountLabel.innerText = 'Withdrawal Amount (₹)';
+        if (accLabel) accLabel.innerText = 'Deposit Into Account';
+        if (submitBtnText) submitBtnText.innerText = 'Confirm Withdrawal';
+        amountInput.value = ''; amountInput.readOnly = false; pendingPayment = { type: 'gl_withdraw', id: id };
       }
       openModal('paymentModal');
     }
@@ -2076,22 +2197,42 @@
       } else if (pendingPayment.type === 'gl_int') {
         const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
         if (!gl) return;
-        const prevStartDate = gl.startDate || dateStr;
-        gl.startDate = dateStr; // Reset the running interest meter to today
+        const prevState = { accruedInterest: Number(gl.accruedInterest || 0), startDate: gl.startDate || dateStr };
+        const { liveInt } = calcGoldLoanInterest(gl);
+        const totalBeforePay = Number(gl.accruedInterest || 0) + liveInt;
+        gl.accruedInterest = Math.max(0, totalBeforePay - amount);
+        gl.startDate = dateStr;
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Interest: ${gl.name}`, linkedModule: 'gl_int', linkedId: gl.id, linkedValue: prevStartDate });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Interest: ${gl.name}`, linkedModule: 'gl_int', linkedId: gl.id, linkedValue: prevState });
+      
       } else if (pendingPayment.type === 'gl_prin') {
         const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
         if (!gl) return;
+        const prevState = { principal: gl.principal, accruedInterest: Number(gl.accruedInterest || 0), startDate: gl.startDate || dateStr };
+        const { liveInt } = calcGoldLoanInterest(gl);
+        gl.accruedInterest = Number(gl.accruedInterest || 0) + liveInt;
+        gl.startDate = dateStr;
         gl.principal = Math.max(0, gl.principal - amount);
         sourceAcc.balance -= amount;
-        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Repayment: ${gl.name}`, linkedModule: 'gl_prin', linkedId: gl.id, linkedValue: amount });
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Debt Repayment', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan Repayment: ${gl.name}`, linkedModule: 'gl_prin', linkedId: gl.id, linkedValue: prevState });
+      
+      } else if (pendingPayment.type === 'gl_withdraw') {
+        const gl = appData.goldLoans.find(l => l.id === pendingPayment.id);
+        if (!gl) return;
+        const prevState = { principal: gl.principal, accruedInterest: Number(gl.accruedInterest || 0), startDate: gl.startDate || dateStr };
+        const { liveInt } = calcGoldLoanInterest(gl);
+        gl.accruedInterest = Number(gl.accruedInterest || 0) + liveInt;
+        gl.startDate = dateStr;
+        gl.principal = Number(gl.principal || 0) + amount;
+        sourceAcc.balance += amount;
+        appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'income', isTransfer: true, amount: amount, category: 'General', accountId: sourceAcc.id, date: dateStr, notes: `Gold Loan OD Withdrawal: ${gl.name}`, linkedModule: 'gl_withdraw', linkedId: gl.id, linkedValue: prevState });
       }
 
+      const wasWithdraw = pendingPayment.type === 'gl_withdraw';
       pendingPayment = null; 
       saveData(true); 
       closeModal('paymentModal');
-      showToast('Payment recorded successfully');
+      showToast(wasWithdraw ? 'OD withdrawal recorded' : 'Payment recorded successfully');
     }
 
     function openKhataModal() {
@@ -2238,11 +2379,12 @@
         if (gl) {
           gl.name = name; gl.principal = principal; gl.weight = weight;
           gl.interestRate = interestRate; gl.startDate = startDate; gl.dueDate = dueDate;
+          if (gl.accruedInterest === undefined) gl.accruedInterest = 0;
         }
       } else {
         appData.goldLoans.push({ 
           id: 'gl_' + Date.now(), 
-          name, principal, weight, interestRate, startDate, dueDate 
+          name, principal, weight, interestRate, startDate, dueDate, accruedInterest: 0 
         });
       }
       
@@ -2479,9 +2621,11 @@
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function toggleRemindersModal() { const modal = document.getElementById('remindersModal'); modal.classList.toggle('hidden'); if (!modal.classList.contains('hidden')) renderRemindersUI(); }
-    function openSettingsModal() { openModal('settingsModal'); }
+    function openSettingsModal() { checkBackupNudge(); openModal('settingsModal'); }
 
     function exportDataJSON() {
+      appData.lastBackupDate = getLocalDateStr();
+      saveData(true);
       const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `PocketLedger_Backup_${getLocalDateStr()}.json`;
@@ -2519,6 +2663,7 @@
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.bills) parsed.bills = [];
+          parsed.goldLoans.forEach(gl => { if (gl.accruedInterest === undefined) gl.accruedInterest = 0; });
 
           if (parsed && parsed.accounts && parsed.transactions) {
             if (importMode === 'overwrite') {
@@ -2587,6 +2732,7 @@
 
       setDefaultTxDateRange();
       checkCreditCardBills(); 
+      applyPrivacyMode();
       refreshAllViews();
 
       document.getElementById('txForm')?.addEventListener('submit', handleSaveTransaction);
@@ -2623,6 +2769,7 @@
         
         if (target.classList.contains('action-pay-gl-int')) return openPaymentModal('gl_int', target.dataset.id);
         if (target.classList.contains('action-pay-gl-prin')) return openPaymentModal('gl_prin', target.dataset.id);
+        if (target.classList.contains('action-withdraw-gl')) return openPaymentModal('gl_withdraw', target.dataset.id);
         
         if (target.classList.contains('action-edit-tx')) return editTransaction(target.dataset.id);
         if (target.classList.contains('action-delete-tx')) return deleteTransaction(target.dataset.id);
@@ -2647,6 +2794,7 @@
         if (target.classList.contains('action-delete-bill')) return deleteBill(target.dataset.id);
         
         if (target.id === 'btn-load-more-tx') return loadMoreTransactions();
+        if (target.id === 'btn-privacy') return togglePrivacyMode();
         if (target.id === 'btn-reminders') return toggleRemindersModal();
         if (target.id === 'btn-settings') return openSettingsModal();
         
