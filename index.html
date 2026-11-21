@@ -71,7 +71,7 @@
       <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-bold text-white shadow-lg shadow-emerald-950/40">₹</div>
       <div>
         <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
-          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.7</span>
+          PocketLedger <span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded font-mono font-medium border border-emerald-500/20">PWA v1.0.8</span>
         </h1>
         <p class="text-[11px] text-slate-400 font-medium">Personal Finance & Khata</p>
       </div>
@@ -560,9 +560,15 @@
           <input type="text" id="accName" required placeholder="e.g. ICICI Salary, Amazon Pay" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
         </div>
         
-        <div id="accDebitBalanceGroup">
-          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
-          <input type="number" inputmode="decimal" step="0.01" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+        <div id="accDebitBalanceGroup" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Balance (₹)</label>
+            <input type="number" inputmode="decimal" step="0.01" id="accBalance" placeholder="0.00" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+          </div>
+          <div id="accTargetMabGroup">
+            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Target MAB (₹)</label>
+            <input type="number" inputmode="decimal" step="0.01" id="accTargetMab" placeholder="Optional, e.g. 10000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none">
+          </div>
         </div>
         
         <div id="accCreditCardGroup" class="hidden space-y-2">
@@ -738,7 +744,7 @@
         income: ['Salary & Wages', 'Investment Inflow/Return', 'General']
       },
       accounts: [
-        { id: 'acc_1', name: 'Primary Bank', type: 'debit_bank', balance: 0 }
+        { id: 'acc_1', name: 'Primary Bank', type: 'debit_bank', balance: 0, targetMab: 0 }
       ],
       transactions: [], khata: [], loans: [], goldLoans: [], investments: [], insurances: [], bills: [], dismissedAlerts: {},
       lastBackupDate: null
@@ -827,6 +833,61 @@
       return { dailyInt, daysElapsed, liveInt, frozen, totalAccrued };
     }
 
+    function calculateAccountMAB(acc) {
+      const todayStr = getLocalDateStr();
+      const year = parseInt(todayStr.slice(0, 4));
+      const month = parseInt(todayStr.slice(5, 7));
+      const currentDay = parseInt(todayStr.slice(8, 10));
+      const currentMonthKey = todayStr.slice(0, 7);
+      const daysInMonth = new Date(year, month, 0).getDate();
+      const targetMab = Number(acc.targetMab || 0);
+
+      let runningBal = Number(acc.balance || 0);
+
+      const reverseTxOnAccount = (tx) => {
+        const amt = Number(tx.amount || 0);
+        if (tx.type === 'expense' && tx.accountId === acc.id) {
+          runningBal += amt;
+        } else if (tx.type === 'income' && tx.accountId === acc.id) {
+          runningBal -= amt;
+        } else if (tx.type === 'transfer') {
+          if (tx.accountId === acc.id) runningBal += amt;
+          if (tx.toAccountId === acc.id) runningBal -= amt;
+        }
+      };
+
+      const txByDate = {};
+      appData.transactions.forEach(tx => {
+        if (!tx.date) return;
+        if (tx.accountId !== acc.id && tx.toAccountId !== acc.id) return;
+        if (tx.date > todayStr) {
+          reverseTxOnAccount(tx);
+        } else if (tx.date.startsWith(currentMonthKey)) {
+          if (!txByDate[tx.date]) txByDate[tx.date] = [];
+          txByDate[tx.date].push(tx);
+        }
+      });
+
+      let sumOfEodSoFar = 0;
+      for (let day = currentDay; day >= 1; day--) {
+        sumOfEodSoFar += runningBal;
+        if (day > 1) {
+          const dayStr = `${currentMonthKey}-${String(day).padStart(2, '0')}`;
+          if (txByDate[dayStr]) {
+            txByDate[dayStr].forEach(reverseTxOnAccount);
+          }
+        }
+      }
+
+      const currentMab = sumOfEodSoFar / currentDay;
+      const remainingDays = daysInMonth - currentDay;
+      const requiredDailyBalance = remainingDays > 0
+        ? ((targetMab * daysInMonth) - sumOfEodSoFar) / remainingDays
+        : 0;
+
+      return { currentMab, targetMab, remainingDays, requiredDailyBalance };
+    }
+
     function showToast(message) {
       const toast = document.getElementById('toastNotification');
       document.getElementById('toastMsg').innerText = escapeHTML(message);
@@ -862,6 +923,8 @@
               if (acc.billGenDay === undefined) acc.billGenDay = 1;
               if (acc.statementBalance === undefined) acc.statementBalance = acc.currentDue || 0;
               if (acc.lastBilledMonth === undefined) acc.lastBilledMonth = '';
+            } else {
+              if (acc.targetMab === undefined) acc.targetMab = 0;
             }
           });
           parsed.goldLoans.forEach(gl => {
@@ -926,13 +989,17 @@
 
     function checkCreditCardBills() {
       const todayStr = getLocalDateStr();
+      const year = parseInt(todayStr.slice(0, 4));
+      const month = parseInt(todayStr.slice(5, 7));
       const currentMonthKey = todayStr.slice(0, 7);
       const currentDay = parseInt(todayStr.slice(8, 10));
+      const daysInMonth = new Date(year, month, 0).getDate();
       let changed = false;
       
       appData.accounts.forEach(acc => {
         if (acc.type === 'credit_card') {
-          if (currentDay >= acc.billGenDay && acc.lastBilledMonth !== currentMonthKey) {
+          const effectiveBillGenDay = Math.min(acc.billGenDay || 1, daysInMonth);
+          if (currentDay >= effectiveBillGenDay && acc.lastBilledMonth !== currentMonthKey) {
              acc.statementBalance = acc.currentDue; 
              acc.lastBilledMonth = currentMonthKey;
              acc.lastPaidMonth = ''; 
@@ -988,8 +1055,11 @@
 
     function computeReminders() {
       const todayStr = getLocalDateStr();
+      const todayYear = parseInt(todayStr.slice(0, 4));
+      const todayMonth = parseInt(todayStr.slice(5, 7));
       const currentDay = parseInt(todayStr.slice(8, 10));
       const currentMonthKey = todayStr.slice(0, 7);
+      const todayMs = new Date(todayStr).setHours(0, 0, 0, 0);
       const reminders = [];
 
       appData.loans.forEach(loan => {
@@ -1005,14 +1075,14 @@
       appData.goldLoans.forEach(gl => {
         if (gl.principal <= 0) return;
         if (appData.dismissedAlerts[gl.id] === currentMonthKey) return;
-        const dayDiff = Math.round((new Date(gl.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        const dayDiff = Math.round((new Date(gl.dueDate).setHours(0,0,0,0) - todayMs) / 86400000);
         if (dayDiff > 30) return;
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 14 ? 'soon' : 'upcoming')));
         reminders.push({ id: gl.id, type: 'Gold Loan Renewal', title: gl.name, amount: gl.principal, dueDayText: `Due on ${gl.dueDate}`, status: status, targetDateStr: gl.dueDate });
       });
 
       appData.investments.forEach(inv => {
-        if((inv.installmentAmount || 0) > 0) {
+        if((inv.installmentAmount || 0) > 0 && inv.dueDay) {
           if(inv.lastPaidMonth === currentMonthKey) return;
           if(appData.dismissedAlerts[inv.id] === currentMonthKey) return;
 
@@ -1026,9 +1096,35 @@
         if(card.lastPaidMonth === currentMonthKey) return; 
         if(appData.dismissedAlerts[card.id] === currentMonthKey) return;
 
-        let diffDays = (card.dueDay || 15) - currentDay;
-        let status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
-        reminders.push({ id: card.id, type: 'Statement Due', title: `${card.name}`, amount: card.statementBalance, dueDayText: `Due on ${card.dueDay || 15}th of this month`, status: status, targetDateStr: `${currentMonthKey}-${String(card.dueDay || 15).padStart(2,'0')}` });
+        const billGenDay = Number(card.billGenDay || 1);
+        const dueDay = Number(card.dueDay || 15);
+        let dueYear = todayYear;
+        let dueMonth = todayMonth;
+
+        if (dueDay < billGenDay && currentDay >= billGenDay) {
+          dueMonth += 1;
+          if (dueMonth > 12) {
+            dueMonth = 1;
+            dueYear += 1;
+          }
+        }
+
+        const maxDayInDueMonth = new Date(dueYear, dueMonth, 0).getDate();
+        const clampedDueDay = Math.min(dueDay, maxDayInDueMonth);
+        const targetDateStr = `${dueYear}-${String(dueMonth).padStart(2, '0')}-${String(clampedDueDay).padStart(2, '0')}`;
+        const dueMs = new Date(targetDateStr).setHours(0, 0, 0, 0);
+        const diffDays = Math.round((dueMs - todayMs) / 86400000);
+        const status = diffDays === 0 ? 'today' : (diffDays < 0 ? 'overdue' : (diffDays === 1 ? 'tomorrow' : (diffDays <= 7 ? 'soon' : 'upcoming')));
+
+        reminders.push({
+          id: card.id,
+          type: 'Statement Due',
+          title: `${card.name}`,
+          amount: card.statementBalance,
+          dueDayText: `Due on ${targetDateStr}`,
+          status: status,
+          targetDateStr: targetDateStr
+        });
       });
 
       appData.bills.forEach(bill => {
@@ -1049,7 +1145,7 @@
         const aggId = 'khata_agg_' + contact.name;
         if (appData.dismissedAlerts[aggId] === currentMonthKey) return;
 
-        const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        const dayDiff = Math.round((new Date(dueDateStr).setHours(0,0,0,0) - todayMs) / 86400000);
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 7 ? 'soon' : 'upcoming')));
         
         reminders.push({
@@ -1062,7 +1158,7 @@
       appData.insurances.forEach(ins => {
         if(appData.dismissedAlerts[ins.id] === currentMonthKey) return;
         
-        const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - new Date(todayStr).setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+        const dayDiff = Math.round((new Date(ins.dueDate).setHours(0,0,0,0) - todayMs) / 86400000);
         if (dayDiff > 30) return;
 
         let status = dayDiff === 0 ? 'today' : (dayDiff < 0 ? 'overdue' : (dayDiff === 1 ? 'tomorrow' : (dayDiff <= 14 ? 'soon' : 'upcoming')));
@@ -1190,7 +1286,7 @@
          return i.dueDate.slice(0,7) <= currentMonthKey;
       }).reduce((sum, i) => sum + Number(i.premium), 0);
       
-      let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
+      let sipReq = appData.investments.filter(i => (i.installmentAmount || 0) > 0 && i.dueDay && i.lastPaidMonth !== currentMonthKey).reduce((sum, i) => sum + Number(i.installmentAmount), 0);
 
       let glReq = appData.goldLoans.filter(gl => gl.principal > 0 && gl.dueDate && gl.dueDate.slice(0,7) <= currentMonthKey).reduce((sum, gl) => sum + Number(gl.principal), 0);
 
@@ -1732,7 +1828,7 @@
         invContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-500 bg-slate-800/40 rounded-xl">No investments added yet.</div>`;
       } else {
         invContainer.innerHTML = appData.investments.map(i => {
-          const isSip = (i.installmentAmount || 0) > 0;
+          const isSip = (i.installmentAmount || 0) > 0 && Boolean(i.dueDay);
           const isPaid = i.lastPaidMonth === currentMonthKey;
           return `
             <div class="flex flex-col p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 mb-2">
@@ -1796,18 +1892,42 @@
       const creditContainer = document.getElementById('creditCardsList');
       const monthName = getCurrentMonthName();
 
-      debitContainer.innerHTML = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash').map(acc => `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-800">
-            <div class="flex items-center gap-2.5">
-              <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="${acc.type === 'debit_cash' ? 'banknote' : 'landmark'}" class="w-4 h-4"></i></div>
-              <div><h4 class="text-xs font-bold text-white">${escapeHTML(acc.name)}</h4><p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p></div>
+      debitContainer.innerHTML = appData.accounts.filter(a => a.type === 'debit_bank' || a.type === 'debit_cash').map(acc => {
+        let mabStripHtml = '';
+        if (acc.type === 'debit_bank' && Number(acc.targetMab || 0) > 0) {
+          const { currentMab, targetMab, remainingDays, requiredDailyBalance } = calculateAccountMAB(acc);
+          let statusBadge = '';
+          if (currentMab >= targetMab) {
+            statusBadge = `<span class="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold">MAB Safe</span>`;
+          } else if (remainingDays > 0) {
+            const reqVal = Math.max(0, Math.ceil(requiredDailyBalance));
+            statusBadge = `<span class="bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold">Hold <span class="privacy-blur">₹${reqVal.toLocaleString('en-IN')}</span>/day</span>`;
+          } else {
+            statusBadge = `<span class="bg-rose-500/15 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full text-[9px] font-bold">MAB Shortfall</span>`;
+          }
+          mabStripHtml = `
+            <div class="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
+              <span class="text-slate-400">MAB: <strong class="text-slate-200 privacy-blur">₹${Math.round(currentMab).toLocaleString('en-IN')}</strong> / <span class="privacy-blur">₹${Math.round(targetMab).toLocaleString('en-IN')}</span></span>
+              ${statusBadge}
+            </div>`;
+        }
+
+        return `
+          <div class="p-3 rounded-xl bg-slate-900/50 border border-slate-800">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i data-lucide="${acc.type === 'debit_cash' ? 'banknote' : 'landmark'}" class="w-4 h-4"></i></div>
+                <div><h4 class="text-xs font-bold text-white">${escapeHTML(acc.name)}</h4><p class="text-[10px] text-slate-400">${acc.type === 'debit_cash' ? 'Physical Cash' : 'Bank Balance'}</p></div>
+              </div>
+              <div class="flex items-center gap-1">
+                <div class="text-sm font-bold text-white mr-2 privacy-blur">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
+                <button class="action-edit-acc p-2.5 text-slate-400 active:text-white" aria-label="Edit account" data-id="${acc.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                <button class="action-delete-acc p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete account" data-id="${acc.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              </div>
             </div>
-            <div class="flex items-center gap-1">
-              <div class="text-sm font-bold text-white mr-2 privacy-blur">₹${Number(acc.balance).toLocaleString('en-IN')}</div>
-              <button class="action-edit-acc p-2.5 text-slate-400 active:text-white" aria-label="Edit account" data-id="${acc.id}"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
-              <button class="action-delete-acc p-2.5 text-slate-500 active:text-rose-400" aria-label="Delete account" data-id="${acc.id}"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-            </div>
-          </div>`).join('');
+            ${mabStripHtml}
+          </div>`;
+      }).join('');
 
       const creditCards = appData.accounts.filter(a => a.type === 'credit_card');
       if (creditCards.length === 0) creditContainer.innerHTML = `<div class="p-3 text-center text-xs text-slate-500">No credit cards added.</div>`;
@@ -1916,6 +2036,10 @@
     function editTransaction(id) {
       const tx = appData.transactions.find(t => t.id === id);
       if (!tx) return;
+      if (tx.linkedModule) {
+        alert('This transaction is auto-linked to a Loan, Bill, SIP, or Insurance. Please delete it and re-record the payment instead to keep your balances accurate.');
+        return;
+      }
       document.getElementById('txEditId').value = tx.id;
       setTxType(tx.type);
       document.getElementById('txModalTitle').innerText = 'Edit Transaction';
@@ -2190,7 +2314,7 @@
         const oldDate = ins.dueDate;
         const nextYearDate = new Date(ins.dueDate);
         nextYearDate.setFullYear(nextYearDate.getFullYear() + 1);
-        ins.dueDate = nextYearDate.toISOString().slice(0, 10);
+        ins.dueDate = getLocalDateStr(nextYearDate);
         sourceAcc.balance -= amount;
         appData.transactions.unshift({ id: 'tx_' + Date.now(), type: 'expense', amount: amount, category: 'Utilities & Bills', accountId: sourceAcc.id, date: dateStr, notes: `Insurance Premium: ${ins.name}`, linkedModule: 'ins', linkedId: ins.id, linkedValue: oldDate });
       
@@ -2492,15 +2616,29 @@
     }
 
     function toggleAccountFields() {
-      const type = document.getElementById('accType').value, debitGroup = document.getElementById('accDebitBalanceGroup'), creditGroup = document.getElementById('accCreditCardGroup');
-      if (type === 'credit_card') { debitGroup.classList.add('hidden'); creditGroup.classList.remove('hidden'); } 
-      else { debitGroup.classList.remove('hidden'); creditGroup.classList.add('hidden'); }
+      const type = document.getElementById('accType').value;
+      const debitGroup = document.getElementById('accDebitBalanceGroup');
+      const creditGroup = document.getElementById('accCreditCardGroup');
+      const mabGroup = document.getElementById('accTargetMabGroup');
+
+      if (type === 'credit_card') {
+        debitGroup.classList.add('hidden');
+        creditGroup.classList.remove('hidden');
+      } else {
+        debitGroup.classList.remove('hidden');
+        creditGroup.classList.add('hidden');
+        if (mabGroup) {
+          if (type === 'debit_bank') mabGroup.classList.remove('hidden');
+          else mabGroup.classList.add('hidden');
+        }
+      }
     }
 
     function openAccountModal() {
       document.getElementById('accEditId').value = ''; 
       document.getElementById('accName').value = ''; 
       document.getElementById('accBalance').value = ''; 
+      document.getElementById('accTargetMab').value = ''; 
       document.getElementById('cardDue').value = ''; 
       document.getElementById('cardStatement').value = '';
       document.getElementById('cardLimit').value = '';
@@ -2521,8 +2659,10 @@
         document.getElementById('cardStatement').value = acc.statementBalance !== undefined ? acc.statementBalance : acc.currentDue;
         document.getElementById('cardDueDay').value = acc.dueDay || 15;
         document.getElementById('cardBillGenDay').value = acc.billGenDay || 1;
+        document.getElementById('accTargetMab').value = '';
       } else {
         document.getElementById('accBalance').value = acc.balance;
+        document.getElementById('accTargetMab').value = acc.targetMab > 0 ? acc.targetMab : '';
       }
       toggleAccountFields(); 
       openModal('accountModal');
@@ -2547,8 +2687,10 @@
             acc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : acc.currentDue;
             acc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
             acc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
+            acc.targetMab = 0;
           } else {
             acc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
+            acc.targetMab = type === 'debit_bank' ? (parseFloat(document.getElementById('accTargetMab').value) || 0) : 0;
           }
         }
       } else {
@@ -2560,10 +2702,20 @@
           newAcc.statementBalance = stmtVal !== '' ? parseFloat(stmtVal) : newAcc.currentDue;
           newAcc.dueDay = parseInt(document.getElementById('cardDueDay').value) || 15;
           newAcc.billGenDay = parseInt(document.getElementById('cardBillGenDay').value) || 1;
-          newAcc.lastBilledMonth = '';
+
+          const todayStr = getLocalDateStr();
+          const year = parseInt(todayStr.slice(0, 4));
+          const month = parseInt(todayStr.slice(5, 7));
+          const currentDay = parseInt(todayStr.slice(8, 10));
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const effectiveBillGenDay = Math.min(newAcc.billGenDay, daysInMonth);
+
+          newAcc.lastBilledMonth = currentDay >= effectiveBillGenDay ? getCurrentMonthKey() : '';
           newAcc.lastPaidMonth = '';
+          newAcc.targetMab = 0;
         } else {
           newAcc.balance = parseFloat(document.getElementById('accBalance').value) || 0;
+          newAcc.targetMab = type === 'debit_bank' ? (parseFloat(document.getElementById('accTargetMab').value) || 0) : 0;
         }
         appData.accounts.push(newAcc); 
       }
@@ -2663,6 +2815,7 @@
           if (!parsed.investments) parsed.investments = [];
           if (!parsed.insurances) parsed.insurances = [];
           if (!parsed.bills) parsed.bills = [];
+          parsed.accounts.forEach(acc => { if (acc.targetMab === undefined) acc.targetMab = 0; });
           parsed.goldLoans.forEach(gl => { if (gl.accruedInterest === undefined) gl.accruedInterest = 0; });
 
           if (parsed && parsed.accounts && parsed.transactions) {
@@ -2731,7 +2884,12 @@
       if (document.getElementById('invDueDay')) document.getElementById('invDueDay').innerHTML = dayOptions;
 
       setDefaultTxDateRange();
-      checkCreditCardBills(); 
+      checkCreditCardBills();
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkCreditCardBills();
+        }
+      });
       applyPrivacyMode();
       refreshAllViews();
 
